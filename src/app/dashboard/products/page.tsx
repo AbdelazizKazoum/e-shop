@@ -1,0 +1,43 @@
+// app/(dashboard)/products/page.tsx
+import React from "react";
+
+const ProductsPage = () => {
+  return (
+    <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800 sm:p-6">
+      <div className="flex items-center justify-between">
+        <h3 className="text-xl font-semibold text-gray-800 dark:text-white">
+          Products
+        </h3>
+        <button className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+          Add Product
+        </button>
+      </div>
+      <div className="mt-4 overflow-x-auto">
+        <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+          <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <tr>
+              <th scope="col" className="px-6 py-3">
+                Product Name
+              </th>
+              <th scope="col" className="px-6 py-3">
+                Category
+              </th>
+              <th scope="col" className="px-6 py-3">
+                Price
+              </th>
+              <th scope="col" className="px-6 py-3">
+                Stock
+              </th>
+              <th scope="col" className="px-6 py-3">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody>{/* Add product rows here */}</tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+export default ProductsPage;

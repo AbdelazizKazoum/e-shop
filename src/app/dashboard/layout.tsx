@@ -1,25 +1,35 @@
-// app/(dashboard)/layout.js
 "use client";
-
-import { useState } from "react";
-import Sidebar from "@/components/dashboard/Sidebar";
 import Header from "@/components/dashboard/Header";
-import MobileSidebar from "@/components/dashboard/MobileSidebar";
+import Sidebar from "@/components/dashboard/Sidebar";
+// app/(dashboard)/layout.tsx
+import React, { useState } from "react";
 
-export default function DashboardLayout({ children }) {
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-100">
-      <Sidebar />
-      <MobileSidebar
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-      />
-      <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
-        <Header setSidebarOpen={setSidebarOpen} />
-        <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
+    <body className="bg-white  dark:bg-neutral-900 text-neutral-900 dark:text-neutral-200">
+      <div className="flex h-screen overflow-hidden">
+        {/* Sidebar - hidden on mobile */}
+        <Sidebar />
+
+        {/* Main content */}
+        <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
+          {/* Header */}
+          <Header />
+
+          {/* Page content */}
+          <main>
+            <div className="mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10">
+              {children}
+            </div>
+          </main>
+        </div>
       </div>
-    </div>
+    </body>
   );
 }
