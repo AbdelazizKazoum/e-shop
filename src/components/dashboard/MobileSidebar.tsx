@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV_LINKS } from "@/lib/constants";
 import { X } from "lucide-react";
+import SubMenu from "./SubMenu"; // Import the new component
 
 type MobileSidebarProps = {
   isOpen: boolean;
@@ -16,6 +17,7 @@ export default function MobileSidebar({
   setIsOpen,
 }: MobileSidebarProps) {
   const pathname = usePathname();
+  const handleClose = () => setIsOpen(false);
 
   return (
     <div
@@ -23,13 +25,7 @@ export default function MobileSidebar({
         isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
       }`}
     >
-      {/* Overlay */}
-      <div
-        className="absolute inset-0 bg-black/60"
-        onClick={() => setIsOpen(false)}
-      ></div>
-
-      {/* Sidebar Panel */}
+      <div className="absolute inset-0 bg-black/60" onClick={handleClose}></div>
       <aside
         className={`relative flex h-full w-72 flex-col bg-neutral-100 p-4 transition-transform duration-300 ease-in-out dark:bg-neutral-800 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
@@ -42,22 +38,24 @@ export default function MobileSidebar({
               Admin Panel
             </h1>
           </div>
-          <button onClick={() => setIsOpen(false)}>
+          <button onClick={handleClose}>
             <X className="h-6 w-6" />
           </button>
         </div>
         <nav>
-          <ul>
-            {NAV_LINKS.map((link) => {
-              const isActive = pathname === link.href;
-              return (
+          <ul className="flex flex-col gap-1">
+            {NAV_LINKS.map((link) =>
+              // Same logic as the desktop sidebar
+              link.children ? (
+                <SubMenu key={link.label} item={link} onClick={handleClose} />
+              ) : (
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    onClick={() => setIsOpen(false)} // Close menu on navigation
+                    onClick={handleClose}
                     className={`flex items-center gap-3 rounded-md px-3 py-2 transition-all
                       ${
-                        isActive
+                        pathname === link.href
                           ? "bg-primary-500 text-white"
                           : "text-neutral-600 hover:bg-primary-100 dark:text-neutral-300 dark:hover:bg-primary-900"
                       }
@@ -67,8 +65,8 @@ export default function MobileSidebar({
                     <span>{link.label}</span>
                   </Link>
                 </li>
-              );
-            })}
+              )
+            )}
           </ul>
         </nav>
       </aside>

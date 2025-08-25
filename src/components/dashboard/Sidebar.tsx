@@ -4,6 +4,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV_LINKS } from "@/lib/constants";
+import SubMenu from "./SubMenu"; // Import the new component
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -17,27 +18,30 @@ export default function Sidebar() {
         </h1>
       </div>
       <nav>
-        <ul>
-          {NAV_LINKS.map((link) => {
-            const isActive = pathname === link.href;
-            return (
+        <ul className="flex flex-col gap-1">
+          {NAV_LINKS.map((link) =>
+            // If the link has children, render the SubMenu component
+            link.children ? (
+              <SubMenu key={link.label} item={link} />
+            ) : (
+              // Otherwise, render a regular link
               <li key={link.label}>
                 <Link
                   href={link.href}
                   className={`flex items-center gap-3 rounded-md px-3 py-2 transition-all
-                    ${
-                      isActive
-                        ? "bg-primary-500 text-white"
-                        : "text-neutral-600 hover:bg-primary-100 dark:text-neutral-300 dark:hover:bg-primary-900"
-                    }
-                  `}
+                  ${
+                    pathname === link.href
+                      ? "bg-primary-500 text-white"
+                      : "text-neutral-600 hover:bg-primary-100 dark:text-neutral-300 dark:hover:bg-primary-900"
+                  }
+                `}
                 >
                   <link.icon className="h-5 w-5" />
                   <span>{link.label}</span>
                 </Link>
               </li>
-            );
-          })}
+            )
+          )}
         </ul>
       </nav>
     </aside>
