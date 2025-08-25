@@ -15,7 +15,6 @@ import Heading from "@/components/Heading/Heading";
 import ButtonSecondary from "@/shared/Button/ButtonSecondary";
 import { PRODUCTS, SPORT_PRODUCTS } from "@/data/data";
 import SectionGridFeatureItems from "@/components/SectionGridFeatureItems";
-import SectionMagazine5 from "@/app/blog/SectionMagazine5";
 
 function PageHome() {
   return (
@@ -68,7 +67,6 @@ function PageHome() {
             <Heading rightDescText="From the Ciseco blog">
               The latest news
             </Heading>
-            <SectionMagazine5 />
             <div className="flex mt-16 justify-center">
               <ButtonSecondary>Show all blog articles</ButtonSecondary>
             </div>
