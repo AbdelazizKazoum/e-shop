@@ -51,7 +51,7 @@ export default function MobileSidebar({
               ) : (
                 <li key={link.label}>
                   <Link
-                    href={link.href}
+                    href={link.href as any}
                     onClick={handleClose}
                     className={`flex items-center gap-3 rounded-md px-3 py-2 transition-all
                       ${

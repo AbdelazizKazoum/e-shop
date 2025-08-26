@@ -138,7 +138,7 @@ export default function ProductVariantsForm({ product }: Props) {
         </button>
         <button
           type="submit"
-          className="rounded-md bg-secondary-600 px-6 py-2 text-sm font-medium text-white shadow-sm hover:bg-secondary-700"
+          className="rounded-md bg-secondary-500 px-6 py-2 text-sm font-medium text-white shadow-sm hover:bg-secondary-700"
         >
           Finish & Save Product
         </button>

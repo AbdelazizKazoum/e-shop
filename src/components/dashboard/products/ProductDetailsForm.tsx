@@ -1,10 +1,11 @@
 // src/components/products/ProductDetailsForm.tsx
 "use client";
 
-import { FormEvent } from "react";
+import { FormEvent, useState } from "react";
 import Input from "@/components/ui/form/Input";
 import Textarea from "@/components/ui/form/Textarea";
 import Select from "@/components/ui/form/Select";
+import ImageUpload from "@/components/ui/form/ImageUpload";
 import { Product } from "@/app/dashboard/products/new/page";
 
 type Props = {
@@ -17,12 +18,20 @@ const categories = [
 ];
 
 export default function ProductDetailsForm({ onProductCreated }: Props) {
+  const [mainImageFile, setMainImageFile] = useState<File | null>(null);
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const productData = Object.fromEntries(formData.entries());
 
-    console.log("Submitting Product Data:", productData);
+    // Add the file to the data object for logging/submission
+    const submissionData = {
+      ...productData,
+      image: mainImageFile,
+    };
+
+    console.log("Submitting Product Data:", submissionData);
 
     const newProduct: Product = {
       id: "prod_" + Math.random().toString(36).substr(2, 9),
@@ -88,19 +97,16 @@ export default function ProductDetailsForm({ onProductCreated }: Props) {
           step="0.01"
         />
         <div className="md:col-span-2">
-          <Input
-            name="image"
-            label="Main Image URL"
-            type="url"
-            required
-            placeholder="https://..."
+          <ImageUpload
+            label="Main Image"
+            onFileChange={(file) => setMainImageFile(file)}
           />
         </div>
       </div>
       <div className="mt-8 flex justify-end">
         <button
           type="submit"
-          className="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700"
+          className="rounded-md bg-primary-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700"
         >
           Save and Add Variants
         </button>

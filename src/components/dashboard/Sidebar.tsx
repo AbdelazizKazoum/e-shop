@@ -27,7 +27,7 @@ export default function Sidebar() {
               // Otherwise, render a regular link
               <li key={link.label}>
                 <Link
-                  href={link.href}
+                  href={link.href as any}
                   className={`flex items-center gap-3 rounded-md px-3 py-2 transition-all
                   ${
                     pathname === link.href

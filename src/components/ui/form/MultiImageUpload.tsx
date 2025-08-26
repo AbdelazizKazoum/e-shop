@@ -2,6 +2,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { UploadCloud, X } from "lucide-react";
+import Image from "next/image";
 
 type MultiImageUploadProps = {
   label: string;
@@ -50,10 +51,14 @@ export default function MultiImageUpload({
             key={index}
             className="relative h-24 w-24 rounded-md overflow-hidden"
           >
-            <img
+            <Image
               src={preview}
               alt={`Preview ${index + 1}`}
               className="h-full w-full object-cover"
+              fill
+              style={{ objectFit: "cover" }}
+              sizes="96px"
+              unoptimized
             />
             <button
               type="button"
