@@ -44,7 +44,7 @@ export default function ProductDetailsForm({ onProductCreated }: Props) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="nc-box-has-hover nc-dark-box-bg-has-hover p-6"
+      className="border hover:bg-none nc-dark-box-bg-has-hover p-6"
     >
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <Input
