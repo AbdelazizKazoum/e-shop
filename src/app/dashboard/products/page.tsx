@@ -398,7 +398,7 @@ export default function ProductsPage() {
             <Filter size={18} /> Filters
           </button>
           <a
-            href="/products/new"
+            href="/dashboard/products/new"
             className="flex items-center gap-2 whitespace-nowrap rounded-md bg-primary-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700"
           >
             <PlusCircle size={18} /> Add Product
