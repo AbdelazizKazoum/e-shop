@@ -14,8 +14,11 @@ export type Variant = {
 };
 
 export type Category = {
-  id?: string;
-  name: string;
+  id?: string; // UUID, optional if creating a new category
+  category: string; // internal identifier or slug
+  displayText: string; // text shown in the dropdown
+  imageUrl: string; // category image URL
+  products?: any[]; // optional, can be omitted or typed if needed
 };
 
 export type Review = {
@@ -69,7 +72,7 @@ export type ProductCreateInput = {
   brand: string;
   gender: string;
   weight?: string;
-  quantity: number;
+  quantity?: number;
   image?: File; // main product image as file
   price: number;
   newPrice?: number;

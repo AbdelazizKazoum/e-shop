@@ -19,6 +19,7 @@ export const productService = {
   },
 
   async createProduct(data: ProductCreateInput): Promise<Product> {
+    console.log("🚀 ~ createProduct ~ data:", data);
     const formData = new FormData();
 
     // stringify all fields except files

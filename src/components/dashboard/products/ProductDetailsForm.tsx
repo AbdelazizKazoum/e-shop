@@ -1,4 +1,3 @@
-// src/components/products/ProductDetailsForm.tsx
 "use client";
 
 import { FormEvent, useState } from "react";
@@ -6,39 +5,84 @@ import Input from "@/components/ui/form/Input";
 import Textarea from "@/components/ui/form/Textarea";
 import Select from "@/components/ui/form/Select";
 import ImageUpload from "@/components/ui/form/ImageUpload";
-import { Product } from "@/app/dashboard/products/new/page";
+import { useProductStore } from "@/stores/productStore";
+import type { Category, Product, ProductCreateInput } from "@/types/product";
+import { toast } from "react-toastify";
 
 type Props = {
-  onProductCreated: (product: Product) => void;
+  onProductCreated: () => void;
 };
 
-const categories = [
-  { id: "cat1", displayText: "T-Shirts" },
-  { id: "cat2", displayText: "Hoodies" },
+const categories: Category[] = [
+  {
+    id: "cat1",
+    category: "tshirts",
+    displayText: "T-Shirts",
+    imageUrl: "/images/categories/tshirts.png",
+    products: [],
+  },
+  {
+    id: "cat2",
+    category: "hoodies",
+    displayText: "Hoodies",
+    imageUrl: "/images/categories/hoodies.png",
+    products: [],
+  },
+  {
+    id: "cat3",
+    category: "jackets",
+    displayText: "Jackets",
+    imageUrl: "/images/categories/jackets.png",
+    products: [],
+  },
 ];
 
-export default function ProductDetailsForm({ onProductCreated }: Props) {
+export default function ProductDetailsForm({ onProductCreated }: any) {
   const [mainImageFile, setMainImageFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const createProduct = useProductStore((state) => state.createProduct);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
-    const productData = Object.fromEntries(formData.entries());
 
-    // Add the file to the data object for logging/submission
-    const submissionData = {
-      ...productData,
-      image: mainImageFile,
+    const productData: ProductCreateInput = {
+      name: formData.get("name") as string,
+      brand: formData.get("brand") as string,
+      description: formData.get("description") as string,
+      categoryId: formData.get("category") as string,
+      gender: formData.get("gender") as string,
+      price: Number(formData.get("price")),
+      newPrice: formData.get("newPrice")
+        ? Number(formData.get("newPrice"))
+        : undefined,
+      image: mainImageFile || undefined,
     };
 
-    console.log("Submitting Product Data:", submissionData);
+    try {
+      setLoading(true);
+      const createdProduct = await createProduct(productData);
 
-    const newProduct: Product = {
-      id: "prod_" + Math.random().toString(36).substr(2, 9),
-      name: productData.name as string,
-    };
+      if (createdProduct) {
+        const newProduct = {
+          id: "prod_" + Math.random().toString(36).substr(2, 9),
+          name: productData.name as string,
+        };
 
-    onProductCreated(newProduct);
+        onProductCreated(newProduct as any);
+        setMainImageFile(null);
+        // Optionally reset the form:
+        // event.currentTarget.reset();
+      } else {
+        // Optionally handle failure (toast already shown in store)
+        // toast.error("Product creation failed.");
+      }
+    } catch (err) {
+      console.error("Failed to create product:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -107,8 +151,9 @@ export default function ProductDetailsForm({ onProductCreated }: Props) {
         <button
           type="submit"
           className="rounded-md bg-primary-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700"
+          disabled={loading}
         >
-          Save and Add Variants
+          {loading ? "Saving..." : "Save Product"}
         </button>
       </div>
     </form>

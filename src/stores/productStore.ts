@@ -7,6 +7,7 @@ import type {
   ProductUpdateInput,
   VariantInput,
 } from "@/types/product";
+import { toast } from "react-toastify";
 
 type ProductState = {
   products: Product[];
@@ -56,8 +57,10 @@ export const useProductStore = create<ProductState>((set, get) => ({
     try {
       const newProduct = await productService.createProduct(productData);
       await get().fetchProducts(get().page, get().limit);
+      toast.success(`Product "${newProduct?.name}" created successfully!`);
       return newProduct;
     } catch (err: any) {
+      toast.error(err.message || "Failed to create product");
       set({ error: err.message || "Failed to create product" });
       return null;
     } finally {
