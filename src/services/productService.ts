@@ -10,11 +10,27 @@ import type {
 export const productService = {
   async fetchProducts(
     page = 1,
-    limit = 10
-  ): Promise<{ items: Product[]; total: number }> {
+    limit = 10,
+    filters?: {
+      name?: string;
+      brand?: string;
+      gender?: string;
+      rating?: number;
+      minPrice?: number;
+      maxPrice?: number;
+      startDate?: string;
+      endDate?: string;
+    }
+  ): Promise<{ data: Product[]; total: number; page: number; limit: number }> {
     const res = await axiosClient.get(`/api/products`, {
-      params: { page, limit },
+      params: {
+        page,
+        limit,
+        ...filters, // ✅ dynamically attach filters if provided
+      },
     });
+    console.log("🚀 ~ fetchProducts ~ res:", res);
+
     return res.data;
   },
 
@@ -73,30 +89,39 @@ export const productService = {
     productId: string,
     variants: VariantInput[]
   ): Promise<string> {
+    console.log("🚀 ~ createVariants ~ variants:", variants);
+
     const formData = new FormData();
 
-    // stringify variant data except files
-    formData.append(
-      "variants",
-      JSON.stringify(
-        variants.map((v) => ({
-          color: v.color,
-          size: v.size,
-          qte: v.qte,
-          id: v.id,
-        }))
-      )
-    );
+    // ✅ Build the variant data with file references instead of files
+    const variantData = variants.map((v, vIndex) => ({
+      color: v.color,
+      size: v.size,
+      qte: v.qte,
+      id: v.id,
+      // Replace File objects with deterministic filenames
+      images: v.images.map((img, iIndex) =>
+        img instanceof File ? `${vIndex}_${iIndex}_${img.name}` : img
+      ),
+    }));
 
-    // append variant images
-    variants.forEach((variant) => {
-      variant.images.forEach((img) => {
+    // Append JSON (with image references)
+    formData.append("variants", JSON.stringify(variantData));
+
+    // ✅ Append actual files with matching filenames
+    variants.forEach((variant, vIndex) => {
+      variant.images.forEach((img, iIndex) => {
         if (img instanceof File) {
-          formData.append("variantImages", img); // ✅ always the same field name
+          formData.append(
+            "variantImages",
+            img,
+            `${vIndex}_${iIndex}_${img.name}` // must match JSON above
+          );
         }
       });
     });
 
+    //Send to backend
     return await axiosClient.post(
       `/api/products/${productId}/variants`,
       formData,
@@ -104,6 +129,8 @@ export const productService = {
         headers: { "Content-Type": "multipart/form-data" },
       }
     );
+
+    // return null as any; // Temporary return to avoid errors
   },
 
   async updateVariants(productId: string, variants: VariantInput[]) {
