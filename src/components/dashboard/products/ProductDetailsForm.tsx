@@ -66,7 +66,7 @@ export default function ProductDetailsForm({ onProductCreated }: any) {
 
       if (createdProduct) {
         const newProduct = {
-          id: "prod_" + Math.random().toString(36).substr(2, 9),
+          id: createdProduct.id,
           name: productData.name as string,
         };
 

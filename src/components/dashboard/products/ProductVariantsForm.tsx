@@ -1,4 +1,3 @@
-// src/components/products/ProductVariantsForm.tsx
 "use client";
 
 import { useState, FormEvent } from "react";
@@ -8,58 +7,68 @@ import { PlusCircle, Trash2 } from "lucide-react";
 import { Product } from "@/app/dashboard/products/new/page";
 import ColorPickerInput from "@/components/ui/form/ColorPickerInput";
 import MultiImageUpload from "@/components/ui/form/MultiImageUpload";
+import { useProductStore } from "@/stores/productStore";
+import { VariantInput } from "@/types/product";
+import { toast } from "react-toastify";
 
 type Props = {
   product: Product;
 };
 
-type Variant = {
-  id: number;
-  color: string;
-  size: string;
-  qte: number;
-  images: File[];
-};
-
 export default function ProductVariantsForm({ product }: Props) {
-  const [variants, setVariants] = useState<Variant[]>([
-    { id: Date.now(), color: "#000000", size: "M", qte: 10, images: [] },
+  const [variants, setVariants] = useState<VariantInput[]>([
+    { color: "#000000", size: "M", qte: 10, images: [] },
   ]);
+
+  const createVariants = useProductStore((state) => state.createVariants);
 
   const addVariant = () => {
     setVariants([
       ...variants,
-      { id: Date.now(), color: "#ffffff", size: "M", qte: 10, images: [] },
+      { color: "#ffffff", size: "M", qte: 10, images: [] },
     ]);
   };
 
-  const removeVariant = (id: number) => {
-    setVariants(variants.filter((v) => v.id !== id));
+  const removeVariant = (index: number) => {
+    setVariants(variants.filter((_, i) => i !== index));
   };
 
   const handleVariantChange = (
-    id: number,
-    field: keyof Omit<Variant, "id" | "images">,
+    index: number,
+    field: keyof Omit<VariantInput, "images">,
     value: any
   ) => {
     setVariants(
-      variants.map((v) => (v.id === id ? { ...v, [field]: value } : v))
+      variants.map((v, i) => (i === index ? { ...v, [field]: value } : v))
     );
   };
 
-  const handleImagesChange = (variantId: number, files: File[]) => {
+  const handleImagesChange = (index: number, files: File[]) => {
     setVariants(
-      variants.map((v) => (v.id === variantId ? { ...v, images: files } : v))
+      variants.map((v, i) => (i === index ? { ...v, images: files } : v))
     );
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    console.log("Submitting Variants for Product ID:", product.id);
-    console.log("Variants Data:", variants);
-    alert(
-      "Variants saved successfully! Check the console for the data structure."
-    );
+
+    try {
+      console.log("🚀 ~ ProductVariantsForm ~ variants:", variants);
+      console.log("🚀 ~ handleSubmit ~ product id:", product.id);
+
+      const created = await createVariants(product.id, variants);
+      console.log("🚀 ~ handleSubmit ~ created:", created);
+
+      if (created) {
+        toast.success("Variants created successfully!");
+        // Optionally reset variants or perform other actions here
+      } else {
+        // Optionally handle failure (toast already shown in store)
+        toast.error("Failed to create variants.");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Failed to create variants");
+    }
   };
 
   return (
@@ -67,7 +76,7 @@ export default function ProductVariantsForm({ product }: Props) {
       <div className="space-y-6">
         {variants.map((variant, index) => (
           <div
-            key={variant.id}
+            key={index}
             className="nc-box-has-hover nc-dark-box-bg-has-hover relative p-6"
           >
             <h3 className="mb-4 font-semibold text-neutral-700 dark:text-neutral-200">
@@ -77,15 +86,13 @@ export default function ProductVariantsForm({ product }: Props) {
               <ColorPickerInput
                 label="Color"
                 value={variant.color}
-                onChange={(color) =>
-                  handleVariantChange(variant.id, "color", color)
-                }
+                onChange={(color) => handleVariantChange(index, "color", color)}
               />
               <Select
                 label="Size"
                 value={variant.size}
                 onChange={(e) =>
-                  handleVariantChange(variant.id, "size", e.target.value)
+                  handleVariantChange(index, "size", e.target.value)
                 }
                 required
               >
@@ -101,7 +108,7 @@ export default function ProductVariantsForm({ product }: Props) {
                 value={variant.qte}
                 onChange={(e) =>
                   handleVariantChange(
-                    variant.id,
+                    index,
                     "qte",
                     parseInt(e.target.value) || 0
                   )
@@ -112,13 +119,13 @@ export default function ProductVariantsForm({ product }: Props) {
             <div className="mt-6">
               <MultiImageUpload
                 label="Variant Images"
-                onFilesChange={(files) => handleImagesChange(variant.id, files)}
+                onFilesChange={(files) => handleImagesChange(index, files)}
               />
             </div>
             {variants.length > 1 && (
               <button
                 type="button"
-                onClick={() => removeVariant(variant.id)}
+                onClick={() => removeVariant(index)}
                 className="absolute top-4 right-4 text-neutral-400 hover:text-red-500"
               >
                 <Trash2 className="h-5 w-5" />

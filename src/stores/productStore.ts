@@ -24,7 +24,7 @@ type ProductState = {
   createVariants: (
     productId: string,
     variants: VariantInput[]
-  ) => Promise<void>;
+  ) => Promise<string | void>;
   updateVariants: (
     productId: string,
     variants: VariantInput[]
@@ -86,7 +86,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
   createVariants: async (productId, variants) => {
     set({ loading: true, error: null });
     try {
-      await productService.createVariants(productId, variants);
+      return await productService.createVariants(productId, variants);
     } catch (err: any) {
       set({ error: err.message || "Failed to create variants" });
     } finally {

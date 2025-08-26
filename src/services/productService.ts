@@ -69,7 +69,10 @@ export const productService = {
     return res.data;
   },
 
-  async createVariants(productId: string, variants: VariantInput[]) {
+  async createVariants(
+    productId: string,
+    variants: VariantInput[]
+  ): Promise<string> {
     const formData = new FormData();
 
     // stringify variant data except files
@@ -86,17 +89,21 @@ export const productService = {
     );
 
     // append variant images
-    variants.forEach((variant, idx) => {
+    variants.forEach((variant) => {
       variant.images.forEach((img) => {
         if (img instanceof File) {
-          formData.append(`variantImages[${idx}][]`, img);
+          formData.append("variantImages", img); // ✅ always the same field name
         }
       });
     });
 
-    await axiosClient.post(`/api/products/${productId}/variants`, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    return await axiosClient.post(
+      `/api/products/${productId}/variants`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    );
   },
 
   async updateVariants(productId: string, variants: VariantInput[]) {
