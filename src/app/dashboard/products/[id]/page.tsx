@@ -18,6 +18,7 @@ import { create } from "zustand";
 import { SketchPicker, ColorResult } from "react-color";
 import { useProductStore } from "@/stores/productStore";
 import { Category, Product, Variant } from "@/types/product";
+import Image from "next/image";
 
 // --- TYPE DEFINITIONS (would be in src/lib/types.ts) ---
 export interface Image {
@@ -411,6 +412,9 @@ const EditVariantForm = ({
   const [newImageFiles, setNewImageFiles] = useState<File[]>([]);
   const [newImagePreviews, setNewImagePreviews] = useState<string[]>([]);
 
+  // Get updateVariant and loading from the store
+  const { updateVariant, loading } = useProductStore();
+
   useEffect(() => {
     const urls = newImageFiles.map((file) => URL.createObjectURL(file));
     setNewImagePreviews(urls);
@@ -445,21 +449,22 @@ const EditVariantForm = ({
     );
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const submissionData = {
-      variantId: formData.id,
-      data: {
-        color: formData.color,
-        size: formData.size,
-        qte: formData.qte,
-        deletedImages: deletedImageIds,
-      },
-      newImages: newImageFiles,
+      color: formData.color,
+      size: formData.size,
+      qte: formData.qte,
+      deletedImages: deletedImageIds,
     };
-    console.log("Submitting variant update:", submissionData);
-    alert("Variant updated! (Check console)");
-    onSave(submissionData);
+    try {
+      // @ts-ignore
+      await updateVariant(formData.id, submissionData, newImageFiles);
+      onSave(submissionData);
+    } catch (err) {
+      // Optionally handle error here
+      console.error("Failed to update variant:", err);
+    }
   };
 
   return (
@@ -498,13 +503,16 @@ const EditVariantForm = ({
         <div className="flex flex-wrap gap-2">
           {formData.images.map((img) => (
             <div key={img.id} className="relative h-20 w-20">
-              <img
+              <Image
                 src={img.image}
                 alt="variant"
+                width={80}
+                height={80}
                 className="h-full w-full rounded-md object-cover"
               />
               <button
                 type="button"
+                // @ts-ignore
                 onClick={() => handleDeleteImage(img.id)}
                 className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5"
               >
@@ -514,9 +522,11 @@ const EditVariantForm = ({
           ))}
           {newImagePreviews.map((preview, index) => (
             <div key={index} className="relative h-20 w-20">
-              <img
+              <Image
                 src={preview}
                 alt="new preview"
+                width={80}
+                height={80}
                 className="h-full w-full rounded-md object-cover"
               />
               <button
@@ -549,9 +559,10 @@ const EditVariantForm = ({
         </button>
         <button
           type="submit"
-          className="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white"
+          disabled={loading}
+          className="rounded-md bg-primary-500 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
         >
-          Save Variant
+          {loading ? "Saving..." : "Save Variant"}
         </button>
       </div>
     </form>
@@ -583,12 +594,14 @@ const VariantList = ({ variants }: { variants: Variant[] }) => {
               />
             ) : (
               <div className="flex items-center gap-4 p-3 rounded-md bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700/60">
-                <img
+                <Image
                   src={
                     variant.images[0]?.image ||
                     "https://placehold.co/100x100/e2e8f0/64748b?text=N/A"
                   }
                   alt="variant"
+                  width={48}
+                  height={48}
                   className="h-12 w-12 rounded-md object-cover"
                 />
                 <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">

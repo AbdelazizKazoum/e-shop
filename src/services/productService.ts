@@ -201,4 +201,38 @@ export const productService = {
     const res = await axiosClient.get(`/api/products/categories`);
     return res.data;
   },
+
+  // =================================================================
+  // === UPDATE ONE VARIANT =========================================
+  // =================================================================
+  /**
+   * Update a specific variant by its ID
+   */
+  async updateVariant(
+    variantId: string,
+    data: {
+      color?: string;
+      size?: string;
+      qte?: number;
+      // add other updatable fields as needed
+      [key: string]: any;
+    },
+    newImages?: File[]
+  ): Promise<any> {
+    const formData = new FormData();
+    formData.append("data", JSON.stringify(data));
+    if (newImages && newImages.length > 0) {
+      newImages.forEach((img) => {
+        formData.append("newImages", img);
+      });
+    }
+    const res = await axiosClient.patch(
+      `/api/products/variants/${variantId}`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    );
+    return res.data;
+  },
 };

@@ -48,6 +48,16 @@ type ProductState = {
     productId: string,
     variants: VariantInput[]
   ) => Promise<void>;
+  updateVariant: (
+    variantId: string,
+    data: {
+      color?: string;
+      size?: string;
+      qte?: number;
+      [key: string]: any;
+    },
+    newImages?: File[]
+  ) => Promise<any>;
 
   resetError: () => void;
 };
@@ -197,6 +207,29 @@ export const useProductStore = create<ProductState>((set, get) => ({
       await productService.updateVariants(productId, variants);
     } catch (err: any) {
       set({ error: err.message || "Failed to update variants" });
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  // =================================================================
+  // === UPDATE A SINGLE VARIANT =====================================
+  // =================================================================
+  updateVariant: async (variantId, data, newImages) => {
+    set({ loading: true, error: null });
+    try {
+      const result = await productService.updateVariant(
+        variantId,
+        data,
+        newImages
+      );
+      // Optionally refresh products or selectedProduct if needed
+      toast.success("Variant updated successfully!");
+      return result;
+    } catch (err: any) {
+      set({ error: err.message || "Failed to update variant" });
+      toast.error(err.message || "Failed to update variant");
+      return null;
     } finally {
       set({ loading: false });
     }
