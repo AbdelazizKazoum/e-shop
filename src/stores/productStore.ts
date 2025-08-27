@@ -11,6 +11,7 @@ import { toast } from "react-toastify";
 
 type ProductState = {
   products: Product[];
+  categories: { id: string; displayText: string }[];
   total: number;
   page: number;
   limit: number;
@@ -33,6 +34,7 @@ type ProductState = {
   ) => Promise<void>;
   createProduct: (product: ProductCreateInput) => Promise<Product | null>;
   updateProduct: (product: ProductUpdateInput) => Promise<Product | null>;
+  fetchCategories: () => Promise<void>;
 
   createVariants: (
     productId: string,
@@ -48,13 +50,16 @@ type ProductState = {
 
 export const useProductStore = create<ProductState>((set, get) => ({
   products: [],
+  categories: [],
   total: 0,
   page: 1,
   limit: 10,
   loading: false,
   error: null,
 
-  // PRODUCT ACTIONS
+  // =================================================================
+  // === FETCH PRODUCTS WITH OPTIONAL FILTERS ========================
+  // =================================================================
   fetchProducts: async (
     page = 1,
     limit = 10,
@@ -82,6 +87,25 @@ export const useProductStore = create<ProductState>((set, get) => ({
     }
   },
 
+  // =================================================================
+  // === FETCH ALL CATEGORIES ========================================
+  // =================================================================
+  fetchCategories: async () => {
+    set({ loading: true, error: null });
+    try {
+      const categories = await productService.fetchCategories();
+      set({ categories, loading: false });
+    } catch (err: any) {
+      set({
+        error: err.message || "Failed to fetch categories",
+        loading: false,
+      });
+    }
+  },
+
+  // =================================================================
+  // === CREATE PRODUCT =============================================
+  // =================================================================
   createProduct: async (productData) => {
     set({ loading: true, error: null });
     try {
@@ -98,6 +122,9 @@ export const useProductStore = create<ProductState>((set, get) => ({
     }
   },
 
+  // =================================================================
+  // === UPDATE PRODUCT =============================================
+  // =================================================================
   updateProduct: async (productData) => {
     set({ loading: true, error: null });
     try {
@@ -112,7 +139,9 @@ export const useProductStore = create<ProductState>((set, get) => ({
     }
   },
 
-  // VARIANT ACTIONS
+  // =================================================================
+  // === CREATE VARIANTS FOR A PRODUCT ==============================
+  // =================================================================
   createVariants: async (productId, variants) => {
     set({ loading: true, error: null });
     try {
@@ -124,6 +153,9 @@ export const useProductStore = create<ProductState>((set, get) => ({
     }
   },
 
+  // =================================================================
+  // === UPDATE VARIANTS FOR A PRODUCT ==============================
+  // =================================================================
   updateVariants: async (productId, variants) => {
     set({ loading: true, error: null });
     try {
@@ -135,5 +167,8 @@ export const useProductStore = create<ProductState>((set, get) => ({
     }
   },
 
+  // =================================================================
+  // === RESET ERROR STATE ===========================================
+  // =================================================================
   resetError: () => set({ error: null }),
 }));

@@ -8,6 +8,9 @@ import type {
 } from "@/types/product";
 
 export const productService = {
+  // =================================================================
+  // === FETCH PRODUCTS WITH OPTIONAL FILTERS ========================
+  // =================================================================
   async fetchProducts(
     page = 1,
     limit = 10,
@@ -34,6 +37,9 @@ export const productService = {
     return res.data;
   },
 
+  // =================================================================
+  // === CREATE PRODUCT =============================================
+  // =================================================================
   async createProduct(data: ProductCreateInput): Promise<Product> {
     console.log("🚀 ~ createProduct ~ data:", data);
     const formData = new FormData();
@@ -60,6 +66,9 @@ export const productService = {
     return res.data;
   },
 
+  // =================================================================
+  // === UPDATE PRODUCT =============================================
+  // =================================================================
   async updateProduct(data: ProductUpdateInput): Promise<Product> {
     const formData = new FormData();
 
@@ -85,6 +94,9 @@ export const productService = {
     return res.data;
   },
 
+  // =================================================================
+  // === CREATE VARIANTS FOR A PRODUCT ==============================
+  // =================================================================
   async createVariants(
     productId: string,
     variants: VariantInput[]
@@ -129,10 +141,11 @@ export const productService = {
         headers: { "Content-Type": "multipart/form-data" },
       }
     );
-
-    // return null as any; // Temporary return to avoid errors
   },
 
+  // =================================================================
+  // === UPDATE VARIANTS FOR A PRODUCT ==============================
+  // =================================================================
   async updateVariants(productId: string, variants: VariantInput[]) {
     const formData = new FormData();
 
@@ -161,5 +174,20 @@ export const productService = {
     await axiosClient.put(`/api/variants/bulk/${productId}`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
+  },
+
+  // =================================================================
+  // === DELETE PRODUCT =============================================
+  // =================================================================
+  async deleteProduct(productId: string): Promise<void> {
+    await axiosClient.delete(`/api/products/${productId}`);
+  },
+
+  // =================================================================
+  // === FETCH ALL CATEGORIES ========================================
+  // =================================================================
+  async fetchCategories(): Promise<{ id: string; displayText: string }[]> {
+    const res = await axiosClient.get(`/api/products/categories`);
+    return res.data;
   },
 };
