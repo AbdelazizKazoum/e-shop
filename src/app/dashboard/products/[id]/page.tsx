@@ -412,7 +412,6 @@ const EditVariantForm = ({
   const [newImageFiles, setNewImageFiles] = useState<File[]>([]);
   const [newImagePreviews, setNewImagePreviews] = useState<string[]>([]);
 
-  // Get updateVariant and loading from the store
   const { updateVariant, loading } = useProductStore();
 
   useEffect(() => {
@@ -460,9 +459,8 @@ const EditVariantForm = ({
     try {
       // @ts-ignore
       await updateVariant(formData.id, submissionData, newImageFiles);
-      onSave(submissionData);
+      // onSave(submissionData);
     } catch (err) {
-      // Optionally handle error here
       console.error("Failed to update variant:", err);
     }
   };
@@ -569,20 +567,214 @@ const EditVariantForm = ({
   );
 };
 
+// --- ADD VARIANT FORM ---
+const AddVariantForm = ({
+  onSave,
+  onCancel,
+}: {
+  onSave: (data: any) => void;
+  onCancel: () => void;
+}) => {
+  const [formData, setFormData] = useState({
+    color: "#ffffff",
+    size: "M",
+    qte: 10,
+  });
+  const [newImageFiles, setNewImageFiles] = useState<File[]>([]);
+  const [newImagePreviews, setNewImagePreviews] = useState<string[]>([]);
+
+  const { loading } = useProductStore();
+
+  useEffect(() => {
+    const urls = newImageFiles.map((file) => URL.createObjectURL(file));
+    setNewImagePreviews(urls);
+    return () => {
+      urls.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [newImageFiles]);
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleColorChange = (color: string) => {
+    setFormData({ ...formData, color });
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setNewImageFiles((prev) => [...prev, ...Array.from(e.target.files!)]);
+    }
+  };
+
+  const handleDeleteNewImage = (indexToRemove: number) => {
+    setNewImageFiles((prev) =>
+      prev.filter((_, index) => index !== indexToRemove)
+    );
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    const submissionData = {
+      ...formData,
+      qte: Number(formData.qte),
+      images: newImageFiles,
+    };
+
+    console.log("🚀 New Variant Data:", submissionData);
+    // You can call your createVariant store action here
+    onSave(submissionData);
+  };
+
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className="p-4 my-2 bg-green-50 dark:bg-neutral-900 rounded-md border-l-4 border-green-500"
+    >
+      <h3 className="text-md font-semibold mb-4 text-neutral-800 dark:text-neutral-200">
+        Add New Variant
+      </h3>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <ColorPickerInput
+          label="Color"
+          value={formData.color}
+          onChange={handleColorChange}
+        />
+        <Select
+          label="Size"
+          name="size"
+          value={formData.size}
+          onChange={handleInputChange}
+        >
+          {["SM", "M", "L", "XL", "XXL", "3XL", "4XL"].map((s) => (
+            <option key={s} value={s}>
+              {s}
+            </option>
+          ))}
+        </Select>
+        <Input
+          label="Quantity"
+          name="qte"
+          type="number"
+          value={formData.qte}
+          onChange={handleInputChange}
+        />
+      </div>
+      <div className="mt-4">
+        <label className="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+          Images
+        </label>
+        <div className="flex flex-wrap gap-2">
+          {newImagePreviews.map((preview, index) => (
+            <div key={index} className="relative h-20 w-20">
+              <Image
+                src={preview}
+                alt="new preview"
+                width={80}
+                height={80}
+                className="h-full w-full rounded-md object-cover"
+              />
+              <button
+                type="button"
+                onClick={() => handleDeleteNewImage(index)}
+                className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5"
+              >
+                <X size={12} />
+              </button>
+            </div>
+          ))}
+          <label className="flex h-20 w-20 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-neutral-300 bg-neutral-100 hover:bg-neutral-200 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700">
+            <UploadCloud className="h-6 w-6 text-neutral-500 dark:text-neutral-400" />
+            <input
+              type="file"
+              multiple
+              className="hidden"
+              onChange={handleFileChange}
+              accept="image/*"
+            />
+          </label>
+        </div>
+      </div>
+      <div className="mt-4 flex justify-end gap-2">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="rounded-md bg-neutral-200 px-4 py-2 text-sm font-medium text-neutral-800 hover:bg-neutral-300 dark:bg-neutral-700 dark:text-neutral-200"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          disabled={loading}
+          className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+        >
+          {loading ? "Saving..." : "Save Variant"}
+        </button>
+      </div>
+    </form>
+  );
+};
+
 // --- VARIANT LIST ---
 const VariantList = ({ variants }: { variants: Variant[] }) => {
   const [editingVariantId, setEditingVariantId] = useState<string | null>(null);
+  const [showAddForm, setShowAddForm] = useState(false);
+
+  // Modal state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [variantToDelete, setVariantToDelete] = useState<string | null>(null);
+
+  const {
+    createSingleVariant,
+    selectedProduct,
+    fetchProductById,
+    deleteVariant,
+    loading,
+  } = useProductStore();
 
   const handleDeleteVariant = (variantId: string) => {
-    if (window.confirm("Are you sure you want to delete this variant?")) {
-      console.log("Deleting variant:", variantId);
-      alert("Variant deleted! (Check console)");
+    setVariantToDelete(variantId);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    if (variantToDelete) {
+      await deleteVariant(variantToDelete);
+      if (selectedProduct?.id) {
+        await fetchProductById(selectedProduct.id);
+      }
     }
+    setShowDeleteModal(false);
+    setVariantToDelete(null);
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteModal(false);
+    setVariantToDelete(null);
+  };
+
+  const handleSaveNewVariant = async (data: any) => {
+    if (!selectedProduct?.id) return;
+    await createSingleVariant(selectedProduct.id, data);
+    await fetchProductById(selectedProduct.id);
+    setShowAddForm(false);
   };
 
   return (
     <div className="mt-8 p-6 bg-white dark:bg-neutral-800/50 rounded-lg border border-neutral-200/70 dark:border-neutral-700/50">
-      <h2 className="text-lg font-semibold mb-4">Variants</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-lg font-semibold">Variants</h2>
+      </div>
+
+      {showAddForm && (
+        <AddVariantForm
+          onSave={handleSaveNewVariant}
+          onCancel={() => setShowAddForm(false)}
+        />
+      )}
+
       <div className="space-y-2">
         {variants.map((variant) => (
           <div key={variant.id}>
@@ -646,6 +838,47 @@ const VariantList = ({ variants }: { variants: Variant[] }) => {
           </div>
         ))}
       </div>
+      {!showAddForm && (
+        <button
+          type="button"
+          onClick={() => setShowAddForm(true)}
+          className="flex mt-3 items-center gap-2 rounded-md border border-primary-600 bg-white px-4 py-2 text-sm font-medium text-primary-600 shadow-sm hover:bg-primary-50 dark:bg-neutral-900 dark:border-neutral-700"
+        >
+          <PlusCircle className="h-5 w-5" />
+          Add Another Variant
+        </button>
+      )}
+
+      {/* Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 shadow-lg w-full max-w-sm">
+            <h3 className="text-lg font-semibold mb-4 text-neutral-800 dark:text-neutral-100">
+              Delete Variant
+            </h3>
+            <p className="mb-6 text-neutral-600 dark:text-neutral-300">
+              Are you sure you want to delete this variant? This action cannot
+              be undone.
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={cancelDelete}
+                className="rounded-md bg-neutral-200 px-4 py-2 text-sm font-medium text-neutral-800 hover:bg-neutral-300 dark:bg-neutral-700 dark:text-neutral-200"
+                disabled={loading}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                disabled={loading}
+              >
+                {loading ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -701,25 +934,12 @@ export default function UpdateProductPage({
   } = useProductStore();
 
   useEffect(() => {
-    // In a real Next.js app, params.id would come from the URL
-    // For this example, we'll use a hardcoded ID if params.id is not available
-    const productId = params?.id || "9608eb35-9897-4f6f-ba4e-c018fc1e3151";
-
-    console.log(`Fetching data for product ID: ${productId}`);
-    fetchProductById(productId);
-    fetchCategories();
-
-    // Log the fetched data once it's available in the store
-    // Note: Zustand updates are async, so we use a subscriber to log the state after it updates.
-    const unsubscribe = useProductStore.subscribe((state) => {
-      if (state.selectedProduct && state.categories.length > 0) {
-        console.log("Product from store:", state.selectedProduct);
-        console.log("Categories from store:", state.categories);
-        unsubscribe(); // Clean up the subscription after logging
-      }
-    });
-
-    return () => unsubscribe(); // Cleanup on component unmount
+    const productId = params?.id;
+    if (productId) {
+      console.log(`Fetching data for product ID: ${productId}`);
+      fetchProductById(productId);
+      fetchCategories();
+    }
   }, [params?.id, fetchProductById, fetchCategories]);
 
   if (loading || !selectedProduct) {

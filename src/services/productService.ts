@@ -235,4 +235,52 @@ export const productService = {
     );
     return res.data;
   },
+
+  // =================================================================
+  // === CREATE SINGLE VARIANT =====================================
+  // =================================================================
+  /**
+   * Create a single variant for a product
+   */
+  async createSingleVariant(
+    productId: string,
+    variantData: Omit<VariantInput, "id"> // or adjust type as needed
+  ): Promise<any> {
+    const formData = new FormData();
+
+    // Separate images from other data
+    const { images, ...dataWithoutImages } = variantData;
+
+    // Append JSON data
+    formData.append("data", JSON.stringify(dataWithoutImages));
+
+    // Append images
+    if (images && images.length > 0) {
+      images.forEach((img) => {
+        if (img instanceof File) {
+          formData.append("images", img);
+        }
+      });
+    }
+
+    const res = await axiosClient.post(
+      `/api/products/${productId}/variant`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    );
+    return res.data;
+  },
+
+  // =================================================================
+  // === DELETE VARIANT ==============================================
+  // =================================================================
+  /**
+   * Delete a specific variant by its ID
+   */
+  async deleteVariant(variantId: string): Promise<any> {
+    const res = await axiosClient.delete(`/api/products/variants/${variantId}`);
+    return res.data;
+  },
 };

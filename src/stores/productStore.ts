@@ -58,6 +58,11 @@ type ProductState = {
     },
     newImages?: File[]
   ) => Promise<any>;
+  createSingleVariant: (
+    productId: string,
+    variantData: Omit<VariantInput, "id">
+  ) => Promise<any>;
+  deleteVariant: (variantId: string) => Promise<any>;
 
   resetError: () => void;
 };
@@ -225,10 +230,72 @@ export const useProductStore = create<ProductState>((set, get) => ({
       );
       // Optionally refresh products or selectedProduct if needed
       toast.success("Variant updated successfully!");
+      // 🔄 Refresh the products list
+      await get().fetchProducts(get().page, get().limit);
+
+      // 🔄 Also refetch the single product by id (to update selectedProduct)
+      if (result?.id) {
+        const selectedProduct = get().selectedProduct;
+        if (selectedProduct && typeof selectedProduct.id === "string") {
+          await get().fetchProductById(selectedProduct.id);
+        }
+      }
+
       return result;
     } catch (err: any) {
       set({ error: err.message || "Failed to update variant" });
       toast.error(err.message || "Failed to update variant");
+      return null;
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  // =================================================================
+  // === CREATE A SINGLE VARIANT =====================================
+  // =================================================================
+  createSingleVariant: async (productId, variantData) => {
+    set({ loading: true, error: null });
+    try {
+      const result = await productService.createSingleVariant(
+        productId,
+        variantData
+      );
+      toast.success("Variant created successfully!");
+      // Optionally refresh products or selectedProduct if needed
+      await get().fetchProducts(get().page, get().limit);
+      if (get().selectedProduct?.id) {
+        //@ts-ignore
+        await get().fetchProductById(get().selectedProduct.id);
+      }
+      return result;
+    } catch (err: any) {
+      set({ error: err.message || "Failed to create variant" });
+      toast.error(err.message || "Failed to create variant");
+      return null;
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  // =================================================================
+  // === DELETE A SINGLE VARIANT =====================================
+  // =================================================================
+  deleteVariant: async (variantId) => {
+    set({ loading: true, error: null });
+    try {
+      const result = await productService.deleteVariant(variantId);
+      toast.success("Variant deleted successfully!");
+      // Optionally refresh products or selectedProduct if needed
+      await get().fetchProducts(get().page, get().limit);
+      if (get().selectedProduct?.id) {
+        //@ts-ignore
+        await get().fetchProductById(get().selectedProduct.id);
+      }
+      return result;
+    } catch (err: any) {
+      set({ error: err.message || "Failed to delete variant" });
+      toast.error(err.message || "Failed to delete variant");
       return null;
     } finally {
       set({ loading: false });
