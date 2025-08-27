@@ -2,6 +2,7 @@
 import { create } from "zustand";
 import { productService } from "@/services/productService";
 import type {
+  Category,
   Product,
   ProductCreateInput,
   ProductUpdateInput,
@@ -11,7 +12,9 @@ import { toast } from "react-toastify";
 
 type ProductState = {
   products: Product[];
-  categories: { id: string; displayText: string }[];
+  categories: Category[];
+  selectedProduct: Product | null;
+
   total: number;
   page: number;
   limit: number;
@@ -35,6 +38,7 @@ type ProductState = {
   createProduct: (product: ProductCreateInput) => Promise<Product | null>;
   updateProduct: (product: ProductUpdateInput) => Promise<Product | null>;
   fetchCategories: () => Promise<void>;
+  fetchProductById: (productId: string) => Promise<Product | null>;
 
   createVariants: (
     productId: string,
@@ -50,7 +54,9 @@ type ProductState = {
 
 export const useProductStore = create<ProductState>((set, get) => ({
   products: [],
+  selectedProduct: null,
   categories: [],
+
   total: 0,
   page: 1,
   limit: 10,
@@ -84,6 +90,24 @@ export const useProductStore = create<ProductState>((set, get) => ({
       set({ products: data, total, page, limit, loading: false });
     } catch (err: any) {
       set({ error: err.message || "Failed to fetch products", loading: false });
+    }
+  },
+
+  // =================================================================
+  // === FETCH SINGLE PRODUCT BY ID ==================================
+  // =================================================================
+  fetchProductById: async (productId: string) => {
+    set({ loading: true, error: null });
+    try {
+      const product = await productService.getProductById(productId);
+      set({ selectedProduct: product, loading: false });
+      return product;
+    } catch (err: any) {
+      set({
+        error: err.message || "Failed to fetch product",
+        loading: false,
+      });
+      return null;
     }
   },
 

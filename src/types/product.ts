@@ -15,9 +15,9 @@ export type Variant = {
 
 export type Category = {
   id?: string; // UUID, optional if creating a new category
-  category: string; // internal identifier or slug
-  displayText: string; // text shown in the dropdown
-  imageUrl: string; // category image URL
+  category?: string; // internal identifier or slug
+  displayText?: string; // text shown in the dropdown
+  imageUrl?: string; // category image URL
   products?: any[]; // optional, can be omitted or typed if needed
 };
 
@@ -42,6 +42,7 @@ export type Product = {
   reviewCount: number;
   price: number;
   newPrice?: number | null;
+  status?: string;
   trending: boolean;
   createAt: string;
   category: Category;

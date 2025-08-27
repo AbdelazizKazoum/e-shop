@@ -16,90 +16,14 @@ import {
 } from "lucide-react";
 import { create } from "zustand";
 import { SketchPicker, ColorResult } from "react-color";
+import { useProductStore } from "@/stores/productStore";
+import { Category, Product, Variant } from "@/types/product";
 
 // --- TYPE DEFINITIONS (would be in src/lib/types.ts) ---
 export interface Image {
   id: string;
   image: string;
 }
-
-export interface Variant {
-  id: string;
-  color: string;
-  size: "SM" | "M" | "L" | "XL" | "XXL" | "3XL" | "4XL";
-  qte: number;
-  images: Image[];
-}
-
-export interface Category {
-  id: string;
-  displayText: string;
-  category?: string;
-  imageUrl?: string;
-}
-
-export interface Product {
-  id: string;
-  name: string;
-  description: string;
-  brand: string;
-  gender: "Unisex" | "Male" | "Female";
-  price: number;
-  newPrice?: number;
-  status: "active" | "archived";
-  image: string;
-  category: Category;
-  variants: Variant[];
-}
-
-// --- MOCK DATA & API ---
-const mockProductData: Product = {
-  id: "9608eb35-9897-4f6f-ba4e-c018fc1e3151",
-  name: "PC Gamer Ultra Pro Max",
-  description:
-    "Experience next-level gaming with this high-performance PC, featuring the latest graphics card, a blazing-fast processor, and liquid cooling to handle the most demanding titles with ease.",
-  brand: "apple",
-  gender: "Unisex",
-  image: "https://placehold.co/400x400/e2e8f0/64748b?text=Product+Image",
-  price: 270.21,
-  newPrice: 210.0,
-  status: "active",
-  category: { id: "2", displayText: "Electronics" },
-  variants: [
-    {
-      id: "317e5c07-60cc-4608-ae4d-74782f742717",
-      color: "#ba5c5c",
-      size: "XL",
-      qte: 21,
-      images: [
-        {
-          id: "b565fbca-0861-4f3c-9e5c-1b3c7af62f82",
-          image: "https://placehold.co/100x100/e2e8f0/64748b?text=Variant+1",
-        },
-      ],
-    },
-    {
-      id: "7001de98-6d02-46da-b752-9578185c7862",
-      color: "#793838",
-      size: "XL",
-      qte: 25,
-      images: [
-        {
-          id: "9dcc7f67-f013-4e08-a8fb-a0893c668be6",
-          image:
-            "https://pub-c1f95dd9de0040bca80754b566c4d7d1.r2.dev/products/variants/1756294974101-0_0_UI-community.png",
-        },
-      ],
-    },
-  ],
-};
-
-const mockCategories: Category[] = [
-  { id: "1", displayText: "Sport" },
-  { id: "2", displayText: "Electronics" },
-  { id: "3", displayText: "Apparel" },
-  { id: "4", displayText: "Books" },
-];
 
 // --- UI COMPONENTS ---
 
@@ -216,6 +140,10 @@ const ImageUpload = ({
 }) => {
   const [preview, setPreview] = useState<string | null>(initialPreview || null);
 
+  useEffect(() => {
+    setPreview(initialPreview || null);
+  }, [initialPreview]);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -317,9 +245,19 @@ const ColorPickerInput = ({
 };
 
 // --- UPDATE PRODUCT FORM ---
-const UpdateProductForm = ({ product }: { product: Product }) => {
+const UpdateProductForm = ({
+  product,
+  categories,
+}: {
+  product: Product;
+  categories: Category[];
+}) => {
   const [formData, setFormData] = useState(product);
   const [newMainImage, setNewMainImage] = useState<File | null>(null);
+
+  useEffect(() => {
+    setFormData(product);
+  }, [product]);
 
   const handleInputChange = (
     e: React.ChangeEvent<
@@ -331,7 +269,7 @@ const UpdateProductForm = ({ product }: { product: Product }) => {
   };
 
   const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedCategory = mockCategories.find(
+    const selectedCategory = categories.find(
       (cat) => cat.id === e.target.value
     );
     if (selectedCategory) {
@@ -381,7 +319,7 @@ const UpdateProductForm = ({ product }: { product: Product }) => {
                 <Textarea
                   label="Description"
                   name="description"
-                  value={formData.description}
+                  value={formData.description || ""}
                   onChange={handleInputChange}
                 />
               </div>
@@ -407,7 +345,7 @@ const UpdateProductForm = ({ product }: { product: Product }) => {
                 value={formData.category.id}
                 onChange={handleCategoryChange}
               >
-                {mockCategories.map((cat) => (
+                {categories.map((cat) => (
                   <option key={cat.id} value={cat.id}>
                     {cat.displayText}
                   </option>
@@ -665,13 +603,13 @@ const VariantList = ({ variants }: { variants: Variant[] }) => {
                 </div>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => setEditingVariantId(variant.id)}
+                    onClick={() => setEditingVariantId(variant.id || null)}
                     className="p-2 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-700"
                   >
                     <Pencil size={16} />
                   </button>
                   <button
-                    onClick={() => handleDeleteVariant(variant.id)}
+                    onClick={() => handleDeleteVariant(variant.id || "")}
                     className="p-2 rounded-md hover:bg-red-100 dark:hover:bg-red-900/50 text-red-500"
                   >
                     <Trash2 size={16} />
@@ -723,32 +661,51 @@ const UpdateProductPageSkeleton = () => (
 );
 
 // --- MAIN PAGE COMPONENT ---
-export default function UpdateProductPage() {
-  const [product, setProduct] = useState<Product | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+export default function UpdateProductPage({
+  params,
+}: {
+  params: { id: string };
+}) {
+  const {
+    selectedProduct,
+    categories,
+    loading,
+    fetchProductById,
+    fetchCategories,
+  } = useProductStore();
 
   useEffect(() => {
-    // Simulate API fetch
-    setTimeout(() => {
-      setProduct(mockProductData);
-      setIsLoading(false);
-    }, 1500);
-  }, []);
+    // In a real Next.js app, params.id would come from the URL
+    // For this example, we'll use a hardcoded ID if params.id is not available
+    const productId = params?.id || "9608eb35-9897-4f6f-ba4e-c018fc1e3151";
 
-  if (isLoading) {
+    console.log(`Fetching data for product ID: ${productId}`);
+    fetchProductById(productId);
+    fetchCategories();
+
+    // Log the fetched data once it's available in the store
+    // Note: Zustand updates are async, so we use a subscriber to log the state after it updates.
+    const unsubscribe = useProductStore.subscribe((state) => {
+      if (state.selectedProduct && state.categories.length > 0) {
+        console.log("Product from store:", state.selectedProduct);
+        console.log("Categories from store:", state.categories);
+        unsubscribe(); // Clean up the subscription after logging
+      }
+    });
+
+    return () => unsubscribe(); // Cleanup on component unmount
+  }, [params?.id, fetchProductById, fetchCategories]);
+
+  if (loading || !selectedProduct) {
     return <UpdateProductPageSkeleton />;
-  }
-
-  if (!product) {
-    return <div>Product not found.</div>;
   }
 
   return (
     <>
-      <PageTitle title={`Edit: ${product.name}`} />
+      <PageTitle title={`Edit: ${selectedProduct.name}`} />
       <div className="mt-8">
-        <UpdateProductForm product={product} />
-        <VariantList variants={product.variants} />
+        <UpdateProductForm product={selectedProduct} categories={categories} />
+        <VariantList variants={selectedProduct.variants} />
       </div>
     </>
   );

@@ -184,6 +184,14 @@ export const productService = {
   },
 
   // =================================================================
+  // === GET PRODUCT BY ID ============================================
+  // =================================================================
+  async getProductById(productId: string): Promise<Product> {
+    const res = await axiosClient.get(`/api/products/${productId}`);
+    return res.data;
+  },
+
+  // =================================================================
   // === FETCH ALL CATEGORIES ========================================
   // =================================================================
   async fetchCategories(): Promise<{ id: string; displayText: string }[]> {

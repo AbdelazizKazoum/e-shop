@@ -12,6 +12,7 @@ import {
   Filter,
 } from "lucide-react";
 import { useProductStore } from "@/stores/productStore"; // Assuming this is the correct path
+import { useRouter } from "next/navigation";
 
 // --- TYPE DEFINITIONS (would be in src/lib/types.ts) ---
 export interface Category {
@@ -206,90 +207,102 @@ const ProductListSkeleton = () => (
 );
 
 // --- UI COMPONENT: ProductList (would be in src/components/products/ProductList.tsx) ---
-const ProductList = ({ products }: { products: Product[] }) => (
-  <div className="w-full overflow-x-auto">
-    <table className="w-full text-left">
-      <thead>
-        <tr className="border-b border-neutral-200/70 dark:border-neutral-700/50">
-          <th className="px-4 py-3 text-sm font-medium text-neutral-500">
-            Product
-          </th>
-          <th className="px-4 py-3 text-sm font-medium text-neutral-500">
-            Brand
-          </th>
-          <th className="px-4 py-3 text-sm font-medium text-neutral-500">
-            Gender
-          </th>
-          <th className="px-4 py-3 text-sm font-medium text-neutral-500">
-            Created At
-          </th>
-          <th className="px-4 py-3 text-sm font-medium text-neutral-500 text-center">
-            Status
-          </th>
-          <th className="px-4 py-3 text-sm font-medium text-neutral-500 text-center">
-            Actions
-          </th>
-        </tr>
-      </thead>
-      <tbody className="divide-y divide-neutral-200/70 dark:divide-neutral-700/50">
-        {products.map((product) => (
-          <tr
-            key={product.id}
-            className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
-          >
-            <td className="px-4 py-3">
-              <div className="flex items-center gap-3">
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  className="h-12 w-12 rounded-md object-cover"
-                />
-                <div>
-                  <p className="font-medium text-neutral-800 dark:text-neutral-100">
-                    {product.name}
-                  </p>
-                  <p className="text-sm text-neutral-500">
-                    {product.category.displayText}
-                  </p>
-                </div>
-              </div>
-            </td>
-            <td className="px-4 py-3 text-neutral-600 dark:text-neutral-300">
-              {product.brand}
-            </td>
-            <td className="px-4 py-3 text-neutral-600 dark:text-neutral-300">
-              {product.gender}
-            </td>
-            <td className="px-4 py-3 text-neutral-600 dark:text-neutral-300">
-              {product.createAt}
-            </td>
-            <td className="px-4 py-3 text-center">
-              <span
-                className={`inline-block rounded-full px-2.5 py-1 text-xs font-medium ${
-                  product.status === "active"
-                    ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300"
-                    : "bg-neutral-200 text-neutral-800 dark:bg-neutral-700 dark:text-neutral-300"
-                }`}
-              >
-                {product.status === "active" ? "Active" : "Archived"}
-              </span>
-            </td>
-            <td className="px-4 py-3">
-              <div className="flex justify-center items-center gap-2">
-                <button className="p-2 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-500 hover:text-primary-600 dark:hover:text-primary-400">
-                  <Eye size={18} />
-                </button>
-                <button className="p-2 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-500 hover:text-primary-600 dark:hover:text-primary-400">
-                  <Pencil size={18} />
-                </button>
-              </div>
-            </td>
+const ProductList = ({ products }: { products: Product[] }) => {
+  const router = useRouter();
+
+  return (
+    <div className="w-full overflow-x-auto">
+      <table className="w-full text-left">
+        <thead>
+          <tr className="border-b border-neutral-200/70 dark:border-neutral-700/50">
+            <th className="px-4 py-3 text-sm font-medium text-neutral-500">
+              Product
+            </th>
+            <th className="px-4 py-3 text-sm font-medium text-neutral-500">
+              Brand
+            </th>
+            <th className="px-4 py-3 text-sm font-medium text-neutral-500">
+              Gender
+            </th>
+            <th className="px-4 py-3 text-sm font-medium text-neutral-500">
+              Created At
+            </th>
+            <th className="px-4 py-3 text-sm font-medium text-neutral-500 text-center">
+              Status
+            </th>
+            <th className="px-4 py-3 text-sm font-medium text-neutral-500 text-center">
+              Actions
+            </th>
           </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-);
+        </thead>
+        <tbody className="divide-y divide-neutral-200/70 dark:divide-neutral-700/50">
+          {products.map((product) => (
+            <tr
+              key={product.id}
+              className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
+            >
+              <td className="px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    className="h-12 w-12 rounded-md object-cover"
+                  />
+                  <div>
+                    <p className="font-medium text-neutral-800 dark:text-neutral-100">
+                      {product.name}
+                    </p>
+                    <p className="text-sm text-neutral-500">
+                      {product.category.displayText}
+                    </p>
+                  </div>
+                </div>
+              </td>
+              <td className="px-4 py-3 text-neutral-600 dark:text-neutral-300">
+                {product.brand}
+              </td>
+              <td className="px-4 py-3 text-neutral-600 dark:text-neutral-300">
+                {product.gender}
+              </td>
+              <td className="px-4 py-3 text-neutral-600 dark:text-neutral-300">
+                {product.createAt}
+              </td>
+              <td className="px-4 py-3 text-center">
+                <span
+                  className={`inline-block rounded-full px-2.5 py-1 text-xs font-medium ${
+                    product.status === "active"
+                      ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300"
+                      : "bg-neutral-200 text-neutral-800 dark:bg-neutral-700 dark:text-neutral-300"
+                  }`}
+                >
+                  {product.status === "active" ? "Active" : "Archived"}
+                </span>
+              </td>
+              <td className="px-4 py-3">
+                <div className="flex justify-center items-center gap-2">
+                  {/* View button (you can keep as-is or wire it later) */}
+                  <button className="p-2 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-500 hover:text-primary-600 dark:hover:text-primary-400">
+                    <Eye size={18} />
+                  </button>
+
+                  {/* Edit button → navigate to /dashboard/products/:id */}
+                  <button
+                    onClick={() =>
+                      router.push(`/dashboard/products/${product.id}`)
+                    }
+                    className="p-2 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-500 hover:text-primary-600 dark:hover:text-primary-400"
+                  >
+                    <Pencil size={18} />
+                  </button>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
 
 // --- UI COMPONENT: ProductFilters (would be in src/components/products/ProductFilters.tsx) ---
 const ProductFilters = ({
