@@ -70,6 +70,7 @@ export const productService = {
   // === UPDATE PRODUCT =============================================
   // =================================================================
   async updateProduct(data: ProductUpdateInput): Promise<Product> {
+    console.log("🚀 ~ updateProduct ~ data:", data);
     const formData = new FormData();
 
     // stringify fields except files
@@ -81,11 +82,13 @@ export const productService = {
     if (data.gender) productData.gender = data.gender;
     if (data.price !== undefined) productData.price = data.price;
     if (data.newPrice !== undefined) productData.newPrice = data.newPrice;
+    if (data.status) productData.status = data.status;
+    if (data.trending !== undefined) productData.trending = data.trending;
 
     formData.append("data", JSON.stringify(productData));
 
     // files
-    if (data.image) formData.append("image", data.image);
+    if (data.imageFile) formData.append("image", data.imageFile);
 
     const res = await axiosClient.put(`/api/products/${data.id}`, formData, {
       headers: { "Content-Type": "multipart/form-data" },

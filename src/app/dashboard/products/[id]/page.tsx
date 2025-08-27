@@ -255,6 +255,8 @@ const UpdateProductForm = ({
   const [formData, setFormData] = useState(product);
   const [newMainImage, setNewMainImage] = useState<File | null>(null);
 
+  const { loading, updateProduct } = useProductStore();
+
   useEffect(() => {
     setFormData(product);
   }, [product]);
@@ -277,11 +279,21 @@ const UpdateProductForm = ({
     }
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    const submissionData = { ...formData, imageFile: newMainImage };
-    console.log("Submitting updated product data:", submissionData);
-    alert("Product updated! (Check console)");
+
+    const submissionData = {
+      ...formData,
+      categoryId: formData.category.id,
+      imageFile: newMainImage ?? undefined, // only send if new image uploaded
+    };
+
+    try {
+      // @ts-ignore
+      await updateProduct(submissionData); // call store action
+    } catch (err) {
+      console.error("❌ Failed to update product:", err);
+    }
   };
 
   return (
@@ -365,7 +377,7 @@ const UpdateProductForm = ({
           <div className="lg:col-span-1">
             <ImageUpload
               label="Main Product Image"
-              initialPreview={formData.image}
+              initialPreview={formData.image as string}
               onFileChange={setNewMainImage}
             />
           </div>
@@ -374,9 +386,10 @@ const UpdateProductForm = ({
       <div className="mt-6 flex justify-end">
         <button
           type="submit"
-          className="rounded-md bg-primary-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-700"
+          disabled={loading}
+          className="rounded-md bg-primary-500 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 disabled:opacity-50"
         >
-          Save Changes
+          {loading ? "Saving..." : "Save Changes"}
         </button>
       </div>
     </form>

@@ -153,10 +153,21 @@ export const useProductStore = create<ProductState>((set, get) => ({
     set({ loading: true, error: null });
     try {
       const updatedProduct = await productService.updateProduct(productData);
-      await get().fetchProducts(get().page, get().limit); // 🔄 refresh list
+
+      toast.success(`Product "${updatedProduct?.name}" updated successfully!`);
+
+      // 🔄 Refresh the products list
+      await get().fetchProducts(get().page, get().limit);
+
+      // 🔄 Also refetch the single product by id (to update selectedProduct)
+      if (updatedProduct?.id) {
+        await get().fetchProductById(updatedProduct.id);
+      }
+
       return updatedProduct;
     } catch (err: any) {
       set({ error: err.message || "Failed to update product" });
+      toast.error(err.message || "Failed to update product");
       return null;
     } finally {
       set({ loading: false });

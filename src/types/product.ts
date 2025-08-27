@@ -32,23 +32,22 @@ export type Review = {
 export type Product = {
   id?: string;
   name: string;
-  description?: string | null;
+  description?: string;
   brand: string;
   gender: string;
-  weight?: string | null;
-  quantity: number;
-  image: string;
-  rating: number;
-  reviewCount: number;
+  quantity?: number;
+  image: string | File;
+  rating?: number;
+  reviewCount?: number;
   price: number;
-  newPrice?: number | null;
+  newPrice: number;
   status?: string;
-  trending: boolean;
-  createAt: string;
+  trending?: boolean;
+  createAt?: string;
   category: Category;
-  variants: Variant[];
-  reviews: Review[];
-  averageRating: number;
+  variants?: Variant[];
+  reviews?: Review[];
+  averageRating?: number;
 };
 
 // -------------------- CREATE / UPDATE TYPES --------------------
@@ -74,7 +73,7 @@ export type ProductCreateInput = {
   gender: string;
   weight?: string;
   quantity?: number;
-  image?: File; // main product image as file
+  image?: File | string; // main product image as file
   price: number;
   newPrice?: number;
   trending?: boolean;
@@ -84,4 +83,6 @@ export type ProductCreateInput = {
 
 export type ProductUpdateInput = Partial<ProductCreateInput> & {
   id: string; // id is required for updates
+  imageFile?: File; // main product image as file
+  status?: string;
 };
