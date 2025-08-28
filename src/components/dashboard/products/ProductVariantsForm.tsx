@@ -3,7 +3,8 @@
 import { useState, FormEvent } from "react";
 import Input from "@/components/ui/form/Input";
 import Select from "@/components/ui/form/Select";
-import { PlusCircle, Trash2 } from "lucide-react";
+import { PlusCircle, Trash2, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { Product } from "@/app/dashboard/products/new/page";
 import ColorPickerInput from "@/components/ui/form/ColorPickerInput";
 import MultiImageUpload from "@/components/ui/form/MultiImageUpload";
@@ -19,8 +20,10 @@ export default function ProductVariantsForm({ product }: Props) {
   const [variants, setVariants] = useState<VariantInput[]>([
     { color: "#000000", size: "M", qte: 10, images: [] },
   ]);
+  const [loading, setLoading] = useState(false);
 
   const createVariants = useProductStore((state) => state.createVariants);
+  const router = useRouter();
 
   const addVariant = () => {
     setVariants([
@@ -51,23 +54,21 @@ export default function ProductVariantsForm({ product }: Props) {
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setLoading(true);
 
     try {
-      console.log("🚀 ~ ProductVariantsForm ~ variants:", variants);
-      console.log("🚀 ~ handleSubmit ~ product id:", product.id);
-
       const created = await createVariants(product.id, variants);
-      console.log("🚀 ~ handleSubmit ~ created:", created);
 
       if (created) {
         toast.success("Variants created successfully!");
-        // Optionally reset variants or perform other actions here
+        router.push("/dashboard/products");
       } else {
-        // Optionally handle failure (toast already shown in store)
         toast.error("Failed to create variants.");
       }
     } catch (err: any) {
       toast.error(err.message || "Failed to create variants");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -127,6 +128,7 @@ export default function ProductVariantsForm({ product }: Props) {
                 type="button"
                 onClick={() => removeVariant(index)}
                 className="absolute top-4 right-4 text-neutral-400 hover:text-red-500"
+                disabled={loading}
               >
                 <Trash2 className="h-5 w-5" />
               </button>
@@ -139,15 +141,18 @@ export default function ProductVariantsForm({ product }: Props) {
           type="button"
           onClick={addVariant}
           className="flex items-center gap-2 rounded-md border border-primary-600 bg-white px-4 py-2 text-sm font-medium text-primary-600 shadow-sm hover:bg-primary-50 dark:bg-neutral-900 dark:border-neutral-700"
+          disabled={loading}
         >
           <PlusCircle className="h-5 w-5" />
           Add Another Variant
         </button>
         <button
           type="submit"
-          className="rounded-md bg-secondary-500 px-6 py-2 text-sm font-medium text-white shadow-sm hover:bg-secondary-700"
+          className="rounded-md bg-secondary-500 px-6 py-2 text-sm font-medium text-white shadow-sm hover:bg-secondary-700 flex items-center gap-2"
+          disabled={loading}
         >
-          Finish & Save Product
+          {loading && <Loader2 className="animate-spin h-5 w-5" />}
+          {loading ? "Saving..." : "Finish & Save Product"}
         </button>
       </div>
     </form>

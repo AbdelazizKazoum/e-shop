@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import Input from "@/components/ui/form/Input";
 import Textarea from "@/components/ui/form/Textarea";
 import Select from "@/components/ui/form/Select";
@@ -8,38 +8,25 @@ import ImageUpload from "@/components/ui/form/ImageUpload";
 import { useProductStore } from "@/stores/productStore";
 import type { Category, Product, ProductCreateInput } from "@/types/product";
 import { toast } from "react-toastify";
+import { Loader2 } from "lucide-react";
 
-type Props = {
-  onProductCreated: () => void;
-};
-
-const categories: Category[] = [
-  {
-    id: "cat1",
-    category: "tshirts",
-    displayText: "T-Shirts",
-    imageUrl: "/images/categories/tshirts.png",
-    products: [],
-  },
-  {
-    id: "cat2",
-    category: "hoodies",
-    displayText: "Hoodies",
-    imageUrl: "/images/categories/hoodies.png",
-    products: [],
-  },
-  {
-    id: "cat3",
-    category: "jackets",
-    displayText: "Jackets",
-    imageUrl: "/images/categories/jackets.png",
-    products: [],
-  },
-];
+// type Props = {
+//   onProductCreated: () => void;
+// };
 
 export default function ProductDetailsForm({ onProductCreated }: any) {
   const [mainImageFile, setMainImageFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const categories = useProductStore((state) => state.categories);
+  const fetchCategories = useProductStore((state) => state.fetchCategories);
+
+  // Fetch categories if empty
+  useEffect(() => {
+    if (!categories || categories.length === 0) {
+      fetchCategories();
+    }
+  }, [categories, fetchCategories]);
 
   const createProduct = useProductStore((state) => state.createProduct);
 
@@ -148,13 +135,16 @@ export default function ProductDetailsForm({ onProductCreated }: any) {
         </div>
       </div>
       <div className="mt-8 flex justify-end">
-        <button
-          type="submit"
-          className="rounded-md bg-primary-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700"
-          disabled={loading}
-        >
-          {loading ? "Saving..." : "Save Product"}
-        </button>
+        <div className="mt-8 flex justify-end">
+          <button
+            type="submit"
+            className="flex items-center gap-2 rounded-md bg-primary-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 disabled:opacity-70"
+            disabled={loading}
+          >
+            {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+            {loading ? "Saving..." : "Save Product"}
+          </button>
+        </div>
       </div>
     </form>
   );
