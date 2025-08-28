@@ -109,6 +109,40 @@ export const useProductStore = create<ProductState>((set, get) => ({
   },
 
   // =================================================================
+  // === FETCH PRODUCTS WITH OPTIONAL FILTERS FOR CLIENT PAGES ========================
+  // =================================================================
+  fetchProductsClient: async (
+    page = 1,
+    limit = 10,
+    filters?: {
+      name?: string;
+      brand?: string;
+      gender?: string;
+      rating?: number;
+      minPrice?: number;
+      maxPrice?: number;
+      startDate?: string;
+      endDate?: string;
+    }
+  ) => {
+    set({ loading: true, error: null });
+    try {
+      const res = await productService.fetchProductsClient(
+        page,
+        limit,
+        filters
+      );
+      console.log("🚀 ~ data:", res);
+
+      const { data, total } = res;
+
+      set({ products: data, total, page, limit, loading: false });
+    } catch (err: any) {
+      set({ error: err.message || "Failed to fetch products", loading: false });
+    }
+  },
+
+  // =================================================================
   // === FETCH SINGLE PRODUCT BY ID ==================================
   // =================================================================
   fetchProductById: async (productId: string) => {

@@ -45,7 +45,7 @@ export type Product = {
   trending?: boolean;
   createAt?: string;
   category: Category;
-  variants?: Variant[];
+  variants: Variant[];
   reviews?: Review[];
   averageRating?: number;
 };

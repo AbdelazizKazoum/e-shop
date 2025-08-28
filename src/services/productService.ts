@@ -25,7 +25,36 @@ export const productService = {
       endDate?: string;
     }
   ): Promise<{ data: Product[]; total: number; page: number; limit: number }> {
-    const res = await axiosClient.get(`/api/products`, {
+    const res = await axiosClient.get(`/products`, {
+      params: {
+        page,
+        limit,
+        ...filters, // ✅ dynamically attach filters if provided
+      },
+    });
+    console.log("🚀 ~ fetchProducts ~ res:", res);
+
+    return res.data;
+  },
+
+  // =================================================================
+  // === FETCH PRODUCTS WITH OPTIONAL FILTERS FOR CLIENT PAGES ========================
+  // =================================================================
+  async fetchProductsClient(
+    page = 1,
+    limit = 10,
+    filters?: {
+      name?: string;
+      brand?: string;
+      gender?: string;
+      rating?: number;
+      minPrice?: number;
+      maxPrice?: number;
+      startDate?: string;
+      endDate?: string;
+    }
+  ): Promise<{ data: Product[]; total: number; page: number; limit: number }> {
+    const res = await axiosClient.get(`/products/client`, {
       params: {
         page,
         limit,
@@ -59,7 +88,7 @@ export const productService = {
     // files
     if (data.image) formData.append("image", data.image);
 
-    const res = await axiosClient.post(`/api/products`, formData, {
+    const res = await axiosClient.post(`/products`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
 
@@ -90,7 +119,7 @@ export const productService = {
     // files
     if (data.imageFile) formData.append("image", data.imageFile);
 
-    const res = await axiosClient.put(`/api/products/${data.id}`, formData, {
+    const res = await axiosClient.put(`/products/${data.id}`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
 
@@ -137,13 +166,9 @@ export const productService = {
     });
 
     //Send to backend
-    return await axiosClient.post(
-      `/api/products/${productId}/variants`,
-      formData,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      }
-    );
+    return await axiosClient.post(`/products/${productId}/variants`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
   },
 
   // =================================================================
@@ -174,7 +199,7 @@ export const productService = {
       });
     });
 
-    await axiosClient.put(`/api/variants/bulk/${productId}`, formData, {
+    await axiosClient.put(`/variants/bulk/${productId}`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
   },
@@ -183,14 +208,14 @@ export const productService = {
   // === DELETE PRODUCT =============================================
   // =================================================================
   async deleteProduct(productId: string): Promise<void> {
-    await axiosClient.delete(`/api/products/${productId}`);
+    await axiosClient.delete(`/products/${productId}`);
   },
 
   // =================================================================
   // === GET PRODUCT BY ID ============================================
   // =================================================================
   async getProductById(productId: string): Promise<Product> {
-    const res = await axiosClient.get(`/api/products/${productId}`);
+    const res = await axiosClient.get(`/products/${productId}`);
     return res.data;
   },
 
@@ -198,7 +223,7 @@ export const productService = {
   // === FETCH ALL CATEGORIES ========================================
   // =================================================================
   async fetchCategories(): Promise<{ id: string; displayText: string }[]> {
-    const res = await axiosClient.get(`/api/products/categories`);
+    const res = await axiosClient.get(`/products/categories`);
     return res.data;
   },
 
@@ -227,7 +252,7 @@ export const productService = {
       });
     }
     const res = await axiosClient.patch(
-      `/api/products/variants/${variantId}`,
+      `/products/variants/${variantId}`,
       formData,
       {
         headers: { "Content-Type": "multipart/form-data" },
@@ -264,7 +289,7 @@ export const productService = {
     }
 
     const res = await axiosClient.post(
-      `/api/products/${productId}/variant`,
+      `/products/${productId}/variant`,
       formData,
       {
         headers: { "Content-Type": "multipart/form-data" },
@@ -280,7 +305,7 @@ export const productService = {
    * Delete a specific variant by its ID
    */
   async deleteVariant(variantId: string): Promise<any> {
-    const res = await axiosClient.delete(`/api/products/variants/${variantId}`);
+    const res = await axiosClient.delete(`/products/variants/${variantId}`);
     return res.data;
   },
 };
