@@ -26,6 +26,7 @@ const SectionSliderProductCard: FC<SectionSliderProductCardProps> = ({
   subHeading = "REY backpacks & bags",
   data = PRODUCTS.filter((_, i) => i < 8 && i > 2),
 }) => {
+  console.log("🚀 ~ SectionSliderProductCard ~ data:", data);
   const sliderRef = useRef(null);
 
   //
