@@ -7,6 +7,8 @@ import { useFilterStore } from "@/stores/filterStore";
 import ButtonCircle from "@/shared/Button/ButtonCircle";
 import { ArrowLeftIcon, ArrowRightIcon } from "@heroicons/react/24/solid";
 import ProductCard from "../products/ProductCardTest";
+import Pagination from "../products/Pagination";
+import ButtonPrimary from "@/shared/Button/ButtonPrimary";
 
 // --- SKELETON COMPONENT for loading state ---
 const ProductGridSkeleton = () => (
@@ -109,7 +111,7 @@ export function RenderProducts({
       )}
 
       {/* Pagination Controls */}
-      {total > 0 && !loading && productsToDisplay.length > 0 && (
+      {/* {total > 0 && !loading && productsToDisplay.length > 0 && (
         <div className="flex justify-center mt-16">
           <nav className="flex items-center gap-2">
             <ButtonCircle
@@ -130,6 +132,20 @@ export function RenderProducts({
               <ArrowRightIcon className="w-5 h-5" />
             </ButtonCircle>
           </nav>
+        </div>
+      )} */}
+
+      {/* PAGINATION */}
+      {total > 0 && !loading && productsToDisplay.length > 0 && (
+        <div className="flex flex-col mt-12 lg:mt-16 space-y-5 sm:space-y-0 sm:space-x-3 sm:flex-row sm:justify-between sm:items-center">
+          <Pagination page={page} totalPages={totalPages} setPage={setPage} />
+          <ButtonPrimary
+            loading={loading}
+            onClick={() => setPage(page + 1)}
+            disabled={page >= totalPages}
+          >
+            Show me more
+          </ButtonPrimary>
         </div>
       )}
     </div>

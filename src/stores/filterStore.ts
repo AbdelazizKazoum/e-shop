@@ -21,7 +21,7 @@ interface FilterState {
 export const useFilterStore = create<FilterState>((set) => ({
   categories: [],
   sizes: [],
-  priceRange: [100, 500],
+  priceRange: [0, 500],
   isOnSale: true,
   sortOrder: "",
   gender: "", // 👈 NEW
