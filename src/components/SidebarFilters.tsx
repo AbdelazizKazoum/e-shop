@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Checkbox from "@/shared/Checkbox/Checkbox";
 import Slider from "rc-slider";
 import Radio from "@/shared/Radio/Radio";
@@ -21,13 +21,17 @@ const DATA_sortOrderRadios = [
   { name: "Most Popular", id: "Most-Popular" },
   { name: "Best Rating", id: "Best-Rating" },
   { name: "Newest", id: "Newest" },
-  { name: "Price Low - Hight", id: "Price-low-hight" },
-  { name: "Price Hight - Low", id: "Price-hight-low" },
+  { name: "Price Low - High", id: "Price-low-high" },
+  { name: "Price High - Low", id: "Price-high-low" },
 ];
 
 const PRICE_RANGE = [1, 500];
 
-const SidebarFilters = ({ categories }: { categories: Category[] }) => {
+interface SidebarFiltersProps {
+  categories: Category[];
+}
+
+const SidebarFilters: React.FC<SidebarFiltersProps> = ({ categories }) => {
   const {
     categories: selectedCategories,
     sizes: selectedSizes,
@@ -41,6 +45,7 @@ const SidebarFilters = ({ categories }: { categories: Category[] }) => {
     setSortOrder,
   } = useFilterStore();
 
+  // Handlers
   const handleChangeCategories = (checked: boolean, name: string) => {
     const updated = checked
       ? [...selectedCategories, name]
@@ -55,17 +60,16 @@ const SidebarFilters = ({ categories }: { categories: Category[] }) => {
     setSizes(updated);
   };
 
-  const renderTabsCategories = () => {
-    const validCategories = categories.filter(
-      (c) => c.displayText && c.displayText.trim() !== ""
-    );
-
+  // Render functions
+  const renderCategories = () => {
     return (
-      <div className="relative flex flex-col pb-8 space-y-4">
+      <div className="flex flex-col pb-8 space-y-4">
         <h3 className="font-semibold mb-2.5">Categories</h3>
-        {validCategories.map((item) => (
-          <div key={item.id}>
+        {categories
+          .filter((c) => c.displayText?.trim() !== "")
+          .map((item) => (
             <Checkbox
+              key={item.id}
               name={item.displayText || ""}
               label={item.displayText}
               defaultChecked={selectedCategories.includes(item.displayText)}
@@ -75,107 +79,82 @@ const SidebarFilters = ({ categories }: { categories: Category[] }) => {
                 handleChangeCategories(checked, item.displayText)
               }
             />
-          </div>
-        ))}
+          ))}
       </div>
     );
   };
 
-  const renderTabsSize = () => {
+  const renderSizes = () => {
     return (
-      <div className="relative flex flex-col py-8 space-y-4">
+      <div className="flex flex-col py-8 space-y-4">
         <h3 className="font-semibold mb-2.5">Sizes</h3>
         {DATA_sizes.map((item) => (
-          <div key={item.name}>
-            <Checkbox
-              name={item.name}
-              label={item.name}
-              defaultChecked={selectedSizes.includes(item.name)}
-              onChange={(checked) => handleChangeSizes(checked, item.name)}
-              sizeClassName="w-5 h-5"
-              labelClassName="text-sm font-normal"
-            />
-          </div>
+          <Checkbox
+            key={item.name}
+            name={item.name}
+            label={item.name}
+            defaultChecked={selectedSizes.includes(item.name)}
+            onChange={(checked) => handleChangeSizes(checked, item.name)}
+            sizeClassName="w-5 h-5"
+            labelClassName="text-sm font-normal"
+          />
         ))}
       </div>
     );
   };
 
-  const renderTabsPriceRange = () => {
+  const renderPriceRange = () => {
     return (
-      <div className="relative flex flex-col py-8 space-y-5 pr-3">
-        <div className="space-y-5">
-          <span className="font-semibold">Price range</span>
-          <Slider
-            range
-            min={PRICE_RANGE[0]}
-            max={PRICE_RANGE[1]}
-            step={1}
-            defaultValue={[priceRange[0], priceRange[1]]}
-            allowCross={false}
-            onChange={(_input: number | number[]) =>
-              setPriceRange(_input as [number, number])
-            }
-          />
-        </div>
-
-        <div className="flex justify-between space-x-5">
+      <div className="flex flex-col py-8 space-y-5 pr-3">
+        <span className="font-semibold">Price range</span>
+        <Slider
+          range
+          min={PRICE_RANGE[0]}
+          max={PRICE_RANGE[1]}
+          step={1}
+          defaultValue={[priceRange[0], priceRange[1]]}
+          allowCross={false}
+          onChange={(value: number | number[]) =>
+            setPriceRange(value as [number, number])
+          }
+        />
+        <div className="flex justify-between space-x-5 mt-2">
           <div>
-            <label
-              htmlFor="minPrice"
-              className="block text-sm font-medium text-neutral-700 dark:text-neutral-300"
-            >
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
               Min price
             </label>
-            <div className="mt-1 relative rounded-md">
-              <span className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-neutral-500 sm:text-sm">
-                $
-              </span>
-              <input
-                type="text"
-                name="minPrice"
-                disabled
-                id="minPrice"
-                className="block w-32 pr-10 pl-4 sm:text-sm border-neutral-200 dark:border-neutral-700 rounded-full bg-transparent"
-                value={priceRange[0]}
-              />
-            </div>
+            <input
+              type="text"
+              disabled
+              className="block w-32 pr-10 pl-4 sm:text-sm border-neutral-200 dark:border-neutral-700 rounded-full bg-transparent"
+              value={priceRange[0]}
+            />
           </div>
           <div>
-            <label
-              htmlFor="maxPrice"
-              className="block text-sm font-medium text-neutral-700 dark:text-neutral-300"
-            >
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
               Max price
             </label>
-            <div className="mt-1 relative rounded-md">
-              <span className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-neutral-500 sm:text-sm">
-                $
-              </span>
-              <input
-                type="text"
-                disabled
-                name="maxPrice"
-                id="maxPrice"
-                className="block w-32 pr-10 pl-4 sm:text-sm border-neutral-200 dark:border-neutral-700 rounded-full bg-transparent"
-                value={priceRange[1]}
-              />
-            </div>
+            <input
+              type="text"
+              disabled
+              className="block w-32 pr-10 pl-4 sm:text-sm border-neutral-200 dark:border-neutral-700 rounded-full bg-transparent"
+              value={priceRange[1]}
+            />
           </div>
         </div>
       </div>
     );
   };
 
-  const renderTabsSortOrder = () => {
+  const renderSortOrder = () => {
     return (
-      <div className="relative flex flex-col py-8 space-y-4">
+      <div className="flex flex-col py-8 space-y-4">
         <h3 className="font-semibold mb-2.5">Sort order</h3>
         {DATA_sortOrderRadios.map((item) => (
           <Radio
-            id={item.id}
             key={item.id}
-            name="radioNameSort"
+            id={item.id}
+            name="sortOrder"
             label={item.name}
             defaultChecked={sortOrder === item.id}
             sizeClassName="w-5 h-5"
@@ -189,9 +168,9 @@ const SidebarFilters = ({ categories }: { categories: Category[] }) => {
 
   return (
     <div className="divide-y divide-slate-200 dark:divide-slate-700">
-      {renderTabsCategories()}
-      {renderTabsSize()}
-      {renderTabsPriceRange()}
+      {renderCategories()}
+      {renderSizes()}
+      {renderPriceRange()}
       <div className="py-8 pr-2">
         <MySwitch
           label="On sale!"
@@ -200,7 +179,7 @@ const SidebarFilters = ({ categories }: { categories: Category[] }) => {
           onChange={setIsOnSale}
         />
       </div>
-      {renderTabsSortOrder()}
+      {renderSortOrder()}
     </div>
   );
 };

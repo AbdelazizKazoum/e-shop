@@ -35,10 +35,28 @@ type ProductState = {
       endDate?: string;
     }
   ) => Promise<void>;
+
+  setPage: (newPage: number) => void;
   createProduct: (product: ProductCreateInput) => Promise<Product | null>;
   updateProduct: (product: ProductUpdateInput) => Promise<Product | null>;
   fetchCategories: () => Promise<void>;
   fetchProductById: (productId: string) => Promise<Product | null>;
+  fetchProductsClient: (
+    page?: number,
+    limit?: number,
+    filters?: {
+      name?: string;
+      brand?: string;
+      gender?: string;
+      rating?: number;
+      minPrice?: number;
+      maxPrice?: number;
+      startDate?: string;
+      endDate?: string;
+      categories?: string[];
+      sizes?: string[];
+    }
+  ) => Promise<void>;
 
   createVariants: (
     productId: string,
@@ -78,6 +96,9 @@ export const useProductStore = create<ProductState>((set, get) => ({
   loading: false,
   error: null,
 
+  // ✅ ADDED: Simple action to update the current page
+  setPage: (newPage: number) => set({ page: newPage }),
+
   // =================================================================
   // === FETCH PRODUCTS WITH OPTIONAL FILTERS ========================
   // =================================================================
@@ -109,7 +130,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
   },
 
   // =================================================================
-  // === FETCH PRODUCTS WITH OPTIONAL FILTERS FOR CLIENT PAGES ========================
+  // === FETCH PRODUCTS WITH OPTIONAL FILTERS FOR CLIENT PAGES ========
   // =================================================================
   fetchProductsClient: async (
     page = 1,
@@ -123,20 +144,19 @@ export const useProductStore = create<ProductState>((set, get) => ({
       maxPrice?: number;
       startDate?: string;
       endDate?: string;
+      categories?: string[];
+      sizes?: string[];
     }
   ) => {
-    set({ loading: true, error: null });
+    set({ loading: true, error: null, page }); // Set loading and update the current page
     try {
       const res = await productService.fetchProductsClient(
         page,
         limit,
         filters
       );
-      console.log("🚀 ~ data:", res);
-
       const { data, total } = res;
-
-      set({ products: data, total, page, limit, loading: false });
+      set({ products: data, total, limit, loading: false });
     } catch (err: any) {
       set({ error: err.message || "Failed to fetch products", loading: false });
     }

@@ -6,6 +6,7 @@ import SidebarFilters from "@/components/SidebarFilters";
 import { Product } from "@/types/product";
 import ProductCard from "@/components/ProductCardTest";
 import { fetchCategories, fetchProducts } from "@/lib/actions/products";
+import { RenderProducts } from "@/components/filter/RenderProducts";
 
 const PageCollection2 = async ({}) => {
   const [products, categories] = await Promise.all([
@@ -35,11 +36,7 @@ const PageCollection2 = async ({}) => {
                 <SidebarFilters categories={categories} />
               </div>
               <div className="flex-shrink-0 mb-10 lg:mb-0 lg:mx-4 border-t lg:border-t-0"></div>
-              {
-                RenderProducts({
-                  products,
-                }) /* Moved product rendering to a separate function */
-              }
+              <RenderProducts initialProducts={products} />
             </div>
           </main>
         </div>
@@ -59,14 +56,14 @@ const PageCollection2 = async ({}) => {
 
 export default PageCollection2;
 
-export function RenderProducts({ products }: { products: Product[] }) {
-  return (
-    <div className="flex-1 ">
-      <div className="flex-1 grid sm:grid-cols-2 xl:grid-cols-3 gap-x-8 gap-y-10 ">
-        {products.map((item, index) => (
-          <ProductCard data={item} key={index} />
-        ))}
-      </div>
-    </div>
-  );
-}
+// export function RenderProducts({ products }: { products: Product[] }) {
+//   return (
+//     <div className="flex-1 ">
+//       <div className="flex-1 grid sm:grid-cols-2 xl:grid-cols-3 gap-x-8 gap-y-10 ">
+//         {products.map((item, index) => (
+//           <ProductCard data={item} key={index} />
+//         ))}
+//       </div>
+//     </div>
+//   );
+// }
