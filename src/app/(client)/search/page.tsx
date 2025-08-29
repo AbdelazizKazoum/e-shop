@@ -3,11 +3,11 @@ import Pagination from "@/shared/Pagination/Pagination";
 import ButtonPrimary from "@/shared/Button/ButtonPrimary";
 import SectionSliderCollections from "@/components/SectionSliderLargeProduct";
 import SectionPromo1 from "@/components/SectionPromo1";
-import HeaderFilterSearchPage from "@/components/HeaderFilterSearchPage";
 import Input from "@/shared/Input/Input";
 import ButtonCircle from "@/shared/Button/ButtonCircle";
 import ProductCard from "@/components/ProductCard";
 import { PRODUCTS } from "@/data/data";
+import HeaderFilterSearchPage from "@/components/products/HeaderFilterSearchPage";
 
 const PageSearch = ({}) => {
   return (

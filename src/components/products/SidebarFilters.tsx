@@ -80,11 +80,13 @@ const SidebarFilters: React.FC<SidebarFiltersProps> = ({ categories }) => {
               key={item.id}
               name={item.displayText || ""}
               label={item.displayText}
-              defaultChecked={selectedCategories.includes(item.displayText)}
+              defaultChecked={selectedCategories.includes(
+                item.displayText || ""
+              )}
               sizeClassName="w-5 h-5"
               labelClassName="text-sm font-normal"
               onChange={(checked) =>
-                handleChangeCategories(checked, item.displayText)
+                handleChangeCategories(checked, item.displayText || "")
               }
             />
           ))}
