@@ -2,11 +2,11 @@
 
 import React, { FC, useEffect, useState } from "react";
 import { Product } from "@/types/product";
-import ProductCard from "@/components/ProductCardTest";
 import { useProductStore } from "@/stores/productStore";
 import { useFilterStore } from "@/stores/filterStore";
 import ButtonCircle from "@/shared/Button/ButtonCircle";
 import { ArrowLeftIcon, ArrowRightIcon } from "@heroicons/react/24/solid";
+import ProductCard from "../products/ProductCardTest";
 
 // --- SKELETON COMPONENT for loading state ---
 const ProductGridSkeleton = () => (
@@ -44,13 +44,13 @@ export function RenderProducts({
   const categories = useFilterStore((state) => state.categories);
   const sizes = useFilterStore((state) => state.sizes);
   const priceRange = useFilterStore((state) => state.priceRange);
+  const sortOrder = useFilterStore((state) => state.sortOrder); // 👈 added
+  const gender = useFilterStore((state) => state.gender); // 👈 added
+
   // Add any other filters you need here in the same way
 
   const [hasMounted, setHasMounted] = useState(false);
-
-  useEffect(() => {
-    setHasMounted(true);
-  }, []);
+  const [filtersApplied, setFiltersApplied] = useState(false);
 
   // ✅ FIX: Use the individual state values in the dependency array.
   // React can now correctly track when they actually change.
@@ -62,21 +62,33 @@ export function RenderProducts({
       sizes: sizes,
       minPrice: priceRange[0],
       maxPrice: priceRange[1],
+      sortOrder, // 👈 included
+      gender, // 👈 included
     };
 
+    // only trigger fetch if filters or pagination change
+    setFiltersApplied(true);
+
     fetchProductsClient(page, limit, queryFilters);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     categories,
     sizes,
     priceRange,
+    sortOrder,
+    gender,
     page,
     limit,
     fetchProductsClient,
-    hasMounted,
   ]);
 
-  const productsToDisplay =
-    storeProducts.length > 0 ? storeProducts : initialProducts;
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
+  // ✅ only switch to storeProducts if filters/pagination were applied
+  const productsToDisplay = filtersApplied ? storeProducts : initialProducts;
 
   const totalPages = Math.ceil(total / limit);
 
@@ -84,16 +96,20 @@ export function RenderProducts({
     <div className="flex-1">
       {loading ? (
         <ProductGridSkeleton />
+      ) : productsToDisplay.length === 0 ? (
+        <div className="text-center text-gray-500 py-10">
+          Aucun produit trouvé
+        </div>
       ) : (
         <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-x-8 gap-y-10">
           {productsToDisplay.map((item) => (
-            <ProductCard data={item} key={item.id} />
+            <ProductCard data={item} key={item.id} isLiked={false} />
           ))}
         </div>
       )}
 
       {/* Pagination Controls */}
-      {total > 0 && !loading && (
+      {total > 0 && !loading && productsToDisplay.length > 0 && (
         <div className="flex justify-center mt-16">
           <nav className="flex items-center gap-2">
             <ButtonCircle

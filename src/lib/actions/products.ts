@@ -13,7 +13,7 @@ export async function fetchProducts(page = 1, limit = 10) {
 
 export async function fetchCategories() {
   const res = await fetch(`${API_URL}/products/categories`, {
-    next: { revalidate: 3600 }, // update every 1h
+    next: { revalidate: 10 }, // update every 1h
   });
 
   if (!res.ok) throw new Error("Failed to fetch categories");

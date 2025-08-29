@@ -1,17 +1,17 @@
 "use client";
 
 import React, { FC, useState, useEffect } from "react";
-import LikeButton from "./LikeButton";
-import Prices from "./Prices";
+import LikeButton from "../LikeButton";
+import Prices from "../Prices";
 import { ArrowsPointingOutIcon } from "@heroicons/react/24/outline";
 import { StarIcon } from "@heroicons/react/24/solid";
 import ButtonPrimary from "@/shared/Button/ButtonPrimary";
 import ButtonSecondary from "@/shared/Button/ButtonSecondary";
-import BagIcon from "./BagIcon";
+import BagIcon from "../BagIcon";
 import toast from "react-hot-toast";
 import { Transition } from "@/app/headlessui";
-import ModalQuickView from "./ModalQuickView";
-import ProductStatus from "./ProductStatus";
+import ModalQuickView from "../ModalQuickView";
+import ProductStatus from "../ProductStatus";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -43,7 +43,7 @@ const ProductCard: FC<ProductCardProps> = ({
     category,
   } = data;
 
-  const [variantActive, setVariantActive] = useState(0);
+  const [variantActive, setVariantActive] = useState(null);
   const [showModalQuickView, setShowModalQuickView] = useState(false);
   const [currentImage, setCurrentImage] = useState(image);
 
@@ -51,8 +51,10 @@ const ProductCard: FC<ProductCardProps> = ({
 
   // Update image when active variant changes
   useEffect(() => {
-    if (variants && variants[variantActive]) {
-      setCurrentImage(variants[variantActive].images[0]?.image || image);
+    if (variantActive !== null) {
+      if (variants && variants[variantActive]) {
+        setCurrentImage(variants[variantActive].images[0]?.image || image);
+      }
     }
   }, [variantActive, variants, image]);
 
@@ -86,7 +88,7 @@ const ProductCard: FC<ProductCardProps> = ({
   };
 
   const renderProductCartOnNotify = () => {
-    const activeVariant = variants[variantActive];
+    const activeVariant = variants[variantActive || 0];
     if (!activeVariant) return null;
 
     return (

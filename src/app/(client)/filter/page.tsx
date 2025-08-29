@@ -1,18 +1,18 @@
 import React, { FC } from "react";
 import SectionSliderCollections from "@/components/SectionSliderLargeProduct";
 import SectionPromo1 from "@/components/SectionPromo1";
-import { PRODUCTS } from "@/data/data";
-import SidebarFilters from "@/components/SidebarFilters";
+// import { PRODUCTS } from "@/data/data";
 import { Product } from "@/types/product";
-import ProductCard from "@/components/ProductCardTest";
 import { fetchCategories, fetchProducts } from "@/lib/actions/products";
 import { RenderProducts } from "@/components/filter/RenderProducts";
+import SidebarFilters from "@/components/products/SidebarFilters";
 
 const PageCollection2 = async ({}) => {
   const [products, categories] = await Promise.all([
     fetchProducts(1, 10),
     fetchCategories(),
   ]);
+
   return (
     <div className={`nc-PageCollection2`}>
       <div className="container py-16 lg:pb-28 lg:pt-20 space-y-16 sm:space-y-20 lg:space-y-28">
