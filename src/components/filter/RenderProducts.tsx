@@ -28,8 +28,10 @@ const ProductGridSkeleton = () => (
 // --- CLIENT COMPONENT for rendering products ---
 export function RenderProducts({
   initialProducts,
+  className,
 }: {
   initialProducts: Product[];
+  className?: string;
 }) {
   const {
     products: storeProducts,
@@ -103,7 +105,7 @@ export function RenderProducts({
           Aucun produit trouvé
         </div>
       ) : (
-        <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-x-8 gap-y-10">
+        <div className={className}>
           {productsToDisplay.map((item) => (
             <ProductCard data={item} key={item.id} isLiked={false} />
           ))}

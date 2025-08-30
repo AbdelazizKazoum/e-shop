@@ -7,6 +7,7 @@ import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import ButtonPrimary from "@/shared/Button/ButtonPrimary";
 import { Transition } from "@/app/headlessui";
 import TabFilters from "./TabFilters";
+import { useFilterStore } from "@/stores/filterStore";
 
 export interface HeaderFilterSearchPageProps {
   className?: string;
@@ -18,6 +19,18 @@ const HeaderFilterSearchPage: FC<HeaderFilterSearchPageProps> = ({
   const [isOpen, setIsOpen] = useState(true);
   const [tabActive, setTabActive] = useState("All items");
 
+  const { setGender } = useFilterStore();
+
+  const handleTabClick = (item: string) => {
+    setTabActive(item);
+
+    // ✅ Update filter store only when gender tab is selected
+    if (item === "Male") setGender("male");
+    else if (item === "Female") setGender("female");
+    else if (item === "Unisex") setGender("unisex");
+    else setGender(""); // "All items" resets gender
+  };
+
   return (
     <div className={`flex flex-col relative ${className}`}>
       <div className="flex flex-col lg:flex-row lg:items-center justify-between space-y-6 lg:space-y-0 lg:space-x-2 ">
@@ -25,25 +38,21 @@ const HeaderFilterSearchPage: FC<HeaderFilterSearchPageProps> = ({
           className="sm:space-x-2"
           containerClassName="relative flex w-full overflow-x-auto text-sm md:text-base hiddenScrollbar"
         >
-          {["All items", "Women", "Man", "Jewels", "Kids"].map(
-            (item, index) => (
-              <NavItem
-                key={index}
-                isActive={tabActive === item}
-                onClick={() => setTabActive(item)}
-              >
-                {item}
-              </NavItem>
-            )
-          )}
+          {["All items", "Male", "Female", "Unisex"].map((item, index) => (
+            <NavItem
+              key={index}
+              isActive={tabActive === item}
+              onClick={() => handleTabClick(item)}
+            >
+              {item}
+            </NavItem>
+          ))}
         </Nav>
         <span className="block flex-shrink-0 text-right">
           <ButtonPrimary
             className="w-auto !pr-16"
             sizeClass="pl-4 py-2.5 sm:pl-6"
-            onClick={() => {
-              setIsOpen(!isOpen);
-            }}
+            onClick={() => setIsOpen(!isOpen)}
           >
             <svg
               className={`w-4 h-4 sm:w-6 sm:h-6`}

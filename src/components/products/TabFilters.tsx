@@ -12,6 +12,7 @@ import MySwitch from "@/components/MySwitch";
 import { useFilterStore } from "@/stores/filterStore";
 import ButtonThird from "@/shared/Button/ButtonThird";
 
+// --- MOCK DATA (Replace with data from your API if needed) ---
 const DATA_categories = [
   { name: "New Arrivals" },
   { name: "Sale" },
@@ -20,16 +21,6 @@ const DATA_categories = [
   { name: "Laptop Sleeves" },
   { name: "Organization" },
   { name: "Accessories" },
-];
-
-const DATA_colors = [
-  { name: "White" },
-  { name: "Beige" },
-  { name: "Blue" },
-  { name: "Black" },
-  { name: "Brown" },
-  { name: "Green" },
-  { name: "Navy" },
 ];
 
 const DATA_sizes = [
@@ -76,7 +67,7 @@ const TabFilters = () => {
 
   const [isOpenMoreFilter, setIsOpenMoreFilter] = useState(false);
 
-  // 3. Sync local state if global store changes
+  // 3. Sync local state if global store changes from elsewhere
   useEffect(() => {
     setLocalCategories(storeCategories);
     setLocalSizes(storeSizes);
@@ -100,7 +91,7 @@ const TabFilters = () => {
     setSortOrder(localSortOrder);
   };
 
-  // 5. Handlers to modify LOCAL state
+  // 5. Handlers to modify ONLY the LOCAL state
   const handleChangeCategories = (checked: boolean, name: string) => {
     const updated = checked
       ? [...localCategories, name]
@@ -115,6 +106,7 @@ const TabFilters = () => {
     setLocalSizes(updated);
   };
 
+  // 6. Reset all LOCAL filters to their default state
   const handleResetAllLocalFilters = () => {
     setLocalCategories([]);
     setLocalSizes([]);
@@ -127,7 +119,7 @@ const TabFilters = () => {
   const openModalMoreFilter = () => setIsOpenMoreFilter(true);
 
   // --- RENDER FUNCTIONS ---
-
+  // ... (renderXClear, renderTabsCategories, renderTabsSize, renderTabsPriceRage, renderTabIsOnsale, renderTabsSortOrder functions are unchanged) ...
   const renderXClear = () => (
     <span className="flex-shrink-0 w-4 h-4 rounded-full bg-primary-500 text-white flex items-center justify-center ml-3 cursor-pointer">
       <svg
@@ -158,6 +150,7 @@ const TabFilters = () => {
                     : "border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:border-neutral-400 dark:hover:border-neutral-500"
                 }`}
           >
+            {/* ... SVG Icon ... */}
             <svg
               className="w-4 h-4"
               viewBox="0 0 24 24"
@@ -274,6 +267,7 @@ const TabFilters = () => {
                     : "border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:border-neutral-400 dark:hover:border-neutral-500"
                 }`}
           >
+            {/* ... SVG Icon ... */}
             <svg
               className="w-4 h-4"
               viewBox="0 0 24 24"
@@ -378,6 +372,7 @@ const TabFilters = () => {
                   : "border-primary-500 bg-primary-50 text-primary-900"
               }`}
           >
+            {/* ... SVG Icon ... */}
             <svg
               className="w-4 h-4"
               viewBox="0 0 24 24"
@@ -410,7 +405,10 @@ const TabFilters = () => {
             {storePriceRange[0] === PRICE_RANGE[0] &&
             storePriceRange[1] === PRICE_RANGE[1] ? null : (
               <span
-                onClick={() => setPriceRange(PRICE_RANGE as [number, number])}
+                onClick={(e) => {
+                  e.stopPropagation(); // prevent popover from opening
+                  setPriceRange(PRICE_RANGE as [number, number]);
+                }}
               >
                 {renderXClear()}
               </span>
@@ -501,16 +499,54 @@ const TabFilters = () => {
   );
 
   const renderTabIsOnsale = () => (
-    <MySwitch
-      label="On sale!"
-      className="py-2.5 px-4 rounded-full border focus:outline-none"
-      enabled={localIsOnSale}
-      onChange={(checked) => {
-        setLocalIsOnSale(checked);
-        // Note: For instant apply on switch, you could call a specific handler here.
-        // But to adhere to the "Apply button" rule, we'll let other apply buttons handle this.
-      }}
-    />
+    <div
+      onClick={() => setIsOnSale(!storeIsOnSale)}
+      className={`flex items-center justify-center px-4 py-2 text-sm rounded-full border focus:outline-none cursor-pointer select-none
+        ${
+          storeIsOnSale
+            ? "border-primary-500 bg-primary-50 text-primary-900"
+            : "border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:border-neutral-400 dark:hover:border-neutral-500"
+        }
+      `}
+    >
+      {/* ... SVG Icon ... */}
+      <svg
+        className="w-4 h-4"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M3.9889 14.6604L2.46891 13.1404C1.84891 12.5204 1.84891 11.5004 2.46891 10.8804L3.9889 9.36039C4.2489 9.10039 4.4589 8.59038 4.4589 8.23038V6.08036C4.4589 5.20036 5.1789 4.48038 6.0589 4.48038H8.2089C8.5689 4.48038 9.0789 4.27041 9.3389 4.01041L10.8589 2.49039C11.4789 1.87039 12.4989 1.87039 13.1189 2.49039L14.6389 4.01041C14.8989 4.27041 15.4089 4.48038 15.7689 4.48038H17.9189C18.7989 4.48038 19.5189 5.20036 19.5189 6.08036V8.23038C19.5189 8.59038 19.7289 9.10039 19.9889 9.36039L21.5089 10.8804C22.1289 11.5004 22.1289 12.5204 21.5089 13.1404L19.9889 14.6604C19.7289 14.9204 19.5189 15.4304 19.5189 15.7904V17.9403C19.5189 18.8203 18.7989 19.5404 17.9189 19.5404H15.7689C15.4089 19.5404 14.8989 19.7504 14.6389 20.0104L13.1189 21.5304C12.4989 22.1504 11.4789 22.1504 10.8589 21.5304L9.3389 20.0104C9.0789 19.7504 8.5689 19.5404 8.2089 19.5404H6.0589C5.1789 19.5404 4.4589 18.8203 4.4589 17.9403V15.7904C4.4589 15.4204 4.2489 14.9104 3.9889 14.6604Z"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M9 15L15 9"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M14.4945 14.5H14.5035"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M9.49451 9.5H9.50349"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+      <span className="line-clamp-1 ml-2">On sale</span>
+    </div>
   );
 
   const renderTabsSortOrder = () => (
@@ -526,6 +562,7 @@ const TabFilters = () => {
                     : "border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:border-neutral-400 dark:hover:border-neutral-500"
                 }`}
           >
+            {/* ... SVG Icon ... */}
             <svg className="w-4 h-4" viewBox="0 0 20 20" fill="none">
               <path
                 d="M11.5166 5.70834L14.0499 8.24168"
@@ -634,6 +671,7 @@ const TabFilters = () => {
           className="flex flex-shrink-0 items-center justify-center px-4 py-2 text-sm rounded-full border border-primary-500 bg-primary-50 text-primary-900 focus:outline-none cursor-pointer"
           onClick={openModalMoreFilter}
         >
+          {/* ... SVG Icon ... */}
           <svg
             className="w-4 h-4"
             viewBox="0 0 24 24"
@@ -699,7 +737,6 @@ const TabFilters = () => {
           className="fixed inset-0 z-50 overflow-y-auto"
           onClose={closeModalMoreFilter}
         >
-          {/* ... Dialog overlay ... */}
           <div className="min-h-screen text-center">
             <Transition.Child
               as={Fragment}
@@ -731,7 +768,7 @@ const TabFilters = () => {
                 <div className="relative flex-shrink-0 px-6 py-4 border-b border-neutral-200 dark:border-neutral-800 text-center">
                   <Dialog.Title
                     as="h3"
-                    className="text-lg font-medium leading-6 text-gray-900"
+                    className="text-lg font-medium leading-6 text-neutral-900 dark:text-neutral-200"
                   >
                     Filters
                   </Dialog.Title>
@@ -742,10 +779,10 @@ const TabFilters = () => {
 
                 <div className="flex-grow overflow-y-auto">
                   <div className="px-6 sm:px-8 md:px-10 divide-y divide-neutral-200 dark:divide-neutral-800">
-                    {/* All inputs inside the mobile view use local state */}
+                    {/* ... other filter sections ... */}
                     <div className="py-7">
                       <h3 className="text-xl font-medium">Categories</h3>
-                      <div className="mt-6 relative ">
+                      <div className="mt-6 grid grid-cols-2 gap-4">
                         {DATA_categories.map((item) => (
                           <Checkbox
                             key={item.name}
@@ -759,7 +796,88 @@ const TabFilters = () => {
                         ))}
                       </div>
                     </div>
-                    {/* ... other filter sections for mobile ... */}
+                    {/* SIZES */}
+                    <div className="py-7">
+                      <h3 className="text-xl font-medium">Size</h3>
+                      <div className="mt-6 grid grid-cols-2 gap-4">
+                        {DATA_sizes.map((item) => (
+                          <Checkbox
+                            key={item.name}
+                            name={item.name}
+                            label={item.name}
+                            defaultChecked={localSizes.includes(item.name)}
+                            onChange={(checked) =>
+                              handleChangeSizes(checked, item.name)
+                            }
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    {/* PRICE RANGE */}
+                    <div className="py-7">
+                      <h3 className="text-xl font-medium">Price Range</h3>
+                      <div className="mt-6 relative ">
+                        <div className="relative flex flex-col space-y-8">
+                          <div className="space-y-5">
+                            <Slider
+                              range
+                              min={PRICE_RANGE[0]}
+                              max={PRICE_RANGE[1]}
+                              defaultValue={localPriceRange}
+                              allowCross={false}
+                              onChange={(value) =>
+                                setLocalPriceRange(value as [number, number])
+                              }
+                            />
+                          </div>
+                          <div className="flex justify-between space-x-5">
+                            <div>
+                              <label className="block text-sm font-medium">
+                                Min price
+                              </label>
+                              <input
+                                type="text"
+                                disabled
+                                className="block w-full mt-1 sm:text-sm border-neutral-200 dark:border-neutral-700 rounded-full bg-transparent"
+                                value={`$${localPriceRange[0]}`}
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium">
+                                Max price
+                              </label>
+                              <input
+                                type="text"
+                                disabled
+                                className="block w-full mt-1 sm:text-sm border-neutral-200 dark:border-neutral-700 rounded-full bg-transparent"
+                                value={`$${localPriceRange[1]}`}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* SORT ORDER - UPDATED DESIGN */}
+                    <div className="py-7">
+                      <h3 className="text-xl font-medium">Sort Order</h3>
+                      <div className="mt-6 relative">
+                        <div className="relative flex flex-col space-y-5">
+                          {DATA_sortOrderRadios.map((item) => (
+                            <Radio
+                              id={`mobile-${item.id}`}
+                              key={item.id}
+                              name="radioSortOrder"
+                              label={item.name}
+                              defaultChecked={localSortOrder === item.id}
+                              onChange={setLocalSortOrder}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* ON SALE */}
                     <div className="py-7">
                       <h3 className="text-xl font-medium">On sale!</h3>
                       <div className="mt-6 relative ">

@@ -36,7 +36,10 @@ const PageCollection2 = async ({}) => {
                 <SidebarFilters categories={categories} />
               </div>
               <div className="flex-shrink-0 mb-10 lg:mb-0 lg:mx-4 border-t lg:border-t-0"></div>
-              <RenderProducts initialProducts={products} />
+              <RenderProducts
+                initialProducts={products}
+                className="grid sm:grid-cols-2 xl:grid-cols-3 gap-x-8 gap-y-10"
+              />
             </div>
           </main>
         </div>

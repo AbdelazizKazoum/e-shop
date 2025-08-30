@@ -8,8 +8,15 @@ import ButtonCircle from "@/shared/Button/ButtonCircle";
 import ProductCard from "@/components/ProductCard";
 import { PRODUCTS } from "@/data/data";
 import HeaderFilterSearchPage from "@/components/products/HeaderFilterSearchPage";
+import { RenderProducts } from "@/components/filter/RenderProducts";
+import { fetchCategories, fetchProducts } from "@/lib/actions/products";
 
-const PageSearch = ({}) => {
+const PageSearch = async ({}) => {
+  const [products, categories] = await Promise.all([
+    fetchProducts(1, 10),
+    fetchCategories(),
+  ]);
+
   return (
     <div className={`nc-PageSearch`} data-nc-id="PageSearch">
       <div
@@ -72,17 +79,16 @@ const PageSearch = ({}) => {
           <HeaderFilterSearchPage />
 
           {/* LOOP ITEMS */}
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-10 mt-8 lg:mt-10">
+          {/* <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-10 mt-8 lg:mt-10">
             {PRODUCTS.map((item, index) => (
               <ProductCard data={item} key={index} />
             ))}
-          </div>
+          </div> */}
 
-          {/* PAGINATION */}
-          <div className="flex flex-col mt-12 lg:mt-16 space-y-5 sm:space-y-0 sm:space-x-3 sm:flex-row sm:justify-between sm:items-center">
-            <Pagination />
-            <ButtonPrimary loading>Show me more</ButtonPrimary>
-          </div>
+          <RenderProducts
+            initialProducts={products}
+            className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-10 mt-8 lg:mt-10"
+          />
         </main>
 
         {/* === SECTION 5 === */}
