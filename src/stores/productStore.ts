@@ -2,13 +2,13 @@
 import { create } from "zustand";
 import { productService } from "@/services/productService";
 import type {
-  Category,
   Product,
   ProductCreateInput,
   ProductUpdateInput,
   VariantInput,
 } from "@/types/product";
 import { toast } from "react-toastify";
+import { Category } from "@/types/category";
 
 type ProductState = {
   products: Product[];
