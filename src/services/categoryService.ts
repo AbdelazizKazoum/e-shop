@@ -11,7 +11,7 @@ export const categoryService = {
   // === FETCH ALL CATEGORIES ========================================
   // =================================================================
   async fetchCategories(): Promise<Category[]> {
-    const res = await axiosClient.get(`/categories`);
+    const res = await axiosClient.get(`/products/categories`);
     return res.data;
   },
 
@@ -19,7 +19,7 @@ export const categoryService = {
   // === GET CATEGORY BY ID ==========================================
   // =================================================================
   async getCategoryById(categoryId: string): Promise<Category> {
-    const res = await axiosClient.get(`/categories/${categoryId}`);
+    const res = await axiosClient.get(`/products/categories/${categoryId}`);
     return res.data;
   },
 
@@ -27,7 +27,20 @@ export const categoryService = {
   // === CREATE CATEGORY =============================================
   // =================================================================
   async createCategory(data: CategoryCreateInput): Promise<Category> {
-    const res = await axiosClient.post(`/categories`, data);
+    const formData = new FormData();
+
+    // Convert the rest of the data to a JSON string and append
+    const { imageFile, ...rest } = data;
+    formData.append("data", JSON.stringify(rest));
+
+    // Append image if exists
+    if (imageFile) {
+      formData.append("imageFile", imageFile);
+    }
+
+    const res = await axiosClient.post(`/products/categories`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
     return res.data;
   },
 
@@ -35,7 +48,22 @@ export const categoryService = {
   // === UPDATE CATEGORY =============================================
   // =================================================================
   async updateCategory(data: CategoryUpdateInput): Promise<Category> {
-    const res = await axiosClient.put(`/categories/${data.id}`, data);
+    const formData = new FormData();
+
+    const { id, imageFile, ...rest } = data;
+    formData.append("data", JSON.stringify(rest));
+
+    if (imageFile) {
+      formData.append("imageFile", imageFile);
+    }
+
+    const res = await axiosClient.patch(
+      `/products/categories/${id}`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    );
     return res.data;
   },
 
@@ -43,6 +71,6 @@ export const categoryService = {
   // === DELETE CATEGORY =============================================
   // =================================================================
   async deleteCategory(categoryId: string): Promise<void> {
-    await axiosClient.delete(`/categories/${categoryId}`);
+    await axiosClient.delete(`/products/categories/${categoryId}`);
   },
 };

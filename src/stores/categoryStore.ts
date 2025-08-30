@@ -7,6 +7,7 @@ import type {
   CategoryCreateInput,
   CategoryUpdateInput,
 } from "@/types/category";
+import { toast } from "react-toastify";
 
 interface CategoryState {
   categories: Category[];
@@ -36,6 +37,7 @@ export const useCategoryStore = create<CategoryState>()(
         const categories = await categoryService.fetchCategories();
         set({ categories });
       } catch (err: any) {
+        toast.error(err.message || "Failed to fetch categories");
         set({ error: err.message || "Failed to fetch categories" });
       } finally {
         set({ loading: false });
@@ -51,6 +53,7 @@ export const useCategoryStore = create<CategoryState>()(
         const category = await categoryService.getCategoryById(id);
         return category;
       } catch (err: any) {
+        toast.error(err.message || "Failed to fetch category");
         set({ error: err.message || "Failed to fetch category" });
         return undefined;
       } finally {
@@ -66,7 +69,10 @@ export const useCategoryStore = create<CategoryState>()(
       try {
         const newCategory = await categoryService.createCategory(data);
         set({ categories: [...get().categories, newCategory] });
+
+        toast.success("Category created successfully");
       } catch (err: any) {
+        toast.error(err.message || "Failed to create category");
         set({ error: err.message || "Failed to create category" });
       } finally {
         set({ loading: false });
@@ -85,7 +91,10 @@ export const useCategoryStore = create<CategoryState>()(
             cat.id === updatedCategory.id ? updatedCategory : cat
           ),
         });
+
+        toast.success("Category updated successfully");
       } catch (err: any) {
+        toast.error(err.message || "Failed to update category");
         set({ error: err.message || "Failed to update category" });
       } finally {
         set({ loading: false });
@@ -100,7 +109,10 @@ export const useCategoryStore = create<CategoryState>()(
       try {
         await categoryService.deleteCategory(id);
         set({ categories: get().categories.filter((cat) => cat.id !== id) });
+        toast.success("Category deleted successfully");
       } catch (err: any) {
+        toast.error("Failed to delete category");
+        toast.error(err.message || "Failed to delete category");
         set({ error: err.message || "Failed to delete category" });
       } finally {
         set({ loading: false });
