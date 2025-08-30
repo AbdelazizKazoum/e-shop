@@ -8,13 +8,16 @@ import ButtonPrimary from "@/shared/Button/ButtonPrimary";
 import { Transition } from "@/app/headlessui";
 import TabFilters from "./TabFilters";
 import { useFilterStore } from "@/stores/filterStore";
+import { Category } from "@/types/product";
 
 export interface HeaderFilterSearchPageProps {
   className?: string;
+  categories: Category[]; //
 }
 
 const HeaderFilterSearchPage: FC<HeaderFilterSearchPageProps> = ({
   className = "mb-12",
+  categories,
 }) => {
   const [isOpen, setIsOpen] = useState(true);
   const [tabActive, setTabActive] = useState("All items");
@@ -106,7 +109,7 @@ const HeaderFilterSearchPage: FC<HeaderFilterSearchPageProps> = ({
         leaveTo="opacity-0"
       >
         <div className="w-full border-b border-neutral-200/70 dark:border-neutral-700 my-8"></div>
-        <TabFilters />
+        <TabFilters categories={categories} />
       </Transition>
     </div>
   );

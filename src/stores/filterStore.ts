@@ -6,7 +6,8 @@ interface FilterState {
   priceRange: [number, number];
   isOnSale: boolean;
   sortOrder: string;
-  gender: string; // 👈 NEW
+  gender: string;
+  name: string; // 👈 Product Name
 
   // actions
   setCategories: (categories: string[]) => void;
@@ -14,7 +15,8 @@ interface FilterState {
   setPriceRange: (range: [number, number]) => void;
   setIsOnSale: (onSale: boolean) => void;
   setSortOrder: (order: string) => void;
-  setGender: (gender: string) => void; // 👈 NEW
+  setGender: (gender: string) => void;
+  setName: (name: string) => void; // 👈 Product Name
   resetFilters: () => void;
 }
 
@@ -24,7 +26,8 @@ export const useFilterStore = create<FilterState>((set) => ({
   priceRange: [0, 500],
   isOnSale: true,
   sortOrder: "",
-  gender: "", // 👈 NEW
+  gender: "",
+  name: "", // 👈 NEW
 
   setCategories: (categories) =>
     set(() => {
@@ -62,6 +65,12 @@ export const useFilterStore = create<FilterState>((set) => ({
       return { gender };
     }),
 
+  setName: (name) =>
+    set(() => {
+      console.log("Product name filter:", name);
+      return { name };
+    }),
+
   resetFilters: () =>
     set(() => {
       console.log("Filters reset");
@@ -71,7 +80,8 @@ export const useFilterStore = create<FilterState>((set) => ({
         priceRange: [100, 500],
         isOnSale: true,
         sortOrder: "",
-        gender: "", // reset gender
+        gender: "",
+        name: "", // 👈 reset product name
       };
     }),
 }));

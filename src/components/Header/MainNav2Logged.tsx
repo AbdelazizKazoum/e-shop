@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createRef, FC, useState } from "react";
+import React, { FC, useState } from "react";
 import Logo from "@/shared/Logo/Logo";
 import MenuBar from "@/shared/MenuBar/MenuBar";
 import AvatarDropdown from "./AvatarDropdown";
@@ -8,13 +8,15 @@ import Navigation from "@/shared/Navigation/Navigation";
 import CartDropdown from "./CartDropdown";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
+import { useFilterStore } from "@/stores/filterStore"; // 👈 import store
 
 export interface MainNav2LoggedProps {}
 
 const MainNav2Logged: FC<MainNav2LoggedProps> = () => {
-  const inputRef = createRef<HTMLInputElement>();
   const [showSearchForm, setShowSearchForm] = useState(false);
+  const [searchValue, setSearchValue] = useState(""); // 👈 local state
   const router = useRouter();
+  const { setName } = useFilterStore(); // 👈 action from store
 
   const renderMagnifyingGlassIcon = () => {
     return (
@@ -49,24 +51,27 @@ const MainNav2Logged: FC<MainNav2LoggedProps> = () => {
         className="flex-1 py-2 text-slate-900 dark:text-slate-100"
         onSubmit={(e) => {
           e.preventDefault();
-          router.push("/search");
-          inputRef.current?.blur();
+          setName(searchValue); // 👈 update store only on submit
+          router.push("/search"); // 👈 redirect
+          setShowSearchForm(false);
         }}
       >
         <div className="bg-slate-50 dark:bg-slate-800 flex items-center space-x-1.5 px-5 h-full rounded">
-          {renderMagnifyingGlassIcon()}
+          <button type="submit" className="flex items-center justify-center">
+            {renderMagnifyingGlassIcon()}
+          </button>
           <input
-            ref={inputRef}
             type="text"
             placeholder="Type and press enter"
             className="border-none bg-transparent focus:outline-none focus:ring-0 w-full text-base"
             autoFocus
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)} // 👈 local state only
           />
           <button type="button" onClick={() => setShowSearchForm(false)}>
             <XMarkIcon className="w-5 h-5" />
           </button>
         </div>
-        <input type="submit" hidden value="" />
       </form>
     );
   };

@@ -50,6 +50,7 @@ export function RenderProducts({
   const priceRange = useFilterStore((state) => state.priceRange);
   const sortOrder = useFilterStore((state) => state.sortOrder); // 👈 added
   const gender = useFilterStore((state) => state.gender); // 👈 added
+  const name = useFilterStore((state) => state.name); // 👈 added
 
   // Add any other filters you need here in the same way
 
@@ -62,6 +63,7 @@ export function RenderProducts({
     if (!hasMounted) return;
 
     const queryFilters = {
+      name,
       categories: categories,
       sizes: sizes,
       minPrice: priceRange[0],
@@ -84,6 +86,7 @@ export function RenderProducts({
     gender,
     page,
     limit,
+    name,
     fetchProductsClient,
   ]);
 
