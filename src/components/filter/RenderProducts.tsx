@@ -4,8 +4,6 @@ import React, { FC, useEffect, useState } from "react";
 import { Product } from "@/types/product";
 import { useProductStore } from "@/stores/productStore";
 import { useFilterStore } from "@/stores/filterStore";
-import ButtonCircle from "@/shared/Button/ButtonCircle";
-import { ArrowLeftIcon, ArrowRightIcon } from "@heroicons/react/24/solid";
 import ProductCard from "../products/ProductCardTest";
 import Pagination from "../products/Pagination";
 import ButtonPrimary from "@/shared/Button/ButtonPrimary";

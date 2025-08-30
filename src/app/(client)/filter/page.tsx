@@ -2,7 +2,6 @@ import React, { FC } from "react";
 import SectionSliderCollections from "@/components/SectionSliderLargeProduct";
 import SectionPromo1 from "@/components/SectionPromo1";
 // import { PRODUCTS } from "@/data/data";
-import { Product } from "@/types/product";
 import { fetchCategories, fetchProducts } from "@/lib/actions/products";
 import { RenderProducts } from "@/components/filter/RenderProducts";
 import SidebarFilters from "@/components/products/SidebarFilters";

@@ -1,12 +1,6 @@
-import React, { FC } from "react";
-import Pagination from "@/shared/Pagination/Pagination";
-import ButtonPrimary from "@/shared/Button/ButtonPrimary";
+import React from "react";
 import SectionSliderCollections from "@/components/SectionSliderLargeProduct";
 import SectionPromo1 from "@/components/SectionPromo1";
-import Input from "@/shared/Input/Input";
-import ButtonCircle from "@/shared/Button/ButtonCircle";
-import ProductCard from "@/components/ProductCard";
-import { PRODUCTS } from "@/data/data";
 import HeaderFilterSearchPage from "@/components/products/HeaderFilterSearchPage";
 import { RenderProducts } from "@/components/filter/RenderProducts";
 import { fetchCategories, fetchProducts } from "@/lib/actions/products";

@@ -5,8 +5,8 @@ import Checkbox from "@/shared/Checkbox/Checkbox";
 import Slider from "rc-slider";
 import Radio from "@/shared/Radio/Radio";
 import MySwitch from "@/components/MySwitch";
-import { Category } from "@/types/product";
 import { useFilterStore } from "@/stores/filterStore";
+import { Category } from "@/types/category";
 
 const DATA_sizes = [
   { name: "XS" },

@@ -29,5 +29,18 @@ export const NAV_LINKS: NavLink[] = [
       { href: "/dashboard/products/new", label: "Add New", icon: PlusCircle },
     ],
   },
-  { href: "/customers", label: "Customers", icon: Users },
+
+  // Parameters
+  // {
+  //   href: "/parameters", // Parent link
+  //   label: "Parameters",
+  //   icon: Package,
+  //   children: [
+  //     // Submenu items
+  //     { href: "/dashboard/parameters", label: "All Parameters", icon: List },
+  //     { href: "/dashboard/parameters/new", label: "Add New", icon: PlusCircle },
+  //   ],
+  // },
+  { href: "/dashboard/customers", label: "Customers", icon: Users },
+  { href: "/dashboard/parameters", label: "Parameters", icon: Users },
 ];

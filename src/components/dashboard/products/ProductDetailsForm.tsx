@@ -6,7 +6,7 @@ import Textarea from "@/components/ui/form/Textarea";
 import Select from "@/components/ui/form/Select";
 import ImageUpload from "@/components/ui/form/ImageUpload";
 import { useProductStore } from "@/stores/productStore";
-import type { Category, Product, ProductCreateInput } from "@/types/product";
+import type { ProductCreateInput } from "@/types/product";
 import { toast } from "react-toastify";
 import { Loader2 } from "lucide-react";
 

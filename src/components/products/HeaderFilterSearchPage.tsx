@@ -8,8 +8,7 @@ import ButtonPrimary from "@/shared/Button/ButtonPrimary";
 import { Transition } from "@/app/headlessui";
 import TabFilters from "./TabFilters";
 import { useFilterStore } from "@/stores/filterStore";
-import { Category } from "@/types/product";
-
+import type { Category } from "@/types/category";
 export interface HeaderFilterSearchPageProps {
   className?: string;
   categories: Category[]; //

@@ -1,5 +1,7 @@
 // types/product.ts
 
+import { Category } from "./category";
+
 export type Image = {
   id?: string;
   image: string;
@@ -13,13 +15,13 @@ export type Variant = {
   images: Image[];
 };
 
-export type Category = {
-  id?: string; // UUID, optional if creating a new category
-  category?: string; // internal identifier or slug
-  displayText?: string; // text shown in the dropdown
-  imageUrl?: string; // category image URL
-  products?: any[]; // optional, can be omitted or typed if needed
-};
+// export type Category = {
+//   id?: string; // UUID, optional if creating a new category
+//   category?: string; // internal identifier or slug
+//   displayText?: string; // text shown in the dropdown
+//   imageUrl?: string; // category image URL
+//   products?: any[]; // optional, can be omitted or typed if needed
+// };
 
 export type Review = {
   id?: string;
