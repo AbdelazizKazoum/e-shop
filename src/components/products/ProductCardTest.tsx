@@ -16,11 +16,11 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import NcImage from "@/shared/NcImage/NcImage";
-import { Product } from "@/types/product";
+import { Product, Variant } from "@/types/product";
 
 export interface ProductCardProps {
   className?: string;
-  data: Product; // Use the new API Product type
+  data: Product;
   isLiked?: boolean;
 }
 
@@ -29,7 +29,6 @@ const ProductCard: FC<ProductCardProps> = ({
   data,
   isLiked,
 }) => {
-  // --- DESTRUCTURED PROPERTIES FROM THE NEW API DATA ---
   const {
     id,
     name,
@@ -43,22 +42,31 @@ const ProductCard: FC<ProductCardProps> = ({
     category,
   } = data;
 
-  const [variantActive, setVariantActive] = useState(null);
+  const [variantActive, setVariantActive] = useState(
+    variants && variants.length > 0 ? 0 : null
+  );
   const [showModalQuickView, setShowModalQuickView] = useState(false);
   const [currentImage, setCurrentImage] = useState(image);
+  // --- NEW: State to track if the user has manually selected a color ---
+  const [userHasInteracted, setUserHasInteracted] = useState(false);
 
   const router = useRouter();
 
-  // Update image when active variant changes
+  // --- MODIFIED: Update image only AFTER user interaction ---
   useEffect(() => {
-    if (variantActive !== null) {
-      if (variants && variants[variantActive]) {
-        setCurrentImage(variants[variantActive].images[0]?.image || image);
-      }
+    // Only switch to the variant's image if the user has clicked a color.
+    if (
+      userHasInteracted &&
+      variantActive !== null &&
+      variants &&
+      variants[variantActive]
+    ) {
+      setCurrentImage(variants[variantActive].images[0]?.image || image);
     }
-  }, [variantActive, variants, image]);
+    // On initial load, `userHasInteracted` is false, so `currentImage` remains the main product `image`.
+  }, [variantActive, variants, image, userHasInteracted]);
 
-  const notifyAddTocart = () => {
+  const notifyAddTocart = (variant: Variant) => {
     toast.custom(
       (t) => (
         <Transition
@@ -76,43 +84,38 @@ const ProductCard: FC<ProductCardProps> = ({
             Added to cart!
           </p>
           <div className="border-t border-slate-200 dark:border-slate-700 my-4" />
-          {renderProductCartOnNotify()}
+          {renderProductCartOnNotify(variant)}
         </Transition>
       ),
       {
         position: "top-right",
-        id: String(id) || "product-detail",
+        id: "add-to-cart-toast",
         duration: 3000,
       }
     );
   };
 
-  const renderProductCartOnNotify = () => {
-    const activeVariant = variants[variantActive || 0];
-    if (!activeVariant) return null;
-
+  const renderProductCartOnNotify = (variant: Variant) => {
     return (
       <div className="flex ">
         <div className="h-24 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-slate-100">
           <Image
             width={80}
             height={96}
-            //@ts-ignore
-            src={activeVariant.images[0]?.image || image}
+            src={variant.images[0]?.image || image}
             alt={name}
             className="absolute object-cover object-center"
           />
         </div>
-
         <div className="ms-4 flex flex-1 flex-col">
           <div>
             <div className="flex justify-between ">
               <div>
                 <h3 className="text-base font-medium ">{name}</h3>
                 <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                  <span>{activeVariant.color}</span>
+                  <span>{variant.color}</span>
                   <span className="mx-2 border-s border-slate-200 dark:border-slate-700 h-4"></span>
-                  <span>{activeVariant.size}</span>
+                  <span>{variant.size}</span>
                 </p>
               </div>
               <Prices price={newPrice || price} className="mt-0.5" />
@@ -120,7 +123,6 @@ const ProductCard: FC<ProductCardProps> = ({
           </div>
           <div className="flex flex-1 items-end justify-between text-sm">
             <p className="text-gray-500 dark:text-slate-400">Qty 1</p>
-
             <div className="flex">
               <button
                 type="button"
@@ -139,30 +141,87 @@ const ProductCard: FC<ProductCardProps> = ({
     );
   };
 
+  const handleAddToCart = (size: string) => {
+    if (variantActive === null) {
+      toast.error("Please select a color first");
+      return;
+    }
+
+    const activeColor = variants[variantActive].color;
+    const targetVariant = variants.find(
+      (v) => v.color === activeColor && v.size === size
+    );
+
+    if (targetVariant) {
+      notifyAddTocart(targetVariant);
+    } else {
+      toast.error("This size is not available for the selected color.");
+    }
+  };
+
+  // --- NEW: Handler for clicking a color swatch ---
+  const handleColorClick = (index: number) => {
+    setVariantActive(index);
+    setUserHasInteracted(true);
+  };
+
   const renderVariants = () => {
     if (!variants || !variants.length) {
       return null;
     }
+    const uniqueColors = variants.filter(
+      (variant, index, self) =>
+        index === self.findIndex((v) => v.color === variant.color)
+    );
 
     return (
       <div className="flex space-x-1">
-        {variants.map((variant, index) => (
-          <div
-            key={variant.id}
-            onClick={() => setVariantActive(index)}
-            className={`relative w-6 h-6 rounded-full overflow-hidden z-10 border-2 cursor-pointer ${
-              variantActive === index
-                ? "border-primary-500"
-                : "border-transparent"
-            }`}
-            title={variant.color}
-          >
+        {uniqueColors.map((variant) => {
+          const firstIndexOfColor = variants.findIndex(
+            (v) => v.color === variant.color
+          );
+          return (
             <div
-              className="absolute inset-0.5 rounded-full z-0"
-              style={{ backgroundColor: variant.color }}
-            ></div>
-          </div>
-        ))}
+              key={variant.id}
+              onClick={() => handleColorClick(firstIndexOfColor)} // Use new handler
+              className={`relative w-6 h-6 rounded-full overflow-hidden z-10 border-2 cursor-pointer ${
+                variantActive !== null &&
+                variants[variantActive].color === variant.color
+                  ? "border-primary-500"
+                  : "border-transparent"
+              }`}
+              title={variant.color}
+            >
+              <div
+                className="absolute inset-0.5 rounded-full z-0"
+                style={{ backgroundColor: variant.color }}
+              ></div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const renderSizeList = () => {
+    if (!variants || !variants.length) {
+      return null;
+    }
+    const uniqueSizes = [...new Set(variants.map((v) => v.size))];
+
+    return (
+      <div className="absolute bottom-0 inset-x-1 space-x-1.5 rtl:space-x-reverse flex justify-center opacity-0 invisible group-hover:bottom-4 group-hover:opacity-100 group-hover:visible transition-all">
+        {uniqueSizes.map((size, index) => {
+          return (
+            <div
+              key={index}
+              className="nc-shadow-lg w-10 h-10 rounded-xl bg-white hover:bg-slate-900 hover:text-white transition-colors cursor-pointer flex items-center justify-center uppercase font-semibold tracking-tight text-sm text-slate-900"
+              onClick={() => handleAddToCart(size)}
+            >
+              {size}
+            </div>
+          );
+        })}
       </div>
     );
   };
@@ -174,7 +233,7 @@ const ProductCard: FC<ProductCardProps> = ({
           className="shadow-lg"
           fontSize="text-xs"
           sizeClass="py-2 px-4"
-          onClick={notifyAddTocart}
+          onClick={() => toast.error("This product has no options to select.")}
         >
           <BagIcon className="w-3.5 h-3.5 mb-0.5" />
           <span className="ms-1">Add to bag</span>
@@ -199,14 +258,14 @@ const ProductCard: FC<ProductCardProps> = ({
       >
         <Link
           href={`/product-detail/${id}`}
-          className="absolute inset-0"
+          className="absolute inset-0 z-0"
         ></Link>
 
         <div className="relative flex-shrink-0 bg-slate-50 dark:bg-slate-300 rounded-3xl overflow-hidden z-1 group">
           <Link href={`/product-detail/${id}`} className="block">
             <NcImage
               containerClassName="flex aspect-w-11 aspect-h-12 w-full h-0"
-              src={currentImage} // Use the state for the current image
+              src={currentImage} // This will now correctly show the main image on load
               className="object-cover w-full h-full drop-shadow-xl"
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 40vw"
@@ -215,7 +274,9 @@ const ProductCard: FC<ProductCardProps> = ({
           </Link>
           <ProductStatus status={status} />
           <LikeButton liked={isLiked} className="absolute top-3 end-3 z-10" />
-          {renderGroupButtons()}
+          {variants && variants.length > 0
+            ? renderSizeList()
+            : renderGroupButtons()}
         </div>
 
         <div className="space-y-4 px-2.5 pt-5 pb-2.5">
@@ -225,7 +286,7 @@ const ProductCard: FC<ProductCardProps> = ({
               {name}
             </h2>
             <p className={`text-sm text-slate-500 dark:text-slate-400 mt-1 `}>
-              {category.displayText}
+              {category?.displayText}
             </p>
           </div>
 
@@ -241,12 +302,10 @@ const ProductCard: FC<ProductCardProps> = ({
         </div>
       </div>
 
-      {/* QUICKVIEW */}
-      {/* Ensure your ModalQuickView can fetch product data by ID or accepts the 'data' prop */}
       <ModalQuickView
-        // product={data} // You might need to pass the full product data here
         show={showModalQuickView}
         onCloseModalQuickView={() => setShowModalQuickView(false)}
+        product={data}
       />
     </>
   );

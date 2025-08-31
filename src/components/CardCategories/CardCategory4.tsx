@@ -7,8 +7,8 @@ import Link from "next/link";
 
 export interface CardCategory4Props {
   className?: string;
-  featuredImage?: StaticImageData | string;
-  bgSVG?: string;
+  featuredImage: StaticImageData | string;
+  bgSVG: string;
   name: string;
   desc: string;
   color?: string;
@@ -17,11 +17,11 @@ export interface CardCategory4Props {
 
 const CardCategory4: FC<CardCategory4Props> = ({
   className = "",
-  featuredImage = ".",
-  bgSVG = explore1Svg,
+  featuredImage,
+  bgSVG,
   name,
   desc,
-  color = "bg-rose-50",
+  color,
   count,
 }) => {
   return (

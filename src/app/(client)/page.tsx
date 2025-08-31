@@ -4,7 +4,6 @@ import BackgroundSection from "@/components/BackgroundSection/BackgroundSection"
 import SectionPromo1 from "@/components/SectionPromo1";
 import SectionHero2 from "@/components/SectionHero/SectionHero2";
 import SectionSliderLargeProduct from "@/components/SectionSliderLargeProduct";
-import SectionSliderProductCard from "@/components/SectionSliderProductCard";
 import DiscoverMoreSlider from "@/components/DiscoverMoreSlider";
 import SectionGridMoreExplore from "@/components/SectionGridMoreExplore/SectionGridMoreExplore";
 import SectionPromo2 from "@/components/SectionPromo2";
@@ -15,8 +14,13 @@ import Heading from "@/components/Heading/Heading";
 import ButtonSecondary from "@/shared/Button/ButtonSecondary";
 import { PRODUCTS, SPORT_PRODUCTS } from "@/data/data";
 import SectionGridFeatureItems from "@/components/SectionGridFeatureItems";
+import { fetchLandingPageData } from "@/lib/actions/landingPage";
+import SectionSliderProductCard from "@/components/landing-page/SectionSliderProductCard";
 
-function PageHome() {
+async function PageHome() {
+  const { newArrivals, bestSellers, featuredProducts, categories } =
+    await fetchLandingPageData();
+
   return (
     <div className="nc-PageHome relative overflow-hidden">
       <SectionHero2 />
@@ -26,29 +30,22 @@ function PageHome() {
       </div>
 
       <div className="container relative space-y-24 my-24 lg:space-y-32 lg:my-32">
-        <SectionSliderProductCard
-          data={[
-            PRODUCTS[4],
-            SPORT_PRODUCTS[5],
-            PRODUCTS[7],
-            SPORT_PRODUCTS[1],
-            PRODUCTS[6],
-          ]}
-        />
+        <SectionSliderProductCard data={newArrivals} />
 
         <div className="py-24 lg:py-32 border-t border-b border-slate-200 dark:border-slate-700">
           <SectionHowItWork />
         </div>
-        <SectionPromo1 />
+        {/* <SectionPromo1 /> */}
 
         <div className="relative py-24 lg:py-32">
           <BackgroundSection />
-          <SectionGridMoreExplore />
+          <SectionGridMoreExplore data={categories} />
         </div>
 
         <SectionSliderProductCard
           heading="Best Sellers"
           subHeading="Best selling of the month"
+          data={bestSellers}
         />
 
         <SectionPromo2 />
@@ -59,7 +56,10 @@ function PageHome() {
 
         <SectionPromo3 />
 
-        <SectionGridFeatureItems />
+        <SectionGridFeatureItems
+          products={featuredProducts}
+          categories={categories}
+        />
 
         <div className="relative py-24 lg:py-32">
           <BackgroundSection />
