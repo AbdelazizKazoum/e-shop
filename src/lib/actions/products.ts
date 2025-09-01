@@ -19,3 +19,17 @@ export async function fetchCategories() {
   if (!res.ok) throw new Error("Failed to fetch categories");
   return (await res.json()) || [];
 }
+
+export async function getProductByName(name: string) {
+  const res = await fetch(`${API_URL}/products/name/${name}`);
+
+  if (!res.ok) throw new Error("Failed to fetch product");
+  return (await res.json()) || [];
+}
+
+export async function getProductById(id: string) {
+  const res = await fetch(`${API_URL}/products/${id}`);
+
+  if (!res.ok) throw new Error("Failed to fetch product");
+  return (await res.json()) || [];
+}
