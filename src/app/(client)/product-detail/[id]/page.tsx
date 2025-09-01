@@ -8,8 +8,9 @@ import ProductDetailsClient from "@/components/product-details/ProductDetailsCli
 import ReviewItem from "@/components/ReviewItem";
 import ButtonSecondary from "@/shared/Button/ButtonSecondary";
 import SectionPromo2 from "@/components/SectionPromo2";
-import SectionSliderProductCard from "@/components/SectionSliderProductCard";
 import Policy from "../Policy";
+import SectionSliderProductCard from "@/components/landing-page/SectionSliderProductCard";
+import { fetchLandingPageData } from "@/lib/actions/landingPage";
 
 // Define props for both the page and metadata function
 interface ProductDetailPageProps {
@@ -55,6 +56,9 @@ export async function generateMetadata({
 // 2. SEO-ENHANCED SERVER COMPONENT
 const ProductDetailPage = async ({ params }: ProductDetailPageProps) => {
   const product = await getProductById(params.id);
+
+  const { newArrivals, bestSellers, featuredProducts, categories } =
+    await fetchLandingPageData();
 
   if (!product) {
     notFound();
@@ -152,9 +156,14 @@ const ProductDetailPage = async ({ params }: ProductDetailPageProps) => {
           {renderReviews()}
           <hr className="border-slate-200 dark:border-slate-700" />
 
-          <SectionSliderProductCard
+          {/* <SectionSliderProductCard
             heading="Customers also purchased"
             subHeading=""
+          /> */}
+          <SectionSliderProductCard
+            heading="Customers also purchased"
+            // subHeading="Best selling of the month"
+            data={bestSellers}
           />
           <div className="pb-20 xl:pb-28 lg:pt-14">
             <SectionPromo2 />

@@ -14,17 +14,21 @@ import AccordionInfo from "@/components/AccordionInfo";
 import { Product } from "@/types/product";
 import NotifyAddTocart from "./NotifyAddTocart";
 import Policy from "@/app/(client)/product-detail/Policy";
+import { useCartStore } from "@/stores/cartStore"; // Import the cart store
+import { ProductInfo } from "@/types/cart"; // Import the simplified product type for the cart
 
 interface ProductDetailsClientProps {
   product: Product;
 }
 
 const ProductDetailsClient: FC<ProductDetailsClientProps> = ({ product }) => {
-  const { variants, status, name, price, newPrice } = product;
+  const { variants, status, name, price, newPrice, brand, category, id } =
+    product;
+  const addToCart = useCartStore((state) => state.addToCart); // Get the addToCart action
 
   // --- STATE MANAGEMENT ---
-  const [selectedColor, setSelectedColor] = useState(variants[0].color);
-  const [selectedSize, setSelectedSize] = useState(variants[0].size);
+  const [selectedColor, setSelectedColor] = useState(variants[0]?.color || "");
+  const [selectedSize, setSelectedSize] = useState(variants[0]?.size || "");
   const [qualitySelected, setQualitySelected] = useState(1);
   const [activeImages, setActiveImages] = useState<string[]>([]);
 
@@ -61,11 +65,27 @@ const ProductDetailsClient: FC<ProductDetailsClientProps> = ({ product }) => {
     }
   };
 
-  const notifyAddTocart = () => {
+  const handleAddToCart = () => {
     if (!selectedVariant) {
       toast.error("Please select a color and size.");
       return;
     }
+
+    // 1. Create the simplified product info object for the cart store
+    const productInfo: ProductInfo = {
+      id,
+      name,
+      image: product.image,
+      price,
+      newPrice,
+      brand,
+      category,
+    };
+
+    // 2. Call the addToCart action from the Zustand store
+    addToCart(productInfo, selectedVariant, qualitySelected);
+
+    // 3. Show the toast notification
     toast.custom(
       (t) => (
         <NotifyAddTocart
@@ -253,7 +273,7 @@ const ProductDetailsClient: FC<ProductDetailsClientProps> = ({ product }) => {
             </div>
             <ButtonPrimary
               className="flex-1 flex-shrink-0"
-              onClick={notifyAddTocart}
+              onClick={handleAddToCart}
             >
               <BagIcon className="hidden sm:inline-block w-5 h-5 mb-0.5" />
               <span className="ml-3">Add to cart</span>

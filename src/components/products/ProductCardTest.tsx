@@ -17,6 +17,8 @@ import Image from "next/image";
 import Link from "next/link";
 import NcImage from "@/shared/NcImage/NcImage";
 import { Product, Variant } from "@/types/product";
+import { useCartStore } from "@/stores/cartStore"; // Import the cart store
+import { ProductInfo } from "@/types/cart"; // Import the cart's product type
 
 export interface ProductCardProps {
   className?: string;
@@ -40,21 +42,19 @@ const ProductCard: FC<ProductCardProps> = ({
     status,
     variants,
     category,
+    brand, // Destructure brand
   } = data;
 
+  const addToCart = useCartStore((state) => state.addToCart); // Get addToCart action
   const [variantActive, setVariantActive] = useState(
     variants && variants.length > 0 ? 0 : null
   );
   const [showModalQuickView, setShowModalQuickView] = useState(false);
   const [currentImage, setCurrentImage] = useState(image);
-  // --- NEW: State to track if the user has manually selected a color ---
   const [userHasInteracted, setUserHasInteracted] = useState(false);
-
   const router = useRouter();
 
-  // --- MODIFIED: Update image only AFTER user interaction ---
   useEffect(() => {
-    // Only switch to the variant's image if the user has clicked a color.
     if (
       userHasInteracted &&
       variantActive !== null &&
@@ -63,7 +63,6 @@ const ProductCard: FC<ProductCardProps> = ({
     ) {
       setCurrentImage(variants[variantActive].images[0]?.image || image);
     }
-    // On initial load, `userHasInteracted` is false, so `currentImage` remains the main product `image`.
   }, [variantActive, variants, image, userHasInteracted]);
 
   const notifyAddTocart = (variant: Variant) => {
@@ -153,13 +152,25 @@ const ProductCard: FC<ProductCardProps> = ({
     );
 
     if (targetVariant) {
+      // Create the simplified product info object
+      const productInfo: ProductInfo = {
+        id,
+        name,
+        image,
+        price,
+        newPrice,
+        brand,
+        category,
+      };
+      // Call the Zustand store action
+      addToCart(productInfo, targetVariant, 1);
+      // Show notification
       notifyAddTocart(targetVariant);
     } else {
       toast.error("This size is not available for the selected color.");
     }
   };
 
-  // --- NEW: Handler for clicking a color swatch ---
   const handleColorClick = (index: number) => {
     setVariantActive(index);
     setUserHasInteracted(true);
@@ -183,7 +194,7 @@ const ProductCard: FC<ProductCardProps> = ({
           return (
             <div
               key={variant.id}
-              onClick={() => handleColorClick(firstIndexOfColor)} // Use new handler
+              onClick={() => handleColorClick(firstIndexOfColor)}
               className={`relative w-6 h-6 rounded-full overflow-hidden z-10 border-2 cursor-pointer ${
                 variantActive !== null &&
                 variants[variantActive].color === variant.color
@@ -265,7 +276,7 @@ const ProductCard: FC<ProductCardProps> = ({
           <Link href={`/product-detail/${id}`} className="block">
             <NcImage
               containerClassName="flex aspect-w-11 aspect-h-12 w-full h-0"
-              src={currentImage} // This will now correctly show the main image on load
+              src={currentImage}
               className="object-cover w-full h-full drop-shadow-xl"
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 40vw"

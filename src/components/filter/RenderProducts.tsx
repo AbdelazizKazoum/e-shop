@@ -58,7 +58,9 @@ export function RenderProducts({
   // ✅ FIX: Use the individual state values in the dependency array.
   // React can now correctly track when they actually change.
   useEffect(() => {
-    if (!hasMounted) return;
+    if (categories.length <= 0) {
+      if (!hasMounted) return;
+    }
 
     const queryFilters = {
       name,

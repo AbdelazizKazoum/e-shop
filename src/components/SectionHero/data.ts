@@ -18,20 +18,20 @@ export const HERO2_DEMO_DATA: Hero2DataType[] = [
     heading: "Exclusive collection for everyone",
     subHeading: "In this season, find the best 🔥",
     btnText: "Explore now",
-    btnLink: "/",
+    btnLink: "/search",
   },
   {
     image: imageRightPng3,
     heading: "Exclusive collection for everyone",
     subHeading: "In this season, find the best 🔥",
     btnText: "Explore now",
-    btnLink: "/",
+    btnLink: "/search",
   },
   {
     image: imageRightPng,
     heading: "Exclusive collection for everyone",
     subHeading: "In this season, find the best 🔥",
     btnText: "Explore now",
-    btnLink: "/",
+    btnLink: "/search",
   },
 ];
