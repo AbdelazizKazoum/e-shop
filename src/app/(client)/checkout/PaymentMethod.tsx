@@ -1,11 +1,14 @@
 "use client";
 
 import Label from "@/components/Label/Label";
-import React, { FC, useState } from "react";
+import React, { FC, useState, useEffect } from "react";
 import ButtonPrimary from "@/shared/Button/ButtonPrimary";
 import ButtonSecondary from "@/shared/Button/ButtonSecondary";
 import Input from "@/shared/Input/Input";
 import Radio from "@/shared/Radio/Radio";
+import { useCheckoutStore } from "@/stores/checkoutStore";
+import { PaymentMethod as PaymentMethodType } from "@/types/checkout";
+import { useSession } from "next-auth/react";
 
 interface Props {
   isActive: boolean;
@@ -18,12 +21,49 @@ const PaymentMethod: FC<Props> = ({
   onCloseActive,
   onOpenActive,
 }) => {
-  const [mothodActive, setMethodActive] = useState<
-    "Credit-Card" | "Internet-banking" | "Wallet"
-  >("Credit-Card");
+  const { paymentMethod, setPaymentMethod, submitOrder } = useCheckoutStore();
+  const [formData, setFormData] =
+    useState<Partial<PaymentMethodType>>(paymentMethod);
+  const [methodActive, setMethodActive] = useState(
+    paymentMethod.method || "Credit-Card"
+  );
+  const { data: session } = useSession();
+
+  useEffect(() => {
+    setFormData(paymentMethod);
+    setMethodActive(paymentMethod.method || "Credit-Card");
+  }, [paymentMethod]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleMethodChange = (method: PaymentMethodType["method"]) => {
+    setMethodActive(method);
+    // Clear card details if switching away from Credit Card
+    const newFormData = { ...formData, method };
+    if (method !== "Credit-Card") {
+      delete newFormData.cardNumber;
+      delete newFormData.cardHolder;
+      delete newFormData.expirationDate;
+      delete newFormData.cvc;
+    }
+    setFormData(newFormData);
+  };
+
+  const handleConfirmOrder = () => {
+    setPaymentMethod(formData);
+    // Pass the current session to the submitOrder action
+    submitOrder(session);
+    onCloseActive();
+  };
 
   const renderDebitCredit = () => {
-    const active = mothodActive === "Credit-Card";
+    const active = methodActive === "Credit-Card";
     return (
       <div className="flex items-start space-x-4 sm:space-x-6">
         <Radio
@@ -31,12 +71,12 @@ const PaymentMethod: FC<Props> = ({
           name="payment-method"
           id="Credit-Card"
           defaultChecked={active}
-          onChange={(e) => setMethodActive(e as any)}
+          onChange={() => handleMethodChange("Credit-Card")}
         />
         <div className="flex-1">
           <label
             htmlFor="Credit-Card"
-            className="flex items-center space-x-4 sm:space-x-6"
+            className="flex items-center space-x-4 sm:space-x-6 cursor-pointer"
           >
             <div
               className={`p-2.5 rounded-xl border-2 ${
@@ -92,7 +132,6 @@ const PaymentMethod: FC<Props> = ({
             </div>
             <p className="font-medium">Debit / Credit Card</p>
           </label>
-
           <div
             className={`mt-6 mb-4 space-y-3 sm:space-y-5 ${
               active ? "block" : "hidden"
@@ -100,27 +139,46 @@ const PaymentMethod: FC<Props> = ({
           >
             <div className="max-w-lg">
               <Label className="text-sm">Card number</Label>
-              <Input autoComplete="off" className="mt-1.5" type={"text"} />
+              <Input
+                name="cardNumber"
+                autoComplete="off"
+                className="mt-1.5"
+                type={"text"}
+                value={formData.cardNumber || ""}
+                onChange={handleInputChange}
+              />
             </div>
             <div className="max-w-lg">
               <Label className="text-sm">Name on Card</Label>
-              <Input autoComplete="off" className="mt-1.5" />
+              <Input
+                name="cardHolder"
+                autoComplete="off"
+                className="mt-1.5"
+                value={formData.cardHolder || ""}
+                onChange={handleInputChange}
+              />
             </div>
             <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
               <div className="sm:w-2/3">
                 <Label className="text-sm">Expiration date (MM/YY)</Label>
                 <Input
+                  name="expirationDate"
                   autoComplete="off"
                   className="mt-1.5"
                   placeholder="MM/YY"
+                  value={formData.expirationDate || ""}
+                  onChange={handleInputChange}
                 />
               </div>
               <div className="flex-1">
                 <Label className="text-sm">CVC</Label>
                 <Input
+                  name="cvc"
                   autoComplete="off"
                   className="mt-1.5"
                   placeholder="CVC"
+                  value={formData.cvc || ""}
+                  onChange={handleInputChange}
                 />
               </div>
             </div>
@@ -131,7 +189,7 @@ const PaymentMethod: FC<Props> = ({
   };
 
   const renderInterNetBanking = () => {
-    const active = mothodActive === "Internet-banking";
+    const active = methodActive === "Internet-banking";
     return (
       <div className="flex items-start space-x-4 sm:space-x-6">
         <Radio
@@ -139,12 +197,12 @@ const PaymentMethod: FC<Props> = ({
           name="payment-method"
           id="Internet-banking"
           defaultChecked={active}
-          onChange={(e) => setMethodActive(e as any)}
+          onChange={() => handleMethodChange("Internet-banking")}
         />
         <div className="flex-1">
           <label
             htmlFor="Internet-banking"
-            className="flex items-center space-x-4 sm:space-x-6"
+            className="flex items-center space-x-4 sm:space-x-6 cursor-pointer"
           >
             <div
               className={`p-2.5 rounded-xl border-2 ${
@@ -157,7 +215,6 @@ const PaymentMethod: FC<Props> = ({
                 className="w-6 h-6 sm:w-7 sm:h-7"
                 viewBox="0 0 24 24"
                 fill="none"
-                xmlns="http://www.w3.org/2000/svg"
               >
                 <path
                   d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
@@ -198,60 +255,13 @@ const PaymentMethod: FC<Props> = ({
             </div>
             <p className="font-medium">Internet banking</p>
           </label>
-          <div className={`mt-6 mb-4 ${active ? "block" : "hidden"}`}>
-            <p className="text-sm dark:text-slate-300">
-              Your order will be delivered to you after you transfer to:
-            </p>
-            <ul className="mt-3.5 text-sm text-slate-500 dark:text-slate-400 space-y-2">
-              <li>
-                <h3 className="text-base text-slate-800 dark:text-slate-200 font-semibold mb-1">
-                  ChisNghiax
-                </h3>
-              </li>
-              <li>
-                {" "}
-                Bank name:{" "}
-                <span className="text-slate-900 dark:text-slate-200 font-medium">
-                  Example Bank Name
-                </span>
-              </li>
-              <li>
-                {" "}
-                Account number:{" "}
-                <span className="text-slate-900 dark:text-slate-200 font-medium">
-                  555 888 777
-                </span>
-              </li>
-              <li>
-                {" "}
-                Sort code:{" "}
-                <span className="text-slate-900 dark:text-slate-200 font-medium">
-                  999
-                </span>
-              </li>
-              <li>
-                {" "}
-                IBAN:{" "}
-                <span className="text-slate-900 dark:text-slate-200 font-medium">
-                  IBAN
-                </span>
-              </li>
-              <li>
-                {" "}
-                BIC:{" "}
-                <span className="text-slate-900 dark:text-slate-200 font-medium">
-                  BIC/Swift
-                </span>
-              </li>
-            </ul>
-          </div>
         </div>
       </div>
     );
   };
 
   const renderWallet = () => {
-    const active = mothodActive === "Wallet";
+    const active = methodActive === "Wallet";
     return (
       <div className="flex items-start space-x-4 sm:space-x-6">
         <Radio
@@ -259,12 +269,12 @@ const PaymentMethod: FC<Props> = ({
           name="payment-method"
           id="Wallet"
           defaultChecked={active}
-          onChange={(e) => setMethodActive(e as any)}
+          onChange={() => handleMethodChange("Wallet")}
         />
         <div className="flex-1">
           <label
             htmlFor="Wallet"
-            className="flex items-center space-x-4 sm:space-x-6 "
+            className="flex items-center space-x-4 sm:space-x-6 cursor-pointer"
           >
             <div
               className={`p-2.5 rounded-xl border-2 ${
@@ -310,80 +320,128 @@ const PaymentMethod: FC<Props> = ({
             </div>
             <p className="font-medium">Google / Apple Wallet</p>
           </label>
-          <div className={`mt-6 mb-4 space-y-6 ${active ? "block" : "hidden"}`}>
-            <div className="text-sm prose dark:prose-invert">
-              <p>
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Itaque
-                dolore quod quas fugit perspiciatis architecto, temporibus quos
-                ducimus libero explicabo?
-              </p>
-            </div>
-          </div>
         </div>
       </div>
     );
   };
 
-  const renderPaymentMethod = () => {
+  const renderCashOnDelivery = () => {
+    const active = methodActive === "Cash-on-Delivery";
     return (
-      <div className="border border-slate-200 dark:border-slate-700 rounded-xl ">
-        <div className="p-6 flex flex-col sm:flex-row items-start">
-          <span className="hidden sm:block">
-            <svg
-              className="w-6 h-6 text-slate-700 dark:text-slate-400 mt-0.5"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
+      <div className="flex items-start space-x-4 sm:space-x-6">
+        <Radio
+          className="pt-3.5"
+          name="payment-method"
+          id="Cash-on-Delivery"
+          defaultChecked={active}
+          onChange={() => handleMethodChange("Cash-on-Delivery")}
+        />
+        <div className="flex-1">
+          <label
+            htmlFor="Cash-on-Delivery"
+            className="flex items-center space-x-4 sm:space-x-6 cursor-pointer"
+          >
+            <div
+              className={`p-2.5 rounded-xl border-2 ${
+                active
+                  ? "border-slate-600 dark:border-slate-300"
+                  : "border-gray-200 dark:border-slate-600"
+              }`}
             >
-              <path
-                d="M3.92969 15.8792L15.8797 3.9292"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeMiterlimit="10"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M11.1013 18.2791L12.3013 17.0791"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeMiterlimit="10"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M13.793 15.5887L16.183 13.1987"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeMiterlimit="10"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M3.60127 10.239L10.2413 3.599C12.3613 1.479 13.4213 1.469 15.5213 3.569L20.4313 8.479C22.5313 10.579 22.5213 11.639 20.4013 13.759L13.7613 20.399C11.6413 22.519 10.5813 22.529 8.48127 20.429L3.57127 15.519C1.47127 13.419 1.47127 12.369 3.60127 10.239Z"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M2 21.9985H22"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </span>
-          <div className="sm:ml-8">
-            <h3 className=" text-slate-700 dark:text-slate-400 flex ">
-              <span className="uppercase tracking-tight">PAYMENT METHOD</span>
+              <svg
+                className="w-6 h-6 sm:w-7 sm:h-7"
+                viewBox="0 0 24 24"
+                fill="none"
+              >
+                <path
+                  d="M3.46021 7.42L11.5402 3.82C11.8002 3.69 12.1902 3.69 12.4602 3.82L20.5402 7.42C21.1902 7.73 21.5002 8.46 21.2402 9.1L19.4602 14.04C19.0302 15.25 17.8602 16.06 16.5902 16.06H7.41021C6.14021 16.06 4.97021 15.25 4.54021 14.04L2.76021 9.1C2.50021 8.46 2.81021 7.73 3.46021 7.42Z"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                ></path>
+                <path
+                  d="M12 21V16"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                ></path>
+                <path
+                  d="M8 19H16"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                ></path>
+              </svg>
+            </div>
+            <p className="font-medium">Cash on Delivery</p>
+          </label>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="border border-slate-200 dark:border-slate-700 rounded-xl ">
+      <div className="p-6 flex flex-col sm:flex-row items-start">
+        <span className="hidden sm:block">
+          <svg
+            className="w-6 h-6 text-slate-700 dark:text-slate-400 mt-0.5"
+            viewBox="0 0 24 24"
+            fill="none"
+          >
+            <path
+              d="M3.92969 15.8792L15.8797 3.9292"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeMiterlimit="10"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M11.1013 18.2791L12.3013 17.0791"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeMiterlimit="10"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M13.793 15.5887L16.183 13.1987"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeMiterlimit="10"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M3.60127 10.239L10.2413 3.599C12.3613 1.479 13.4213 1.469 15.5213 3.569L20.4313 8.479C22.5313 10.579 22.5213 11.639 20.4013 13.759L13.7613 20.399C11.6413 22.519 10.5813 22.529 8.48127 20.429L3.57127 15.519C1.47127 13.419 1.47127 12.369 3.60127 10.239Z"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M2 21.9985H22"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </span>
+        <div className="sm:ml-8">
+          <h3 className=" text-slate-700 dark:text-slate-400 flex ">
+            <span className="uppercase tracking-tight">PAYMENT METHOD</span>
+            {paymentMethod.method && (
               <svg
                 fill="none"
                 viewBox="0 0 24 24"
                 strokeWidth="2.5"
                 stroke="currentColor"
-                className="w-5 h-5 ml-3 text-slate-900"
+                className="w-5 h-5 ml-3 text-slate-900 dark:text-slate-100"
               >
                 <path
                   strokeLinecap="round"
@@ -391,51 +449,48 @@ const PaymentMethod: FC<Props> = ({
                   d="M4.5 12.75l6 6 9-13.5"
                 />
               </svg>
-            </h3>
-            <div className="font-semibold mt-1 text-sm">
-              <span className="">Google / Apple Wallet</span>
-              <span className="ml-3">xxx-xxx-xx55</span>
-            </div>
+            )}
+          </h3>
+          <div className="font-semibold mt-1 text-sm">
+            <span>
+              {paymentMethod.method === "Credit-Card" &&
+              paymentMethod.cardNumber
+                ? `Card ending in ${paymentMethod.cardNumber.slice(-4)}`
+                : paymentMethod.method?.replace(/-/g, " ") || "Not selected"}
+            </span>
           </div>
-          <button
-            className="py-2 px-4 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 mt-5 sm:mt-0 sm:ml-auto text-sm font-medium rounded-lg"
-            onClick={onOpenActive}
-          >
-            Change
-          </button>
         </div>
-
-        <div
-          className={`border-t border-slate-200 dark:border-slate-700 px-6 py-7 space-y-6 ${
-            isActive ? "block" : "hidden"
-          }`}
+        <button
+          className="py-2 px-4 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 mt-5 sm:mt-0 sm:ml-auto text-sm font-medium rounded-lg"
+          onClick={onOpenActive}
         >
-          {/* ==================== */}
-          <div>{renderDebitCredit()}</div>
+          Change
+        </button>
+      </div>
 
-          {/* ==================== */}
-          <div>{renderInterNetBanking()}</div>
-
-          {/* ==================== */}
-          <div>{renderWallet()}</div>
-
-          <div className="flex pt-6">
-            <ButtonPrimary
-              className="w-full max-w-[240px]"
-              onClick={onCloseActive}
-            >
-              Confirm order
-            </ButtonPrimary>
-            <ButtonSecondary className="ml-3" onClick={onCloseActive}>
-              Cancel
-            </ButtonSecondary>
-          </div>
+      <div
+        className={`border-t border-slate-200 dark:border-slate-700 px-6 py-7 space-y-6 ${
+          isActive ? "block" : "hidden"
+        }`}
+      >
+        <div>{renderDebitCredit()}</div>
+        <div>{renderInterNetBanking()}</div>
+        <div>{renderWallet()}</div>
+        <div>{renderCashOnDelivery()}</div>
+        <div className="flex pt-6">
+          <ButtonPrimary
+            className="w-full max-w-[240px]"
+            onClick={handleConfirmOrder}
+          >
+            Confirm order
+          </ButtonPrimary>
+          <ButtonSecondary className="ml-3" onClick={onCloseActive}>
+            Cancel
+          </ButtonSecondary>
         </div>
       </div>
-    );
-  };
-
-  return renderPaymentMethod();
+    </div>
+  );
 };
 
 export default PaymentMethod;
