@@ -5,39 +5,60 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronDown } from "lucide-react";
-import { NavLink as NavLinkType } from "@/lib/constants"; // Import the type
+import { NavLink as NavLinkType } from "@/lib/constants";
 
 type SubMenuProps = {
   item: NavLinkType;
-  onClick?: () => void; // Optional: for closing mobile menu on nav
+  onClick?: () => void;
+  theme?: "light" | "dark"; // Add theme prop
 };
 
-export default function SubMenu({ item, onClick }: SubMenuProps) {
+export default function SubMenu({
+  item,
+  onClick,
+  theme = "light",
+}: SubMenuProps) {
   const pathname = usePathname();
   const [isSubMenuOpen, setIsSubMenuOpen] = useState(false);
 
-  // Check if the current path is a child of this submenu
   const isParentActive =
     item.children?.some((child) => pathname === child.href) ?? false;
 
-  // Open submenu by default if a child route is active
   useEffect(() => {
     if (isParentActive) {
       setIsSubMenuOpen(true);
     }
   }, [isParentActive]);
 
+  const isDarkTheme = theme === "dark";
+
+  // --- Conditional Styles ---
+  const buttonClasses = isParentActive
+    ? isDarkTheme
+      ? "bg-slate-800 text-white"
+      : "bg-primary-100 text-primary-600 dark:bg-primary-900/50 dark:text-primary-400"
+    : isDarkTheme
+    ? "text-neutral-400 hover:bg-slate-800 hover:text-white"
+    : "text-neutral-600 hover:bg-primary-100 dark:text-neutral-300 dark:hover:bg-primary-900";
+
+  const borderClass = isDarkTheme
+    ? "border-slate-700"
+    : "border-neutral-300 dark:border-neutral-600";
+
+  const getChildLinkClasses = (href: string) => {
+    const isActive = pathname === href;
+    if (isActive) return "bg-primary-500 text-white";
+
+    return isDarkTheme
+      ? "text-neutral-400 hover:text-white"
+      : "text-neutral-500 hover:text-primary-600 dark:text-neutral-400 dark:hover:text-primary-400";
+  };
+
   return (
     <li>
       <button
         onClick={() => setIsSubMenuOpen(!isSubMenuOpen)}
-        className={`flex w-full items-center justify-between rounded-md px-3 py-2 transition-all
-          ${
-            isParentActive
-              ? "bg-primary-100 text-primary-600 dark:bg-primary-900/50 dark:text-primary-400"
-              : "text-neutral-600 hover:bg-primary-100 dark:text-neutral-300 dark:hover:bg-primary-900"
-          }
-        `}
+        className={`flex w-full items-center justify-between rounded-md px-3 py-2 transition-all ${buttonClasses}`}
       >
         <div className="flex items-center gap-3">
           <item.icon className="h-5 w-5" />
@@ -50,7 +71,6 @@ export default function SubMenu({ item, onClick }: SubMenuProps) {
         />
       </button>
 
-      {/* Animated Submenu */}
       <div
         className={`grid overflow-hidden transition-all duration-300 ease-in-out ${
           isSubMenuOpen
@@ -59,28 +79,23 @@ export default function SubMenu({ item, onClick }: SubMenuProps) {
         }`}
       >
         <div className="overflow-hidden">
-          <ul className="ml-4 mt-2 flex flex-col gap-1 border-l border-neutral-300 pl-4 dark:border-neutral-600">
-            {item.children?.map((child) => {
-              const isActive = pathname === child.href;
-              return (
-                <li key={child.label}>
-                  <Link
-                    href={child.href as any}
-                    onClick={onClick}
-                    className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-all
-                      ${
-                        isActive
-                          ? "bg-primary-500 text-white"
-                          : "text-neutral-500 hover:text-primary-600 dark:text-neutral-400 dark:hover:text-primary-400"
-                      }
-                    `}
-                  >
-                    <child.icon className="h-4 w-4" />
-                    <span>{child.label}</span>
-                  </Link>
-                </li>
-              );
-            })}
+          <ul
+            className={`ml-4 mt-2 flex flex-col gap-1 border-l pl-4 ${borderClass}`}
+          >
+            {item.children?.map((child) => (
+              <li key={child.label}>
+                <Link
+                  href={child.href as any}
+                  onClick={onClick}
+                  className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-all ${getChildLinkClasses(
+                    child.href as string
+                  )}`}
+                >
+                  <child.icon className="h-4 w-4" />
+                  <span>{child.label}</span>
+                </Link>
+              </li>
+            ))}
           </ul>
         </div>
       </div>
