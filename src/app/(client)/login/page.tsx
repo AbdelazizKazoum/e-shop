@@ -39,15 +39,15 @@ const PageLogin = () => {
         email,
         password,
       });
+
       console.log("🚀 ~ handleSubmit ~ res:", res);
 
-      if (res?.error === "CredentialsSignin") {
-        setError("Email or password is incorrect.");
-      } else if (res?.error) {
-        setError(res.error);
-      } else if (res?.ok) {
-        // Redirect after login
+      if (res?.ok) {
+        // Login success, redirect to home
         window.location.href = "/";
+      } else {
+        // Login failed
+        setError("Email or password is incorrect.");
       }
     } catch (err: any) {
       setError(err.message || "Something went wrong.");

@@ -99,7 +99,7 @@ const MainNav2Logged = ({ user }: { user: User | null }) => {
         <div className="flex-1 flex items-center justify-end text-slate-700 dark:text-slate-100">
           {/* ✅ Conditional Auth Rendering */}
           {user ? (
-            <AvatarDropdown />
+            <AvatarDropdown user={user} />
           ) : (
             <div className="flex items-center gap-4 ml-4 mr-2">
               <Link

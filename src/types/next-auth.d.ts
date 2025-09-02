@@ -55,7 +55,7 @@ declare module "next-auth/jwt" {
     lastName?: string;
     role?: string;
     email?: string;
-    picture?: string;
+    image?: string;
     isProfileComplete?: boolean;
 
     accessToken?: string;

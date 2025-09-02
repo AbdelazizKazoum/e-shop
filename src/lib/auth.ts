@@ -33,30 +33,29 @@ const authOptions: NextAuthOptions = {
               password: credentials.password,
             }),
           });
-          console.log("🚀 ~ res:", res);
 
           if (!res.ok) return null;
 
-          const data = await res.json();
+          const { data, access_token, refresh_token } = await res.json();
+          console.log("🚀 ~------------- data:", data);
 
-          if (data && data.access_token) {
-            // the backend returns user details along with tokens
+          if (data && access_token) {
             return {
-              // id: credentials.email, // or fetch the actual user ID
-              email: credentials.email,
-              username: data.user.username || credentials.email.split("@")[0], // Fallback to email prefix
-              firstName: data.user.firstName || "",
-              lastName: data.user.lastName || "",
-              image: data.user.image || "",
-              // Include any other fields you need
-              role: data.user.role || "user", // Default role
-              accessToken: data.access_token, // Include access token in user object
-              refreshToken: data.refresh_token, // Include refresh token if available
+              id: data.sub,
+              email: data.email,
+              firstName: data.firstName || "",
+              lastName: data.lastName || "",
+              role: data.role || "user",
+              provider: data.provider,
+              accessToken: access_token,
+              refreshToken: refresh_token,
             };
           }
 
           return null;
         } catch (error) {
+          console.log("🚀 ~ error:", error);
+
           console.error("Authorize error:", error);
           return null;
         }
@@ -80,7 +79,7 @@ const authOptions: NextAuthOptions = {
       }
 
       // ✅ OAuth providers (Google, Facebook, etc.)
-      const res = await fetch(`${env.API_URL}/auth/oauth-login`, {
+      const res = await fetch(`${env.API_URL}/auth/oauth`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -96,18 +95,18 @@ const authOptions: NextAuthOptions = {
 
       if (!res.ok) return false;
 
-      const data = await res.json();
+      const { data } = await res.json();
 
       // Attach backend response to user object
       user.backendToken = data.token;
-      user.role = data.user.role;
-      user.id = data.user.id;
-      user.firstName = data.user.firstName || "";
-      user.lastName = data.user.lastName || "";
-      user.image = data.user.image || "";
+      user.role = data.role;
+      user.id = data.sub;
+      user.firstName = data.firstName || "";
+      user.lastName = data.lastName || "";
+      user.image = data.image || "";
       user.accessToken = data.access_token;
       user.refreshToken = data.refresh_token;
-      user.isProfileComplete = data.user.isProfileComplete || false;
+      user.isProfileComplete = data.isProfileComplete || false;
 
       return true;
     },
@@ -128,6 +127,8 @@ const authOptions: NextAuthOptions = {
         token.refreshToken = user.refreshToken;
         token.id = user.id;
         token.role = user.role;
+        token.image = user.image;
+
         token.email = user.email;
         token.firstName = user.firstName;
         token.lastName = user.lastName;
@@ -145,6 +146,7 @@ const authOptions: NextAuthOptions = {
         role: token.role,
         email: token.email,
         isProfileComplete: token.isProfileComplete,
+        image: token.image,
       };
 
       return session;
