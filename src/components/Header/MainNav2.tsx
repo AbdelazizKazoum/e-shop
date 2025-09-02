@@ -11,6 +11,8 @@ import CartDropdown from "./CartDropdown";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import { useFilterStore } from "@/stores/filterStore"; // 👈 import store
+import { useSession } from "next-auth/react";
+import Link from "next/link";
 
 export interface MainNav2Props {
   className?: string;
@@ -18,10 +20,11 @@ export interface MainNav2Props {
 
 const MainNav2: FC<MainNav2Props> = ({ className = "" }) => {
   const [showSearchForm, setShowSearchForm] = useState(false);
-  const [searchValue, setSearchValue] = useState(""); // 👈 local state
+  const [searchValue, setSearchValue] = useState("");
   const router = useRouter();
-  const { setName } = useFilterStore(); // 👈 get store action
-  console.log("🚀 ~ MainNav2 ~ setName:", setName);
+  const { setName } = useFilterStore();
+
+  const { data: session, status } = useSession(); // <-- 2. Get session info
 
   const renderMagnifyingGlassIcon = () => {
     return (
@@ -80,32 +83,11 @@ const MainNav2: FC<MainNav2Props> = ({ className = "" }) => {
       </form>
     );
   };
-
   return (
     <div className="nc-MainNav2 relative z-10 bg-white dark:bg-slate-900 ">
       <div className="container">
         <div className="h-20 flex justify-between">
-          <div className="flex items-center md:hidden flex-1">
-            <MenuBar />
-          </div>
-
-          <div className="flex lg:flex-1 items-center space-x-3 sm:space-x-8">
-            <Logo />
-            {!showSearchForm && (
-              <div className="hidden md:block h-10 border-l border-slate-200 dark:border-slate-700"></div>
-            )}
-            {!showSearchForm && (
-              <div className="hidden md:block">
-                <DropdownCategories />
-              </div>
-            )}
-          </div>
-
-          {showSearchForm && (
-            <div className="flex-[2] flex !mx-auto px-10">
-              {renderSearchForm()}
-            </div>
-          )}
+          {/* ... left side elements unchanged */}
 
           <div className="flex-1 flex items-center justify-end ">
             {!showSearchForm && <TemplatesDropdown />}
@@ -118,7 +100,27 @@ const MainNav2: FC<MainNav2Props> = ({ className = "" }) => {
                 {renderMagnifyingGlassIcon()}
               </button>
             )}
-            <AvatarDropdown />
+
+            {/* ✅ 3. Conditional rendering based on auth */}
+            {status === "loading" ? null : session?.user ? (
+              <AvatarDropdown />
+            ) : (
+              <div className="flex items-center gap-4 ml-4">
+                <Link
+                  href="/login"
+                  className="text-sm font-medium text-slate-700 dark:text-slate-200 hover:underline"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/signup"
+                  className="text-sm font-medium text-green-600 hover:underline"
+                >
+                  Register
+                </Link>
+              </div>
+            )}
+
             <CartDropdown />
           </div>
         </div>

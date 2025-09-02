@@ -33,6 +33,7 @@ const authOptions: NextAuthOptions = {
               password: credentials.password,
             }),
           });
+          console.log("🚀 ~ res:", res);
 
           if (!res.ok) return null;
 
@@ -66,15 +67,13 @@ const authOptions: NextAuthOptions = {
 
   // Custom sign-in page
   pages: {
-    signIn: "/fr/login",
-    error: "/fr/login", // Error page
+    signIn: "/login",
+    error: "/login", // Error page
   },
 
   callbacks: {
     // 1) On OAuth sign-in, ask Nest if the user exists / is complete
     async signIn({ user, account, profile }) {
-      console.log("🚀 ~ signIn ~ account:", account);
-
       if (account?.provider === "credentials") {
         // ✅ Already handled inside `authorize`
         return true;

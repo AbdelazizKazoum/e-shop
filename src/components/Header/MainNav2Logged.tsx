@@ -9,14 +9,17 @@ import CartDropdown from "./CartDropdown";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import { useFilterStore } from "@/stores/filterStore"; // 👈 import store
+import { useSession } from "next-auth/react";
+import Link from "next/link";
+import { User } from "next-auth";
 
 export interface MainNav2LoggedProps {}
 
-const MainNav2Logged: FC<MainNav2LoggedProps> = () => {
+const MainNav2Logged = ({ user }: { user: User | null }) => {
   const [showSearchForm, setShowSearchForm] = useState(false);
-  const [searchValue, setSearchValue] = useState(""); // 👈 local state
+  const [searchValue, setSearchValue] = useState("");
   const router = useRouter();
-  const { setName } = useFilterStore(); // 👈 action from store
+  const { setName } = useFilterStore();
 
   const renderMagnifyingGlassIcon = () => {
     return (
@@ -79,19 +82,41 @@ const MainNav2Logged: FC<MainNav2LoggedProps> = () => {
   const renderContent = () => {
     return (
       <div className="h-20 flex justify-between">
+        {/* Left: Logo and Menu */}
         <div className="flex items-center lg:hidden flex-1">
           <MenuBar />
         </div>
-
         <div className="lg:flex-1 flex items-center">
           <Logo className="flex-shrink-0" />
         </div>
 
+        {/* Center: Search or Navigation */}
         <div className="flex-[2] hidden lg:flex justify-center mx-4">
           {showSearchForm ? renderSearchForm() : <Navigation />}
         </div>
 
+        {/* Right: Icons + Auth */}
         <div className="flex-1 flex items-center justify-end text-slate-700 dark:text-slate-100">
+          {/* ✅ Conditional Auth Rendering */}
+          {user ? (
+            <AvatarDropdown />
+          ) : (
+            <div className="flex items-center gap-4 ml-4 mr-2">
+              <Link
+                href="/login"
+                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200"
+              >
+                Login
+              </Link>
+              <Link
+                href="/signup"
+                className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg shadow-md hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:outline-none transition-colors duration-200"
+              >
+                Register
+              </Link>
+            </div>
+          )}
+
           {!showSearchForm && (
             <button
               className="hidden lg:flex w-10 h-10 sm:w-12 sm:h-12 rounded-full text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none items-center justify-center"
@@ -100,7 +125,7 @@ const MainNav2Logged: FC<MainNav2LoggedProps> = () => {
               {renderMagnifyingGlassIcon()}
             </button>
           )}
-          <AvatarDropdown />
+
           <CartDropdown />
         </div>
       </div>
@@ -109,7 +134,7 @@ const MainNav2Logged: FC<MainNav2LoggedProps> = () => {
 
   return (
     <div className="nc-MainNav2Logged relative z-10 bg-white dark:bg-neutral-900 border-b border-slate-100 dark:border-slate-700">
-      <div className="container ">{renderContent()}</div>
+      <div className="container">{renderContent()}</div>
     </div>
   );
 };
