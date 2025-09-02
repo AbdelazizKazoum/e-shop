@@ -3,8 +3,7 @@
 import Label from "@/components/Label/Label";
 import NcInputNumber from "@/components/NcInputNumber";
 import Prices from "@/components/Prices";
-import { Product, PRODUCTS } from "@/data/data";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ButtonPrimary from "@/shared/Button/ButtonPrimary";
 import Input from "@/shared/Input/Input";
 import ContactInfo from "./ContactInfo";
@@ -12,11 +11,21 @@ import PaymentMethod from "./PaymentMethod";
 import ShippingAddress from "./ShippingAddress";
 import Image from "next/image";
 import Link from "next/link";
+import { useCartStore } from "@/stores/cartStore";
+import { CartItem } from "@/types/cart";
 
 const CheckoutPage = () => {
   const [tabActive, setTabActive] = useState<
     "ContactInfo" | "ShippingAddress" | "PaymentMethod"
   >("ShippingAddress");
+
+  const [isMounted, setIsMounted] = useState(false);
+  const { items, removeFromCart, updateQuantity, getCartTotal } =
+    useCartStore();
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const handleScrollToEl = (id: string) => {
     const element = document.getElementById(id);
@@ -25,20 +34,29 @@ const CheckoutPage = () => {
     }, 80);
   };
 
-  const renderProduct = (item: Product, index: number) => {
-    const { image, price, name } = item;
+  const renderProduct = (item: CartItem, index: number) => {
+    if (!item?.product || !item?.variant) {
+      return null;
+    }
+
+    const { product, variant, quantity } = item;
+    const { name, price, newPrice, id } = product;
+    const imageUrl = variant.images?.[0]?.image || product.image;
 
     return (
       <div key={index} className="relative flex py-7 first:pt-0 last:pb-0">
         <div className="relative h-36 w-24 sm:w-28 flex-shrink-0 overflow-hidden rounded-xl bg-slate-100">
           <Image
-            src={image}
+            src={imageUrl}
             fill
             alt={name}
             className="h-full w-full object-contain object-center"
             sizes="150px"
           />
-          <Link href="/product-detail" className="absolute inset-0"></Link>
+          <Link
+            href={`/product-detail/${id}`}
+            className="absolute inset-0"
+          ></Link>
         </div>
 
         <div className="ml-3 sm:ml-6 flex flex-1 flex-col">
@@ -46,7 +64,7 @@ const CheckoutPage = () => {
             <div className="flex justify-between ">
               <div className="flex-[1.5] ">
                 <h3 className="text-base font-semibold">
-                  <Link href="/product-detail">{name}</Link>
+                  <Link href={`/product-detail/${id}`}>{name}</Link>
                 </h3>
                 <div className="mt-1.5 sm:mt-2.5 flex text-sm text-slate-600 dark:text-slate-300">
                   <div className="flex items-center space-x-1.5">
@@ -91,8 +109,7 @@ const CheckoutPage = () => {
                         strokeLinejoin="round"
                       />
                     </svg>
-
-                    <span>{`Black`}</span>
+                    <span>{variant.color}</span>
                   </div>
                   <span className="mx-4 border-l border-slate-200 dark:border-slate-700 "></span>
                   <div className="flex items-center space-x-1.5">
@@ -126,45 +143,29 @@ const CheckoutPage = () => {
                         strokeLinejoin="round"
                       />
                     </svg>
-
-                    <span>{`2XL`}</span>
+                    <span>{variant.size}</span>
                   </div>
-                </div>
-
-                <div className="mt-3 flex justify-between w-full sm:hidden relative">
-                  <select
-                    name="qty"
-                    id="qty"
-                    className="form-select text-sm rounded-md py-1 border-slate-200 dark:border-slate-700 relative z-10 dark:bg-slate-800 "
-                  >
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                    <option value="6">6</option>
-                    <option value="7">7</option>
-                  </select>
-                  <Prices
-                    contentClass="py-1 px-2 md:py-1.5 md:px-2.5 text-sm font-medium h-full"
-                    price={price}
-                  />
                 </div>
               </div>
 
               <div className="hidden flex-1 sm:flex justify-end">
-                <Prices price={price} className="mt-0.5" />
+                <Prices price={newPrice ?? price} className="mt-0.5" />
               </div>
             </div>
           </div>
 
           <div className="flex mt-auto pt-4 items-end justify-between text-sm">
             <div className="hidden sm:block text-center relative">
-              <NcInputNumber className="relative z-10" />
+              <NcInputNumber
+                className="relative z-10"
+                defaultValue={quantity}
+                onChange={(value) => updateQuantity(variant.id, value)}
+                max={variant.qte}
+              />
             </div>
-
             <a
               href="##"
+              onClick={() => removeFromCart(variant.id)}
               className="relative z-10 flex items-center mt-3 font-medium text-primary-6000 hover:text-primary-500 text-sm "
             >
               <span>Remove</span>
@@ -220,6 +221,11 @@ const CheckoutPage = () => {
     );
   };
 
+  const subtotal = isMounted ? getCartTotal() : 0;
+  const shippingEstimate = subtotal > 0 ? 5.0 : 0;
+  const taxEstimate = subtotal * 0.1; // Example: 10% tax
+  const orderTotal = subtotal + shippingEstimate + taxEstimate;
+
   return (
     <div className="nc-CheckoutPage">
       <main className="container py-16 lg:pb-28 lg:pt-20 ">
@@ -230,10 +236,6 @@ const CheckoutPage = () => {
           <div className="block mt-3 sm:mt-5 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-400">
             <Link href={"/"} className="">
               Homepage
-            </Link>
-            <span className="text-xs mx-1 sm:mx-1.5">/</span>
-            <Link href={"/collection-2"} className="">
-              Clothing Categories
             </Link>
             <span className="text-xs mx-1 sm:mx-1.5">/</span>
             <span className="underline">Checkout</span>
@@ -248,7 +250,13 @@ const CheckoutPage = () => {
           <div className="w-full lg:w-[36%] ">
             <h3 className="text-lg font-semibold">Order summary</h3>
             <div className="mt-8 divide-y divide-slate-200/70 dark:divide-slate-700 ">
-              {[PRODUCTS[0], PRODUCTS[2], PRODUCTS[3]].map(renderProduct)}
+              {isMounted && items.length > 0 ? (
+                items.map(renderProduct)
+              ) : (
+                <div className="py-10 text-center text-sm text-slate-500">
+                  Your cart is empty.
+                </div>
+              )}
             </div>
 
             <div className="mt-10 pt-6 text-sm text-slate-500 dark:text-slate-400 border-t border-slate-200/70 dark:border-slate-700 ">
@@ -265,27 +273,32 @@ const CheckoutPage = () => {
               <div className="mt-4 flex justify-between py-2.5">
                 <span>Subtotal</span>
                 <span className="font-semibold text-slate-900 dark:text-slate-200">
-                  $249.00
+                  ${subtotal.toFixed(2)}
                 </span>
               </div>
               <div className="flex justify-between py-2.5">
                 <span>Shipping estimate</span>
                 <span className="font-semibold text-slate-900 dark:text-slate-200">
-                  $5.00
+                  ${shippingEstimate.toFixed(2)}
                 </span>
               </div>
               <div className="flex justify-between py-2.5">
                 <span>Tax estimate</span>
                 <span className="font-semibold text-slate-900 dark:text-slate-200">
-                  $24.90
+                  ${taxEstimate.toFixed(2)}
                 </span>
               </div>
               <div className="flex justify-between font-semibold text-slate-900 dark:text-slate-200 text-base pt-4">
                 <span>Order total</span>
-                <span>$276.00</span>
+                <span>${orderTotal.toFixed(2)}</span>
               </div>
             </div>
-            <ButtonPrimary className="mt-8 w-full">Confirm order</ButtonPrimary>
+            <ButtonPrimary
+              className="mt-8 w-full"
+              disabled={!isMounted || items.length === 0}
+            >
+              Confirm order
+            </ButtonPrimary>
             <div className="mt-5 text-sm text-slate-500 dark:text-slate-400 flex items-center justify-center">
               <p className="block relative pl-5">
                 <svg
@@ -315,7 +328,7 @@ const CheckoutPage = () => {
                     strokeLinejoin="round"
                   />
                 </svg>
-                Learn more{` `}
+                Learn more{" "}
                 <a
                   target="_blank"
                   rel="noopener noreferrer"
@@ -324,9 +337,7 @@ const CheckoutPage = () => {
                 >
                   Taxes
                 </a>
-                <span>
-                  {` `}and{` `}
-                </span>
+                <span> and </span>
                 <a
                   target="_blank"
                   rel="noopener noreferrer"
