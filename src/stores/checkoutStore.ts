@@ -44,14 +44,12 @@ export const useCheckoutStore = create<CheckoutState>()(
             !shippingAddress.address ||
             !shippingAddress.city
           ) {
-            toast.error("Please fill in all required shipping information.");
-            // Throw an error to be caught by the component
+            // Throw a specific error to be caught by the component, toast removed.
             throw new Error("Missing shipping information.");
           }
 
           if (!paymentMethod.method) {
-            toast.error("Payment method not selected.");
-            // Throw an error to be caught by the component
+            // Throw a specific error to be caught by the component, toast removed.
             throw new Error("Missing payment method.");
           }
 
@@ -73,18 +71,12 @@ export const useCheckoutStore = create<CheckoutState>()(
               price: item.product.newPrice ?? item.product.price,
             })),
             totalAmount: total,
-            // orderDate: newtoISOString(),
+            orderDate: new Date().toISOString(),
           };
-
-          console.log("--- SUBMITTING ORDER ---");
-          console.log(JSON.stringify(orderPayload, null, 2));
-          console.log("------------------------");
 
           // --- Call API ---
           const response = await createOrder(orderPayload);
-          console.log("🚀 ~ response:", response);
 
-          // I've removed the success toast from here.
           // The component will now handle the success UI by showing the modal.
 
           // Clear cart
@@ -100,17 +92,17 @@ export const useCheckoutStore = create<CheckoutState>()(
           return response.data;
         } catch (error: any) {
           console.error("Order submission failed:", error);
-          // Keep the error toast for failures
-          if (error.response?.data?.message) {
-            toast.error(error.response.data.message);
-          } else if (
+
+          // Handle specific API error messages with a toast, but not validation errors.
+          if (
             error.message !== "Missing shipping information." &&
-            error.message !== "Missing payment method."
+            error.message !== "Missing payment method." &&
+            error.response?.data?.message
           ) {
-            // Only show generic error if it's not a validation one we already showed
-            toast.error("Failed to submit order. Please try again.");
+            toast.error(error.response.data.message);
           }
-          // Re-throw the error so the component's try/catch can handle it
+
+          // Re-throw the error so the component's try/catch can handle it and show the modal
           throw error;
         } finally {
           set({ isLoading: false });

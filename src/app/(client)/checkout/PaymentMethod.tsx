@@ -11,6 +11,7 @@ import { PaymentMethod as PaymentMethodType } from "@/types/checkout";
 import { useSession } from "next-auth/react";
 import { useCartStore } from "@/stores/cartStore";
 import SuccessModal from "@/components/modals/SuccessModal";
+import NotificationModal from "@/components/modals/NotificationModal"; // Changed import from FailedModal
 
 interface Props {
   isActive: boolean;
@@ -33,8 +34,15 @@ const PaymentMethod: FC<Props> = ({
   );
   const { data: session } = useSession();
 
-  // State to control the visibility of the success modal
+  // State for modals
   const [isSuccessModalOpen, setSuccessModalOpen] = useState(false);
+  // A single state to handle different notification types (error, info)
+  const [notification, setNotification] = useState({
+    isOpen: false,
+    type: "error" as "error" | "info",
+    title: "",
+    message: "",
+  });
 
   useEffect(() => {
     setFormData(paymentMethod);
@@ -74,18 +82,37 @@ const PaymentMethod: FC<Props> = ({
 
       // 4. If the order submission is successful, open the success modal
       setSuccessModalOpen(true);
-    } catch (error) {
-      // Error toasts are already handled in the store, so we just log it here
-      console.error("Order confirmation failed:", error);
+    } catch (error: any) {
+      // 5. If it fails, check the error type and show the appropriate modal
+      if (error.message === "Missing shipping information.") {
+        // Handle missing info case
+        setNotification({
+          isOpen: true,
+          type: "info",
+          title: "Shipping Information Required",
+          message:
+            "Please provide your complete shipping address before placing an order.",
+        });
+      } else {
+        // Handle other generic failures
+        console.error("Order confirmation failed:", error);
+        setNotification({
+          isOpen: true,
+          type: "error",
+          title: "Order Submission Failed",
+          message: "Failed to create order. Please try again later.",
+        });
+      }
     }
   };
 
   const handleCloseSuccessModal = () => {
     setSuccessModalOpen(false);
-    // After closing the modal, you might want to redirect the user or reset the checkout flow
-    // For now, we'll just close the active payment section.
     onCloseActive();
-    // Example of redirecting: window.location.href = '/';
+  };
+
+  const handleCloseNotificationModal = () => {
+    setNotification((prev) => ({ ...prev, isOpen: false }));
   };
 
   const renderDebitCredit = () => {
@@ -522,6 +549,15 @@ const PaymentMethod: FC<Props> = ({
       <SuccessModal
         isOpen={isSuccessModalOpen}
         onClose={handleCloseSuccessModal}
+      />
+
+      {/* Render the notification modal for both info and error states */}
+      <NotificationModal
+        isOpen={notification.isOpen}
+        onClose={handleCloseNotificationModal}
+        type={notification.type}
+        title={notification.title}
+        message={notification.message}
       />
     </>
   );
