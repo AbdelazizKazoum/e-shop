@@ -28,6 +28,7 @@ export interface CheckoutState {
   contactInfo: Partial<ContactInfo>;
   shippingAddress: Partial<ShippingAddress>;
   paymentMethod: Partial<PaymentMethod>;
+  isLoading: boolean;
   setContactInfo: (data: Partial<ContactInfo>) => void;
   setShippingAddress: (data: Partial<ShippingAddress>) => void;
   setPaymentMethod: (data: Partial<PaymentMethod>) => void;

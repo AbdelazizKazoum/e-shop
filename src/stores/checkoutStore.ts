@@ -1,12 +1,10 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import {
-  CheckoutState,
-  ContactInfo,
-  ShippingAddress,
-  PaymentMethod,
-} from "@/types/checkout";
-import { useCartStore } from "./cartStore"; // Import cart store to clear it after order
+import { CheckoutState } from "@/types/checkout";
+import { useCartStore } from "./cartStore";
+import { Session } from "next-auth";
+import { CartItem } from "@/types/cart";
+import toast from "react-hot-toast";
 
 export const useCheckoutStore = create<CheckoutState>()(
   persist(
@@ -14,6 +12,7 @@ export const useCheckoutStore = create<CheckoutState>()(
       contactInfo: {},
       shippingAddress: {},
       paymentMethod: {},
+      isLoading: false, // Add isLoading to the initial state
 
       setContactInfo: (data) =>
         set((state) => ({
@@ -30,65 +29,79 @@ export const useCheckoutStore = create<CheckoutState>()(
           paymentMethod: { ...state.paymentMethod, ...data },
         })),
 
-      submitOrder: async (cartItems, userSession, total) => {
+      submitOrder: async (
+        cartItems: CartItem[],
+        userSession: Session | null,
+        total: number
+      ) => {
+        set({ isLoading: true }); // Set loading to true when submission starts
         const { contactInfo, shippingAddress, paymentMethod } = get();
 
-        // Basic validation
-        if (
-          !contactInfo.email ||
-          !shippingAddress.address ||
-          !shippingAddress.city
-        ) {
-          console.error("Missing required shipping information.");
-          // Here you would typically show an error toast to the user
-          return;
+        try {
+          // Basic validation
+          if (
+            !contactInfo.email ||
+            !shippingAddress.address ||
+            !shippingAddress.city
+          ) {
+            toast.error("Please fill in all required shipping information.");
+            return; // Exit if validation fails
+          }
+
+          if (!paymentMethod.method) {
+            toast.error("Payment method not selected.");
+            return; // Exit if validation fails
+          }
+
+          const orderPayload = {
+            user: userSession?.user || { name: "Guest" },
+            contactInfo,
+            shippingAddress,
+            paymentInfo: {
+              method: paymentMethod.method,
+              ...(paymentMethod.method === "Credit-Card" && {
+                cardLast4: paymentMethod.cardNumber?.slice(-4),
+              }),
+            },
+            items: cartItems.map((item) => ({
+              productId: item.product.id,
+              variantId: item.variant.id,
+              name: item.product.name,
+              quantity: item.quantity,
+              price: item.product.newPrice ?? item.product.price,
+            })),
+            totalAmount: total,
+            orderDate: new Date().toISOString(),
+          };
+
+          console.log("--- SUBMITTING ORDER ---");
+          console.log(JSON.stringify(orderPayload, null, 2));
+          console.log("------------------------");
+
+          // --- Mock API Call ---
+          // Simulate network delay
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+
+          // On successful submission:
+          toast.success("Order submitted successfully!");
+
+          useCartStore.getState().clearCart();
+
+          set({
+            contactInfo: {},
+            shippingAddress: {},
+            paymentMethod: {},
+          });
+        } catch (error) {
+          console.error("Order submission failed:", error);
+          toast.error("Failed to submit order. Please try again.");
+        } finally {
+          set({ isLoading: false }); // Set loading to false when done
         }
-
-        const orderPayload = {
-          user: userSession?.user || { name: "Guest" },
-          contactInfo,
-          shippingAddress,
-          // NOTE: Do not log or store full payment details in a real application.
-          // This is for demonstration only. In production, you would send this
-          // to a secure payment gateway and only store a transaction reference.
-          paymentInfo: {
-            method: "Credit Card", // Example
-          },
-          items: cartItems.map((item) => ({
-            productId: item.product.id,
-            variantId: item.variant.id,
-            name: item.product.name,
-            quantity: item.quantity,
-            price: item.product.newPrice ?? item.product.price,
-          })),
-          totalAmount: total,
-          orderDate: new Date().toISOString(),
-        };
-
-        console.log("--- SUBMITTING ORDER ---");
-        console.log(JSON.stringify(orderPayload, null, 2));
-        console.log("------------------------");
-
-        // Here you would typically make an API call to your backend:
-        // await fetch('/api/orders', {
-        //   method: 'POST',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   body: JSON.stringify(orderPayload),
-        // });
-
-        // After successful submission, clear the cart and checkout state
-        useCartStore.getState().clearCart();
-        set({
-          contactInfo: {},
-          shippingAddress: {},
-          paymentMethod: {},
-        });
-
-        // Optionally, you can redirect the user to an order confirmation page.
       },
     }),
     {
-      name: "checkout-storage", // local storage key
+      name: "checkout-storage",
     }
   )
 );

@@ -9,6 +9,7 @@ import Radio from "@/shared/Radio/Radio";
 import { useCheckoutStore } from "@/stores/checkoutStore";
 import { PaymentMethod as PaymentMethodType } from "@/types/checkout";
 import { useSession } from "next-auth/react";
+import { useCartStore } from "@/stores/cartStore";
 
 interface Props {
   isActive: boolean;
@@ -22,6 +23,8 @@ const PaymentMethod: FC<Props> = ({
   onOpenActive,
 }) => {
   const { paymentMethod, setPaymentMethod, submitOrder } = useCheckoutStore();
+  const { items: cartItems, getCartTotal } = useCartStore();
+
   const [formData, setFormData] =
     useState<Partial<PaymentMethodType>>(paymentMethod);
   const [methodActive, setMethodActive] = useState(
@@ -44,7 +47,6 @@ const PaymentMethod: FC<Props> = ({
 
   const handleMethodChange = (method: PaymentMethodType["method"]) => {
     setMethodActive(method);
-    // Clear card details if switching away from Credit Card
     const newFormData = { ...formData, method };
     if (method !== "Credit-Card") {
       delete newFormData.cardNumber;
@@ -56,9 +58,16 @@ const PaymentMethod: FC<Props> = ({
   };
 
   const handleConfirmOrder = () => {
+    // 1. Save the final payment method details to the store
     setPaymentMethod(formData);
-    // Pass the current session to the submitOrder action
-    submitOrder(session);
+
+    // 2. Get the current cart total
+    const total = getCartTotal();
+
+    // 3. Call the submitOrder action with all required data
+    submitOrder(cartItems, session, total);
+
+    // This could now be used to close the entire checkout flow or redirect
     onCloseActive();
   };
 
