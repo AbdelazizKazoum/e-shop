@@ -5,6 +5,7 @@ import { useCartStore } from "./cartStore";
 import { Session } from "next-auth";
 import { CartItem } from "@/types/cart";
 import toast from "react-hot-toast";
+import { createOrder } from "@/services/orderService";
 
 export const useCheckoutStore = create<CheckoutState>()(
   persist(
@@ -28,7 +29,6 @@ export const useCheckoutStore = create<CheckoutState>()(
         set((state) => ({
           paymentMethod: { ...state.paymentMethod, ...data },
         })),
-
       submitOrder: async (
         cartItems: CartItem[],
         userSession: Session | null,
@@ -78,23 +78,29 @@ export const useCheckoutStore = create<CheckoutState>()(
           console.log(JSON.stringify(orderPayload, null, 2));
           console.log("------------------------");
 
-          // --- Mock API Call ---
-          // Simulate network delay
-          await new Promise((resolve) => setTimeout(resolve, 2000));
+          // --- Call API ---
+          const response = await createOrder(orderPayload);
 
-          // On successful submission:
           toast.success("Order submitted successfully!");
 
+          // Clear cart
           useCartStore.getState().clearCart();
 
+          // Reset checkout state
           set({
             contactInfo: {},
             shippingAddress: {},
             paymentMethod: {},
           });
-        } catch (error) {
+
+          return response.data; // you can return created order if needed
+        } catch (error: any) {
           console.error("Order submission failed:", error);
-          toast.error("Failed to submit order. Please try again.");
+          toast.error(
+            error.response?.data?.message ||
+              "Failed to submit order. Please try again."
+          );
+          throw error;
         } finally {
           set({ isLoading: false }); // Set loading to false when done
         }
