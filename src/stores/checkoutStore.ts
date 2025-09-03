@@ -13,7 +13,7 @@ export const useCheckoutStore = create<CheckoutState>()(
       contactInfo: {},
       shippingAddress: {},
       paymentMethod: {},
-      isLoading: false, // Add isLoading to the initial state
+      isLoading: false,
 
       setContactInfo: (data) =>
         set((state) => ({
@@ -34,7 +34,7 @@ export const useCheckoutStore = create<CheckoutState>()(
         userSession: Session | null,
         total: number
       ) => {
-        set({ isLoading: true }); // Set loading to true when submission starts
+        set({ isLoading: true });
         const { contactInfo, shippingAddress, paymentMethod } = get();
 
         try {
@@ -45,12 +45,14 @@ export const useCheckoutStore = create<CheckoutState>()(
             !shippingAddress.city
           ) {
             toast.error("Please fill in all required shipping information.");
-            return; // Exit if validation fails
+            // Throw an error to be caught by the component
+            throw new Error("Missing shipping information.");
           }
 
           if (!paymentMethod.method) {
             toast.error("Payment method not selected.");
-            return; // Exit if validation fails
+            // Throw an error to be caught by the component
+            throw new Error("Missing payment method.");
           }
 
           const orderPayload = {
@@ -71,7 +73,7 @@ export const useCheckoutStore = create<CheckoutState>()(
               price: item.product.newPrice ?? item.product.price,
             })),
             totalAmount: total,
-            orderDate: new Date().toISOString(),
+            // orderDate: newtoISOString(),
           };
 
           console.log("--- SUBMITTING ORDER ---");
@@ -82,7 +84,8 @@ export const useCheckoutStore = create<CheckoutState>()(
           const response = await createOrder(orderPayload);
           console.log("🚀 ~ response:", response);
 
-          toast.success("Order submitted successfully!");
+          // I've removed the success toast from here.
+          // The component will now handle the success UI by showing the modal.
 
           // Clear cart
           useCartStore.getState().clearCart();
@@ -94,16 +97,23 @@ export const useCheckoutStore = create<CheckoutState>()(
             paymentMethod: {},
           });
 
-          return response.data; // you can return created order if needed
+          return response.data;
         } catch (error: any) {
           console.error("Order submission failed:", error);
-          toast.error(
-            error.response?.data?.message ||
-              "Failed to submit order. Please try again."
-          );
+          // Keep the error toast for failures
+          if (error.response?.data?.message) {
+            toast.error(error.response.data.message);
+          } else if (
+            error.message !== "Missing shipping information." &&
+            error.message !== "Missing payment method."
+          ) {
+            // Only show generic error if it's not a validation one we already showed
+            toast.error("Failed to submit order. Please try again.");
+          }
+          // Re-throw the error so the component's try/catch can handle it
           throw error;
         } finally {
-          set({ isLoading: false }); // Set loading to false when done
+          set({ isLoading: false });
         }
       },
     }),

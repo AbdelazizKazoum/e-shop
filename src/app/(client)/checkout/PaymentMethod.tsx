@@ -10,6 +10,7 @@ import { useCheckoutStore } from "@/stores/checkoutStore";
 import { PaymentMethod as PaymentMethodType } from "@/types/checkout";
 import { useSession } from "next-auth/react";
 import { useCartStore } from "@/stores/cartStore";
+import SuccessModal from "@/components/modals/SuccessModal";
 
 interface Props {
   isActive: boolean;
@@ -31,6 +32,9 @@ const PaymentMethod: FC<Props> = ({
     paymentMethod.method || "Credit-Card"
   );
   const { data: session } = useSession();
+
+  // State to control the visibility of the success modal
+  const [isSuccessModalOpen, setSuccessModalOpen] = useState(false);
 
   useEffect(() => {
     setFormData(paymentMethod);
@@ -57,18 +61,31 @@ const PaymentMethod: FC<Props> = ({
     setFormData(newFormData);
   };
 
-  const handleConfirmOrder = () => {
+  const handleConfirmOrder = async () => {
     // 1. Save the final payment method details to the store
     setPaymentMethod(formData);
 
     // 2. Get the current cart total
     const total = getCartTotal();
 
-    // 3. Call the submitOrder action with all required data
-    submitOrder(cartItems, session, total);
+    try {
+      // 3. Call the submitOrder action and wait for it to complete
+      await submitOrder(cartItems, session, total);
 
-    // This could now be used to close the entire checkout flow or redirect
+      // 4. If the order submission is successful, open the success modal
+      setSuccessModalOpen(true);
+    } catch (error) {
+      // Error toasts are already handled in the store, so we just log it here
+      console.error("Order confirmation failed:", error);
+    }
+  };
+
+  const handleCloseSuccessModal = () => {
+    setSuccessModalOpen(false);
+    // After closing the modal, you might want to redirect the user or reset the checkout flow
+    // For now, we'll just close the active payment section.
     onCloseActive();
+    // Example of redirecting: window.location.href = '/';
   };
 
   const renderDebitCredit = () => {
@@ -393,112 +410,120 @@ const PaymentMethod: FC<Props> = ({
   };
 
   return (
-    <div className="border border-slate-200 dark:border-slate-700 rounded-xl ">
-      <div className="p-6 flex flex-col sm:flex-row items-start">
-        <span className="hidden sm:block">
-          <svg
-            className="w-6 h-6 text-slate-700 dark:text-slate-400 mt-0.5"
-            viewBox="0 0 24 24"
-            fill="none"
-          >
-            <path
-              d="M3.92969 15.8792L15.8797 3.9292"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeMiterlimit="10"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M11.1013 18.2791L12.3013 17.0791"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeMiterlimit="10"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M13.793 15.5887L16.183 13.1987"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeMiterlimit="10"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M3.60127 10.239L10.2413 3.599C12.3613 1.479 13.4213 1.469 15.5213 3.569L20.4313 8.479C22.5313 10.579 22.5213 11.639 20.4013 13.759L13.7613 20.399C11.6413 22.519 10.5813 22.529 8.48127 20.429L3.57127 15.519C1.47127 13.419 1.47127 12.369 3.60127 10.239Z"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M2 21.9985H22"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </span>
-        <div className="sm:ml-8">
-          <h3 className=" text-slate-700 dark:text-slate-400 flex ">
-            <span className="uppercase tracking-tight">PAYMENT METHOD</span>
-            {paymentMethod.method && (
-              <svg
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="2.5"
+    <>
+      <div className="border border-slate-200 dark:border-slate-700 rounded-xl ">
+        <div className="p-6 flex flex-col sm:flex-row items-start">
+          <span className="hidden sm:block">
+            <svg
+              className="w-6 h-6 text-slate-700 dark:text-slate-400 mt-0.5"
+              viewBox="0 0 24 24"
+              fill="none"
+            >
+              <path
+                d="M3.92969 15.8792L15.8797 3.9292"
                 stroke="currentColor"
-                className="w-5 h-5 ml-3 text-slate-900 dark:text-slate-100"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M4.5 12.75l6 6 9-13.5"
-                />
-              </svg>
-            )}
-          </h3>
-          <div className="font-semibold mt-1 text-sm">
-            <span>
-              {paymentMethod.method === "Credit-Card" &&
-              paymentMethod.cardNumber
-                ? `Card ending in ${paymentMethod.cardNumber.slice(-4)}`
-                : paymentMethod.method?.replace(/-/g, " ") || "Not selected"}
-            </span>
+                strokeWidth="1.5"
+                strokeMiterlimit="10"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M11.1013 18.2791L12.3013 17.0791"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeMiterlimit="10"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M13.793 15.5887L16.183 13.1987"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeMiterlimit="10"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M3.60127 10.239L10.2413 3.599C12.3613 1.479 13.4213 1.469 15.5213 3.569L20.4313 8.479C22.5313 10.579 22.5213 11.639 20.4013 13.759L13.7613 20.399C11.6413 22.519 10.5813 22.529 8.48127 20.429L3.57127 15.519C1.47127 13.419 1.47127 12.369 3.60127 10.239Z"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M2 21.9985H22"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </span>
+          <div className="sm:ml-8">
+            <h3 className=" text-slate-700 dark:text-slate-400 flex ">
+              <span className="uppercase tracking-tight">PAYMENT METHOD</span>
+              {paymentMethod.method && (
+                <svg
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="2.5"
+                  stroke="currentColor"
+                  className="w-5 h-5 ml-3 text-slate-900 dark:text-slate-100"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M4.5 12.75l6 6 9-13.5"
+                  />
+                </svg>
+              )}
+            </h3>
+            <div className="font-semibold mt-1 text-sm">
+              <span>
+                {paymentMethod.method === "Credit-Card" &&
+                paymentMethod.cardNumber
+                  ? `Card ending in ${paymentMethod.cardNumber.slice(-4)}`
+                  : paymentMethod.method?.replace(/-/g, " ") || "Not selected"}
+              </span>
+            </div>
+          </div>
+          <button
+            className="py-2 px-4 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 mt-5 sm:mt-0 sm:ml-auto text-sm font-medium rounded-lg"
+            onClick={onOpenActive}
+          >
+            Change
+          </button>
+        </div>
+
+        <div
+          className={`border-t border-slate-200 dark:border-slate-700 px-6 py-7 space-y-6 ${
+            isActive ? "block" : "hidden"
+          }`}
+        >
+          <div>{renderDebitCredit()}</div>
+          <div>{renderInterNetBanking()}</div>
+          <div>{renderWallet()}</div>
+          <div>{renderCashOnDelivery()}</div>
+          <div className="flex pt-6">
+            <ButtonPrimary
+              className="w-full max-w-[240px]"
+              onClick={handleConfirmOrder}
+            >
+              Confirm order
+            </ButtonPrimary>
+            <ButtonSecondary className="ml-3" onClick={onCloseActive}>
+              Cancel
+            </ButtonSecondary>
           </div>
         </div>
-        <button
-          className="py-2 px-4 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 mt-5 sm:mt-0 sm:ml-auto text-sm font-medium rounded-lg"
-          onClick={onOpenActive}
-        >
-          Change
-        </button>
       </div>
 
-      <div
-        className={`border-t border-slate-200 dark:border-slate-700 px-6 py-7 space-y-6 ${
-          isActive ? "block" : "hidden"
-        }`}
-      >
-        <div>{renderDebitCredit()}</div>
-        <div>{renderInterNetBanking()}</div>
-        <div>{renderWallet()}</div>
-        <div>{renderCashOnDelivery()}</div>
-        <div className="flex pt-6">
-          <ButtonPrimary
-            className="w-full max-w-[240px]"
-            onClick={handleConfirmOrder}
-          >
-            Confirm order
-          </ButtonPrimary>
-          <ButtonSecondary className="ml-3" onClick={onCloseActive}>
-            Cancel
-          </ButtonSecondary>
-        </div>
-      </div>
-    </div>
+      {/* Render the success modal */}
+      <SuccessModal
+        isOpen={isSuccessModalOpen}
+        onClose={handleCloseSuccessModal}
+      />
+    </>
   );
 };
 
