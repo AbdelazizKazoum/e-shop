@@ -80,6 +80,7 @@ export const useCheckoutStore = create<CheckoutState>()(
 
           // --- Call API ---
           const response = await createOrder(orderPayload);
+          console.log("🚀 ~ response:", response);
 
           toast.success("Order submitted successfully!");
 

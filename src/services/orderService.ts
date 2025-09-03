@@ -3,6 +3,8 @@ import axiosClient from "@/lib/axiosClient";
 
 // Create a new order (guest or user)
 export const createOrder = (data: any) => {
+  console.log("🚀 ~ createOrder ~ data:", data);
+
   return axiosClient.post("/orders", data);
 };
 
