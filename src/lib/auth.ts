@@ -95,7 +95,7 @@ const authOptions: NextAuthOptions = {
 
       if (!res.ok) return false;
 
-      const { data } = await res.json();
+      const { data, access_token, refresh_token } = await res.json();
 
       // Attach backend response to user object
       user.backendToken = data.token;
@@ -104,8 +104,8 @@ const authOptions: NextAuthOptions = {
       user.firstName = data.firstName || "";
       user.lastName = data.lastName || "";
       user.image = data.image || "";
-      user.accessToken = data.access_token;
-      user.refreshToken = data.refresh_token;
+      user.accessToken = access_token;
+      user.refreshToken = refresh_token;
       user.isProfileComplete = data.isProfileComplete || false;
 
       return true;

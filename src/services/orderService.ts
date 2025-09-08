@@ -15,9 +15,9 @@ export interface UpdateOrderData {
  * Creates a new order.
  * @param data - The order creation data.
  */
-export const createOrder = (data: any) => {
+export const createOrder = async (data: any) => {
   console.log("🚀 ~ createOrder ~ data:", data);
-  return axiosClient.post("/orders", data);
+  return await axiosClient.post("/orders", data);
 };
 
 /**
