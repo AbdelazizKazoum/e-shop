@@ -28,7 +28,9 @@ export async function getProductByName(name: string) {
 }
 
 export async function getProductById(id: string) {
-  const res = await fetch(`${API_URL}/products/${id}`);
+  const res = await fetch(`${API_URL}/products/${id}`, {
+    next: { revalidate: 10 }, // update every 1h
+  });
 
   if (!res.ok) throw new Error("Failed to fetch product");
   return (await res.json()) || [];

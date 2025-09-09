@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect, FC } from "react";
 import ButtonPrimary from "@/shared/Button/ButtonPrimary";
 import LikeButton from "@/components/LikeButton";
-import { StarIcon } from "@heroicons/react/24/solid";
+import { StarIcon, XCircleIcon } from "@heroicons/react/24/solid";
 import BagIcon from "@/components/BagIcon";
 import NcInputNumber from "@/components/NcInputNumber";
 import { SparklesIcon } from "@heroicons/react/24/outline";
@@ -14,8 +14,8 @@ import AccordionInfo from "@/components/AccordionInfo";
 import { Product } from "@/types/product";
 import NotifyAddTocart from "./NotifyAddTocart";
 import Policy from "@/app/(client)/product-detail/Policy";
-import { useCartStore } from "@/stores/cartStore"; // Import the cart store
-import { ProductInfo } from "@/types/cart"; // Import the simplified product type for the cart
+import { useCartStore } from "@/stores/cartStore";
+import { ProductInfo } from "@/types/cart";
 
 interface ProductDetailsClientProps {
   product: Product;
@@ -24,7 +24,8 @@ interface ProductDetailsClientProps {
 const ProductDetailsClient: FC<ProductDetailsClientProps> = ({ product }) => {
   const { variants, status, name, price, newPrice, brand, category, id } =
     product;
-  const addToCart = useCartStore((state) => state.addToCart); // Get the addToCart action
+  console.log("🚀 ~ ProductDetailsClient ~ variants:", variants);
+  const addToCart = useCartStore((state) => state.addToCart);
 
   // --- STATE MANAGEMENT ---
   const [selectedColor, setSelectedColor] = useState(variants[0]?.color || "");
@@ -46,6 +47,11 @@ const ProductDetailsClient: FC<ProductDetailsClientProps> = ({ product }) => {
       (v) => v.color === selectedColor && v.size === selectedSize
     );
   }, [variants, selectedColor, selectedSize]);
+
+  // ✅ New memoized state to check stock
+  const isOutOfStock = useMemo(() => {
+    return (selectedVariant?.stock?.quantity ?? 0) === 0;
+  }, [selectedVariant]);
 
   // --- EFFECT to update images when variant changes ---
   useEffect(() => {
@@ -70,8 +76,16 @@ const ProductDetailsClient: FC<ProductDetailsClientProps> = ({ product }) => {
       toast.error("Please select a color and size.");
       return;
     }
+    // The button won't be clickable if out of stock, but this is a good safeguard
+    if (isOutOfStock) {
+      toast.error("This item is currently out of stock.");
+      return;
+    }
+    if ((selectedVariant.stock?.quantity ?? 0) < qualitySelected) {
+      toast.error("Not enough items in stock.");
+      return;
+    }
 
-    // 1. Create the simplified product info object for the cart store
     const productInfo: ProductInfo = {
       id,
       name,
@@ -82,10 +96,8 @@ const ProductDetailsClient: FC<ProductDetailsClientProps> = ({ product }) => {
       category,
     };
 
-    // 2. Call the addToCart action from the Zustand store
     addToCart(productInfo, selectedVariant, qualitySelected);
 
-    // 3. Show the toast notification
     toast.custom(
       (t) => (
         <NotifyAddTocart
@@ -237,14 +249,20 @@ const ProductDetailsClient: FC<ProductDetailsClientProps> = ({ product }) => {
             <div className="grid grid-cols-5 sm:grid-cols-7 gap-2 mt-3">
               {availableSizesForSelectedColor.map((size, index) => {
                 const isActive = size === selectedSize;
-                const isOutOfStock = (selectedVariant?.qte ?? 0) === 0;
+
+                const variantForThisSize = variants.find(
+                  (v) => v.color === selectedColor && v.size === size
+                );
+                const isVariantOutOfStock =
+                  (variantForThisSize?.stock?.quantity ?? 0) === 0;
+
                 return (
                   <div
                     key={index}
                     className={`relative h-10 sm:h-11 rounded-2xl border flex items-center justify-center 
                       text-sm sm:text-base uppercase font-semibold select-none overflow-hidden z-0 ${
-                        isOutOfStock
-                          ? "cursor-not-allowed opacity-20"
+                        isVariantOutOfStock
+                          ? "cursor-not-allowed opacity-60"
                           : "cursor-pointer"
                       } ${
                       isActive
@@ -252,38 +270,72 @@ const ProductDetailsClient: FC<ProductDetailsClientProps> = ({ product }) => {
                         : "border-slate-300 dark:border-slate-600 hover:bg-neutral-50 dark:hover:bg-neutral-700"
                     }`}
                     onClick={() => {
-                      if (isOutOfStock) return;
+                      if (isVariantOutOfStock) return;
                       setSelectedSize(size);
                     }}
                   >
                     {size}
+                    {isVariantOutOfStock && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-60 dark:bg-black dark:bg-opacity-60">
+                        <svg
+                          className="w-full h-full text-slate-400 dark:text-slate-500"
+                          viewBox="0 0 100 100"
+                          preserveAspectRatio="none"
+                          stroke="currentColor"
+                        >
+                          <line
+                            x1="0"
+                            y1="100"
+                            x2="100"
+                            y2="0"
+                            vectorEffect="non-scaling-stroke"
+                            strokeWidth="1.5"
+                          />
+                        </svg>
+                      </div>
+                    )}
                   </div>
                 );
               })}
             </div>
+
+            {selectedVariant?.stock && !isOutOfStock && (
+              <div className="mt-3 text-sm text-slate-600 dark:text-slate-300">
+                <span className="font-medium">In stock:</span>{" "}
+                <span className="font-semibold">
+                  {selectedVariant.stock.quantity}
+                </span>
+              </div>
+            )}
           </div>
 
-          {/* ADD TO CART */}
-          <div className="flex space-x-3.5">
-            <div className="flex items-center justify-center bg-slate-100/70 dark:bg-slate-800/70 px-2 py-3 sm:p-3.5 rounded-full">
-              <NcInputNumber
-                defaultValue={qualitySelected}
-                onChange={setQualitySelected}
-              />
+          {/* ✅ ADD TO CART & OUT OF STOCK MESSAGE */}
+          {isOutOfStock ? (
+            <div className="flex items-center justify-center p-3.5 rounded-full bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 ring-1 ring-red-200 dark:ring-red-800">
+              <XCircleIcon className="w-6 h-6" />
+              <span className="ml-2.5 font-semibold">Out of Stock</span>
             </div>
-            <ButtonPrimary
-              className="flex-1 flex-shrink-0"
-              onClick={handleAddToCart}
-            >
-              <BagIcon className="hidden sm:inline-block w-5 h-5 mb-0.5" />
-              <span className="ml-3">Add to cart</span>
-            </ButtonPrimary>
-          </div>
+          ) : (
+            <div className="flex space-x-3.5">
+              <div className="flex items-center justify-center bg-slate-100/70 dark:bg-slate-800/70 px-2 py-3 sm:p-3.5 rounded-full">
+                <NcInputNumber
+                  defaultValue={qualitySelected}
+                  onChange={setQualitySelected}
+                  max={selectedVariant?.stock?.quantity}
+                />
+              </div>
+              <ButtonPrimary
+                className="flex-1 flex-shrink-0"
+                onClick={handleAddToCart}
+              >
+                <BagIcon className="hidden sm:inline-block w-5 h-5 mb-0.5" />
+                <span className="ml-3">Add to cart</span>
+              </ButtonPrimary>
+            </div>
+          )}
 
           <hr className="2xl:!my-10 border-slate-200 dark:border-slate-700" />
-
           <AccordionInfo />
-
           <div className="hidden xl:block">
             <Policy />
           </div>
