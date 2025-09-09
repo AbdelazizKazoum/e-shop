@@ -2,7 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useCartStore } from "@/stores/cartStore"; // Import your Zustand store
-import { NoSymbolIcon, CheckIcon } from "@heroicons/react/24/outline";
+import {
+  NoSymbolIcon,
+  CheckIcon,
+  ExclamationTriangleIcon,
+  XCircleIcon,
+} from "@heroicons/react/24/outline";
 import NcInputNumber from "@/components/NcInputNumber";
 import Prices from "@/components/Prices";
 import ButtonPrimary from "@/shared/Button/ButtonPrimary";
@@ -13,20 +18,60 @@ import { CartItem } from "@/types/cart"; // Import the CartItem type
 const CartPage = () => {
   // Handle client-side hydration to safely access the store's state
   const [isMounted, setIsMounted] = useState(false);
-  const { items, removeFromCart, updateQuantity, getCartTotal } =
-    useCartStore();
+
+  const {
+    items,
+    removeFromCart,
+    updateQuantity,
+    getCartTotal,
+    fetchAndUpdateVariantsStock,
+    loading,
+    toggleItemSelected,
+    selectAllItems,
+    deselectAllItems,
+  } = useCartStore();
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
+  // Fetch and update stock for all variants in the cart on mount
+  useEffect(() => {
+    if (isMounted && items.length > 0) {
+      const variantIds = items.map((item) => item.variant.id);
+      fetchAndUpdateVariantsStock(variantIds);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMounted]);
+
   if (!isMounted) {
     // You can return a loading skeleton here for better UX
+    // Show a centered cart loading icon while hydrating
     return (
-      <div className="container py-16 lg:pb-28 lg:pt-20">
-        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold">
-          Loading Shopping Cart...
-        </h2>
+      <div className="container py-16 lg:pb-28 lg:pt-20 flex flex-col items-center justify-center min-h-[40vh]">
+        <svg
+          className="animate-spin h-14 w-14 text-primary-6000 mb-4"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+          ></circle>
+          <path
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8v8z"
+          ></path>
+        </svg>
+        <span className="text-lg font-semibold text-slate-700 dark:text-slate-200">
+          Loading your cart...
+        </span>
       </div>
     );
   }
@@ -54,15 +99,25 @@ const CartPage = () => {
       return null;
     }
 
-    const { product, variant, quantity } = item;
+    const { product, variant, quantity, selected } = item;
     const price = product.newPrice ?? product.price;
     const imageUrl = variant.images?.[0]?.image || product.image;
+    const isOutOfStock = variant.qte === 0;
 
     return (
       <div
         key={variant.id}
         className="relative flex py-8 sm:py-10 xl:py-12 first:pt-0 last:pb-0"
       >
+        <div className="w-12 mr-4">
+          <input
+            type="checkbox"
+            className="form-checkbox h-6 w-6 text-primary-6000 border-slate-300 dark:border-slate-700 rounded focus:ring-primary-500"
+            checked={selected}
+            onChange={() => toggleItemSelected(variant.id)}
+            disabled={isOutOfStock || loading}
+          />
+        </div>
         <div className="relative h-36 w-24 sm:w-32 flex-shrink-0 overflow-hidden rounded-xl bg-slate-100">
           <Image
             fill
@@ -179,6 +234,7 @@ const CartPage = () => {
                       updateQuantity(variant.id, parseInt(e.target.value))
                     }
                     className="form-select text-sm rounded-md py-1 border-slate-200 dark:border-slate-700 relative z-10 dark:bg-slate-800 "
+                    disabled={isOutOfStock || loading}
                   >
                     {/* Create options up to the max available quantity */}
                     {Array.from({ length: variant.qte }, (_, i) => i + 1).map(
@@ -197,12 +253,21 @@ const CartPage = () => {
               </div>
 
               <div className="hidden sm:block text-center relative">
-                <NcInputNumber
-                  className="relative z-10"
-                  defaultValue={quantity}
-                  onChange={(value) => updateQuantity(variant.id, value)}
-                  max={variant.qte}
-                />
+                <div
+                  className={
+                    isOutOfStock || loading
+                      ? "pointer-events-none opacity-60"
+                      : ""
+                  }
+                >
+                  <NcInputNumber
+                    className="relative z-10"
+                    defaultValue={quantity}
+                    onChange={(value) => updateQuantity(variant.id, value)}
+                    max={variant.qte}
+                    min={1}
+                  />
+                </div>
               </div>
 
               <div className="hidden flex-1 sm:flex justify-end">
@@ -212,7 +277,16 @@ const CartPage = () => {
           </div>
 
           <div className="flex mt-auto pt-4 items-end justify-between text-sm">
-            {variant.qte > 0 ? renderStatusInstock() : renderStatusSoldout()}
+            <span>
+              {variant.qte > 0 ? (
+                <>
+                  {renderStatusInstock()}{" "}
+                  <span className="ml-2 text-xs">(Stock: {variant.qte})</span>
+                </>
+              ) : (
+                renderStatusSoldout()
+              )}
+            </span>
             <button
               onClick={() => removeFromCart(variant.id)}
               className="relative z-10 flex items-center mt-3 font-medium text-primary-6000 hover:text-primary-500 text-sm "
@@ -229,6 +303,20 @@ const CartPage = () => {
   const shippingEstimate = subtotal > 0 ? 5.0 : 0;
   const taxEstimate = subtotal * 0.1;
   const orderTotal = subtotal + shippingEstimate + taxEstimate;
+
+  const availableItems = items.filter((item) => item.variant.qte > 0);
+  const allSelected =
+    availableItems.length > 0 && availableItems.every((item) => item.selected);
+  const someSelected =
+    availableItems.some((item) => item.selected) && !allSelected;
+
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      selectAllItems();
+    } else {
+      deselectAllItems();
+    }
+  };
 
   return (
     <div className="nc-CartPage">
@@ -250,13 +338,47 @@ const CartPage = () => {
 
         <div className="flex flex-col lg:flex-row">
           <div className="w-full lg:w-[60%] xl:w-[55%] divide-y divide-slate-200 dark:divide-slate-700 ">
-            {items.length > 0 ? (
-              items.map(renderProduct)
+            {loading ? (
+              // Skeletons for cart items while loading
+              Array.from({ length: Math.max(items.length, 2) }).map(
+                (_, idx) => (
+                  <div key={idx} className="flex py-8 animate-pulse space-x-4">
+                    <div className="h-36 w-24 sm:w-32 bg-slate-200 dark:bg-slate-700 rounded-xl" />
+                    <div className="flex-1 space-y-4 py-1">
+                      <div className="h-6 bg-slate-200 dark:bg-slate-700 rounded w-1/2" />
+                      <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/3" />
+                      <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/4" />
+                      <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded w-1/3 mt-4" />
+                    </div>
+                  </div>
+                )
+              )
+            ) : items.length > 0 ? (
+              <>
+                <div className="flex justify-between items-center mb-4">
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      className="form-checkbox h-5 w-5 text-primary-6000 border-slate-300 dark:border-slate-700 rounded focus:ring-primary-500"
+                      checked={allSelected}
+                      ref={(input) => {
+                        if (input) input.indeterminate = someSelected;
+                      }}
+                      onChange={handleSelectAll}
+                      disabled={availableItems.length === 0}
+                    />
+                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                      Select all items
+                    </label>
+                  </div>
+                </div>
+                {items.map(renderProduct)}
+              </>
             ) : (
               <div className="text-center py-10">
                 <h3 className="text-lg font-semibold">Your cart is empty.</h3>
                 <p className="mt-2 text-slate-600 dark:text-slate-400">
-                  Looks like you haven't added anything to your cart yet.
+                  Looks like you haven&apos;t added anything to your cart yet.
                 </p>
                 <ButtonPrimary href="/collection" className="mt-6">
                   Continue Shopping
@@ -295,7 +417,10 @@ const CartPage = () => {
               <ButtonPrimary
                 href="/checkout"
                 className="mt-8 w-full"
-                disabled={items.length === 0}
+                disabled={
+                  items.filter((i) => i.selected && i.variant.qte > 0)
+                    .length === 0 || loading
+                }
               >
                 Checkout
               </ButtonPrimary>

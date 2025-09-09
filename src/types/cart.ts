@@ -27,4 +27,5 @@ export interface CartItem {
   product: ProductInfo; // Core product data
   variant: Variant; // The specific variant chosen by the user
   quantity: number; // How many of this specific variant are in the cart
+  selected?: boolean; // Whether the item is selected for checkout
 }

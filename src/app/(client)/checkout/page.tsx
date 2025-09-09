@@ -228,6 +228,7 @@ const CheckoutPage = () => {
   const shippingEstimate = subtotal > 0 ? 5.0 : 0;
   const taxEstimate = subtotal * 0.1;
   const orderTotal = subtotal + shippingEstimate + taxEstimate;
+  const selectedItems = items.filter((item) => item.selected);
 
   return (
     <SessionProvider>
@@ -267,11 +268,13 @@ const CheckoutPage = () => {
               <div className="w-full lg:w-[36%] ">
                 <h3 className="text-lg font-semibold">Order summary</h3>
                 <div className="mt-8 divide-y divide-slate-200/70 dark:divide-slate-700 ">
-                  {isMounted && items.length > 0 ? (
-                    items.map(renderProduct)
+                  {isMounted && selectedItems.length > 0 ? (
+                    selectedItems.map(renderProduct)
                   ) : (
                     <div className="py-10 text-center text-sm text-slate-500">
-                      Your cart is empty.
+                      {isMounted && items.length > 0
+                        ? "No items selected for checkout."
+                        : "Your cart is empty."}
                     </div>
                   )}
                 </div>
@@ -312,7 +315,7 @@ const CheckoutPage = () => {
                 </div>
                 <ButtonPrimary
                   className="mt-8 w-full"
-                  disabled={!isMounted || items.length === 0}
+                  disabled={!isMounted || selectedItems.length === 0}
                 >
                   Confirm order
                 </ButtonPrimary>

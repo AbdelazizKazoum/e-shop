@@ -1,10 +1,13 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { ProductInfo, Variant, CartItem } from "@/types/cart"; // Adjust the import path as needed
+
+import { stockService } from "@/services/stockService";
+import { CartItem, ProductInfo, Variant } from "@/types/cart";
 
 // Define the state shape and the actions
 interface CartState {
   items: CartItem[];
+  loading: boolean;
   addToCart: (
     product: ProductInfo,
     variant: Variant,
@@ -14,48 +17,103 @@ interface CartState {
   updateQuantity: (variantId: string, quantity: number) => void;
   clearCart: () => void;
   getCartTotal: () => number;
+  fetchAndUpdateVariantStock: (variantId: string) => Promise<void>;
+  fetchAndUpdateVariantsStock: (variantIds: string[]) => Promise<void>;
+  toggleItemSelected: (variantId: string) => void;
+  selectAllItems: () => void;
+  deselectAllItems: () => void;
 }
 
 // Define the default state separately so it can be reused
-const defaultItems: CartItem[] = [
-  {
-    product: {
-      id: "9608eb35-9897-4f6f-ba4e-c018fc1e3151",
-      name: "PC Gamer",
-      image:
-        "https://pub-c1f95dd9de0040bca80754b566c4d7d1.r2.dev/products/main/1756294920602-search_page.jpg",
-      price: 50,
-      newPrice: 50,
-      brand: "apple",
-      category: {
-        id: "1",
-        category: "sport",
-        displayText: "Sport",
-        imageUrl:
-          "https://pub-c1f95dd9de0040bca80754b566c4d7d1.r2.dev/categories/1756718454005-Schema-Diagram.png",
-      },
-    },
-    variant: {
-      id: "317e5c07-60cc-4bca80754b566c4d7d1ae4d-74782f742717",
-      color: "#ba5c5c",
-      size: "XL",
-      qte: 21,
-      images: [
-        {
-          id: "b565fbca-0861-4f3c-9e5c-1b3c7af62f82",
-          image:
-            "https://pub-c1f95dd9de0040bca80754b566c4d7d1.r2.dev/products/variants/1756294974763-1_0_signup_sender.jpg",
-        },
-      ],
-    },
-    quantity: 1,
-  },
-];
+const defaultItems: CartItem[] = [];
 
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
       items: defaultItems, // Set initial state from the defaultItems array
+      loading: false,
+      /**
+       * Fetch and update the stock quantity for a single variant in the cart.
+       */
+      fetchAndUpdateVariantStock: async (variantId) => {
+        set({ loading: true });
+        try {
+          const res = await stockService.getStockQuantityByVariant(variantId);
+          set({
+            items: get().items.map((item) =>
+              item.variant.id === variantId
+                ? {
+                    ...item,
+                    variant: {
+                      ...item.variant,
+                      qte: res.quantity ?? item.variant.qte,
+                    },
+                  }
+                : item
+            ),
+          });
+        } catch (e) {
+          // On error, set qte to 0 for the affected variant
+          set({
+            items: get().items.map((item) =>
+              item.variant.id === variantId
+                ? {
+                    ...item,
+                    variant: {
+                      ...item.variant,
+                      qte: 0,
+                    },
+                  }
+                : item
+            ),
+          });
+        } finally {
+          set({ loading: false });
+        }
+      },
+
+      /**
+       * Fetch and update the stock quantities for multiple variants in the cart.
+       */
+      fetchAndUpdateVariantsStock: async (variantIds) => {
+        set({ loading: true });
+        try {
+          const res = await stockService.getQuantitiesForVariants(variantIds);
+          // res is an object: { [variantId]: quantity }
+          set({
+            items: get().items.map((item) => {
+              const qte =
+                res && typeof res === "object" && item.variant.id in res
+                  ? res[item.variant.id]
+                  : item.variant.qte;
+              return {
+                ...item,
+                variant: {
+                  ...item.variant,
+                  qte: qte,
+                },
+              };
+            }),
+          });
+        } catch (e) {
+          // On error, set qte to 0 for all affected variants
+          set({
+            items: get().items.map((item) =>
+              variantIds.includes(item.variant.id)
+                ? {
+                    ...item,
+                    variant: {
+                      ...item.variant,
+                      qte: 0,
+                    },
+                  }
+                : item
+            ),
+          });
+        } finally {
+          set({ loading: false });
+        }
+      },
 
       /**
        * Adds a new item to the cart or updates the quantity of an existing item.
@@ -82,7 +140,12 @@ export const useCartStore = create<CartState>()(
           set({
             items: [
               ...validItems,
-              { product, variant, quantity: Math.min(quantity, variant.qte) },
+              {
+                product,
+                variant,
+                quantity: Math.min(quantity, variant.qte),
+                selected: true,
+              }, // New items are selected by default
             ],
           });
         }
@@ -122,16 +185,54 @@ export const useCartStore = create<CartState>()(
       clearCart: () => set({ items: [] }),
 
       /**
-       * Calculates the total price of all items in the cart.
+       * Calculates the total price of all *selected* items in the cart.
        */
       getCartTotal: () => {
         return get().items.reduce((total, item) => {
-          if (!item || !item.product) {
+          if (
+            !item ||
+            !item.product ||
+            !item.selected ||
+            item.variant.qte === 0
+          ) {
             return total;
           }
           const price = item.product.newPrice ?? item.product.price;
           return total + price * item.quantity;
         }, 0);
+      },
+
+      /**
+       * Toggles the selection state of a single item.
+       */
+      toggleItemSelected: (variantId) => {
+        set({
+          items: get().items.map((item) =>
+            item.variant.id === variantId
+              ? { ...item, selected: !item.selected }
+              : item
+          ),
+        });
+      },
+
+      /**
+       * Selects all items that are in stock.
+       */
+      selectAllItems: () => {
+        set({
+          items: get().items.map((item) =>
+            item.variant.qte > 0 ? { ...item, selected: true } : item
+          ),
+        });
+      },
+
+      /**
+       * Deselects all items.
+       */
+      deselectAllItems: () => {
+        set({
+          items: get().items.map((item) => ({ ...item, selected: false })),
+        });
       },
     }),
     {
