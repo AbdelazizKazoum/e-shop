@@ -431,7 +431,7 @@ export default function StockPage() {
       </div>
       <div className="mt-8">
         <FilterHeader onFilter={handleFilter} onSearch={handleSearch} />
-        <div className="nc-box-has-hover nc-dark-box-bg-has-hover p-0 md:p-6">
+        <div className="border rounded-lg nc-dark-box-bg-has-hover p-0 md:p-6">
           {loading && stockItems.length === 0 ? (
             <StockListSkeleton />
           ) : (
