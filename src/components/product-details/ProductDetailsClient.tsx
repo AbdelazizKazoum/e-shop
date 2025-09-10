@@ -35,7 +35,7 @@ const ProductDetailsClient: FC<ProductDetailsClientProps> = ({ product }) => {
 
   // --- DERIVED DATA ---
   const uniqueColors = useMemo(() => {
-    return [...new Set(variants.map((v) => v.color))];
+    return Array.from(new Set(variants.map((v) => v.color)));
   }, [variants]);
 
   const availableSizesForSelectedColor = useMemo(() => {
@@ -65,7 +65,7 @@ const ProductDetailsClient: FC<ProductDetailsClientProps> = ({ product }) => {
     if (selectedVariant && selectedVariant.images.length > 0) {
       setActiveImages(selectedVariant.images.map((img) => img.image));
     } else {
-      setActiveImages([product.image]);
+      setActiveImages([product.image as string]);
     }
   }, [selectedVariant, product.image]);
 
@@ -92,7 +92,7 @@ const ProductDetailsClient: FC<ProductDetailsClientProps> = ({ product }) => {
       return;
     }
 
-    const productInfo: ProductInfo = {
+    const productInfo: any = {
       id,
       name,
       image: product.image,
@@ -101,14 +101,16 @@ const ProductDetailsClient: FC<ProductDetailsClientProps> = ({ product }) => {
       brand,
       category,
     };
-
+    //@ts-ignore
     addToCart(productInfo, selectedVariant, qualitySelected);
 
     toast.custom(
       (t) => (
         <NotifyAddTocart
           show={t.visible}
-          productImage={selectedVariant.images[0]?.image || product.image}
+          productImage={
+            selectedVariant.images[0]?.image || (product.image as string)
+          }
           productName={name}
           price={price}
           newPrice={newPrice}

@@ -4,6 +4,7 @@ import { Pencil, PlusCircle, Trash2 } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
 import { useCategoryStore } from "@/stores/categoryStore";
 import type { Category } from "@/types/category";
+import Image from "next/image";
 
 // --- Category Form Component ---
 const CategoryForm = ({
@@ -166,9 +167,11 @@ const CategoriesManager = () => {
               key={cat.id}
               className="flex items-center gap-4 rounded-lg bg-white p-3 shadow-sm hover:shadow-md transition-shadow dark:bg-neutral-800"
             >
-              <img
-                src={cat.imageUrl}
-                alt={cat.displayText}
+              <Image
+                src={cat.imageUrl || "/placeholder.png"}
+                alt={cat.displayText || "Category Image"}
+                width={48}
+                height={48}
                 className="h-12 w-12 rounded-md object-cover"
               />
 

@@ -18,7 +18,7 @@ import Link from "next/link";
 import NcImage from "@/shared/NcImage/NcImage";
 import { Product, Variant } from "@/types/product";
 import { useCartStore } from "@/stores/cartStore"; // Import the cart store
-import { ProductInfo } from "@/types/cart"; // Import the cart's product type
+import { ProductInfo } from "@/types/cart";
 
 export interface ProductCardProps {
   className?: string;
@@ -101,8 +101,9 @@ const ProductCard: FC<ProductCardProps> = ({
           <Image
             width={80}
             height={96}
-            src={variant.images[0]?.image || image}
+            src={variant.images[0]?.image || (image as string)}
             alt={name}
+            rel="preload"
             className="absolute object-cover object-center"
           />
         </div>
@@ -153,7 +154,7 @@ const ProductCard: FC<ProductCardProps> = ({
 
     if (targetVariant) {
       // Create the simplified product info object
-      const productInfo: ProductInfo = {
+      const productInfo: any = {
         id,
         name,
         image,
@@ -163,6 +164,7 @@ const ProductCard: FC<ProductCardProps> = ({
         category,
       };
       // Call the Zustand store action
+      //@ts-ignore
       addToCart(productInfo, targetVariant, 1);
       // Show notification
       notifyAddTocart(targetVariant);
@@ -218,7 +220,7 @@ const ProductCard: FC<ProductCardProps> = ({
     if (!variants || !variants.length) {
       return null;
     }
-    const uniqueSizes = [...new Set(variants.map((v) => v.size))];
+    const uniqueSizes = Array.from(new Set(variants.map((v) => v.size)));
 
     return (
       <div className="absolute bottom-0 inset-x-1 space-x-1.5 rtl:space-x-reverse flex justify-center opacity-0 invisible group-hover:bottom-4 group-hover:opacity-100 group-hover:visible transition-all">
@@ -285,14 +287,15 @@ const ProductCard: FC<ProductCardProps> = ({
           <Link href={`/product-detail/${id}`} className="block">
             <NcImage
               containerClassName="flex aspect-w-11 aspect-h-12 w-full h-0"
-              src={currentImage}
+              src={currentImage as string}
               className="object-cover w-full h-full drop-shadow-xl"
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 40vw"
               alt={name}
+              rel="preload"
             />
           </Link>
-          <ProductStatus status={status} />
+          <ProductStatus status={status || ""} />
           <LikeButton liked={isLiked} className="absolute top-3 end-3 z-10" />
           {variants && variants.length > 0
             ? renderSizeList()
@@ -325,7 +328,7 @@ const ProductCard: FC<ProductCardProps> = ({
       <ModalQuickView
         show={showModalQuickView}
         onCloseModalQuickView={() => setShowModalQuickView(false)}
-        product={data}
+        // product={data}
       />
     </>
   );

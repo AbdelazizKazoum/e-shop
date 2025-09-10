@@ -22,6 +22,7 @@ import {
   PaymentStatus,
 } from "@/types/order";
 import { useOrderStore } from "@/stores/orderStore";
+import Image from "next/image";
 
 // A simple debounce hook
 const useDebounce = (value: string, delay: number) => {
@@ -387,16 +388,18 @@ const OrderDetailsModal = ({
 
           {/* Right Column: Order Items and Summary */}
           <div className="lg:col-span-2">
-            <div className="p-4 rounded-lg border dark:border-neutral-200 dark:border-neutral-700 h-full flex flex-col">
+            <div className="p-4 rounded-lg border dark:border-neutral-200 h-full flex flex-col">
               <h3 className="font-medium text-neutral-800 dark:text-neutral-200 mb-4">
                 Items Ordered
               </h3>
               <div className="space-y-4 flex-grow">
                 {order.details.map((item: any) => (
                   <div key={item.id} className="flex items-start gap-4">
-                    <img
+                    <Image
                       src={item.variant.product.image}
                       alt={item.variant.product.name}
+                      width={64}
+                      height={64}
                       className="h-16 w-16 rounded-md object-cover bg-neutral-100"
                     />
                     <div className="flex-1">

@@ -11,7 +11,7 @@ import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import MySwitch from "@/components/MySwitch";
 import { useFilterStore } from "@/stores/filterStore";
 import ButtonThird from "@/shared/Button/ButtonThird";
-import { Category } from "@/types/product";
+import { Category } from "@/types/category";
 
 // --- MOCK DATA (Replace with data from your API if needed) ---
 

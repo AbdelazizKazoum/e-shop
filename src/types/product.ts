@@ -1,6 +1,6 @@
 // types/product.ts
 
-import { Category } from "./category";
+import { Stock } from "./stock";
 
 export type Image = {
   id?: string;
@@ -13,6 +13,7 @@ export type Variant = {
   size: "SM" | "M" | "L" | "XL" | "XXL" | "3XL" | "4XL";
   qte: number;
   images: Image[];
+  stock?: Stock;
 };
 
 // export type Category = {

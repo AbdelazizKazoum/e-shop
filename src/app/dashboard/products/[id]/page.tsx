@@ -17,8 +17,12 @@ import {
 import { create } from "zustand";
 import { SketchPicker, ColorResult } from "react-color";
 import { useProductStore } from "@/stores/productStore";
-import { Category, Product, Variant } from "@/types/product";
+import { Product, Variant } from "@/types/product";
 import Image from "next/image";
+import { Category } from "@/types/category";
+import Select from "@/components/ui/form/Select";
+import Textarea from "@/components/ui/form/Textarea";
+import Input from "@/components/ui/form/Input";
 
 // --- TYPE DEFINITIONS (would be in src/lib/types.ts) ---
 export interface Image {
@@ -64,72 +68,6 @@ const PageTitle = ({
   </div>
 );
 
-const Input = React.forwardRef<
-  HTMLInputElement,
-  React.InputHTMLAttributes<HTMLInputElement> & { label: string }
->(({ label, id, ...props }, ref) => (
-  <div>
-    <label
-      htmlFor={id}
-      className="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
-    >
-      {label}
-    </label>
-    <input
-      id={id}
-      ref={ref}
-      {...props}
-      className="w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-800 shadow-sm transition-colors focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200"
-    />
-  </div>
-));
-Input.displayName = "Input";
-
-const Textarea = React.forwardRef<
-  HTMLTextAreaElement,
-  React.TextareaHTMLAttributes<HTMLTextAreaElement> & { label: string }
->(({ label, id, ...props }, ref) => (
-  <div>
-    <label
-      htmlFor={id}
-      className="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
-    >
-      {label}
-    </label>
-    <textarea
-      id={id}
-      ref={ref}
-      rows={4}
-      {...props}
-      className="w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-800 shadow-sm transition-colors focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200"
-    />
-  </div>
-));
-Textarea.displayName = "Textarea";
-
-const Select = React.forwardRef<
-  HTMLSelectElement,
-  React.SelectHTMLAttributes<HTMLSelectElement> & { label: string }
->(({ label, id, children, ...props }, ref) => (
-  <div>
-    <label
-      htmlFor={id}
-      className="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
-    >
-      {label}
-    </label>
-    <select
-      id={id}
-      ref={ref}
-      {...props}
-      className="w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-800 shadow-sm transition-colors focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200"
-    >
-      {children}
-    </select>
-  </div>
-));
-Select.displayName = "Select";
-
 const ImageUpload = ({
   label,
   onFileChange,
@@ -166,9 +104,11 @@ const ImageUpload = ({
       <div className="w-full">
         {preview ? (
           <div className="relative aspect-square w-full rounded-md overflow-hidden">
-            <img
+            <Image
               src={preview}
               alt="Preview"
+              width={400}
+              height={400}
               className="h-full w-full object-cover"
             />
             <label className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 hover:opacity-100 cursor-pointer text-white transition-opacity">

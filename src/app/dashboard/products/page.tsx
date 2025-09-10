@@ -13,26 +13,13 @@ import {
 } from "lucide-react";
 import { useProductStore } from "@/stores/productStore"; // Assuming this is the correct path
 import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { Product } from "@/types/product";
 
 // --- TYPE DEFINITIONS (would be in src/lib/types.ts) ---
 export interface Category {
   id: string;
   displayText: string;
-}
-
-export interface Product {
-  id: string;
-  name: string;
-  brand: string;
-  quantity: number;
-  image: string;
-  price: number;
-  newPrice?: number;
-  category: Category;
-  trending: boolean;
-  status: "active" | "archived";
-  createAt: string;
-  gender: "Unisex" | "Male" | "Female";
 }
 
 export interface PaginatedProductsResponse {
@@ -243,9 +230,11 @@ const ProductList = ({ products }: { products: Product[] }) => {
             >
               <td className="px-4 py-3">
                 <div className="flex items-center gap-3">
-                  <img
-                    src={product.image}
+                  <Image
+                    src={product.image as string}
                     alt={product.name}
+                    width={48}
+                    height={48}
                     className="h-12 w-12 rounded-md object-cover"
                   />
                   <div>
