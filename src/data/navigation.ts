@@ -131,6 +131,11 @@ const OTHER_PAGE_CHILD: NavItemType[] = [
     children: [
       {
         id: ncNanoId(),
+        href: "/dashboard/stock",
+        name: "Stock",
+      },
+      {
+        id: ncNanoId(),
         href: "/about",
         name: "About",
       },
@@ -212,5 +217,18 @@ export const NAVIGATION_DEMO_2: NavItemType[] = [
   //   name: "Explore",
   //   type: "dropdown",
   //   children: OTHER_PAGE_CHILD,
+  // },
+  // {
+  //   id: ncNanoId(),
+  //   href: "/dashboard/stock",
+  //   name: "Dashboard",
+  //   type: "dropdown",
+  //   children: [
+  //     {
+  //       id: ncNanoId(),
+  //       href: "/dashboard/stock",
+  //       name: "Stock",
+  //     },
+  //   ],
   // },
 ];

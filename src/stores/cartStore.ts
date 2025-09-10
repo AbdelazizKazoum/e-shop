@@ -46,7 +46,7 @@ export const useCartStore = create<CartState>()(
                     ...item,
                     variant: {
                       ...item.variant,
-                      qte: res.quantity ?? item.variant.qte,
+                      qte: res.quantity ?? 0,
                     },
                   }
                 : item
@@ -79,13 +79,15 @@ export const useCartStore = create<CartState>()(
         set({ loading: true });
         try {
           const res = await stockService.getQuantitiesForVariants(variantIds);
+          console.log("🚀 ~ res:", res);
+
           // res is an object: { [variantId]: quantity }
           set({
             items: get().items.map((item) => {
               const qte =
                 res && typeof res === "object" && item.variant.id in res
-                  ? res[item.variant.id]
-                  : item.variant.qte;
+                  ? res[item.variant.id] ?? 0
+                  : 0;
               return {
                 ...item,
                 variant: {

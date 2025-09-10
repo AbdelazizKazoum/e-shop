@@ -6,6 +6,7 @@ import {
   Users,
   PlusCircle,
   List,
+  Archive,
 } from "lucide-react";
 
 // Define the type for a single navigation link
@@ -42,5 +43,6 @@ export const NAV_LINKS: NavLink[] = [
   //   ],
   // },
   { href: "/dashboard/customers", label: "Customers", icon: Users },
+  { href: "/dashboard/stock", label: "Stock", icon: Archive },
   { href: "/dashboard/parameters", label: "Parameters", icon: Users },
 ];
