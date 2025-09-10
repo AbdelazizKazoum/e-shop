@@ -92,11 +92,13 @@ export const useCartStore = create<CartState>()(
                   ...item.variant,
                   qte: qte,
                 },
+                // Unselect if out of stock
+                selected: qte > 0 ? item.selected : false,
               };
             }),
           });
         } catch (e) {
-          // On error, set qte to 0 for all affected variants
+          // On error, set qte to 0 and unselect for all affected variants
           set({
             items: get().items.map((item) =>
               variantIds.includes(item.variant.id)
@@ -106,6 +108,7 @@ export const useCartStore = create<CartState>()(
                       ...item.variant,
                       qte: 0,
                     },
+                    selected: false,
                   }
                 : item
             ),

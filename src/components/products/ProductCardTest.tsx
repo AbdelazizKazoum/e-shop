@@ -273,6 +273,15 @@ const ProductCard: FC<ProductCardProps> = ({
         ></Link>
 
         <div className="relative flex-shrink-0 bg-slate-50 dark:bg-slate-300 rounded-3xl overflow-hidden z-1 group">
+          {/* Discount badge - larger and only here */}
+          {typeof price === "number" &&
+            typeof newPrice === "number" &&
+            price > newPrice && (
+              <span className="absolute top-3 left-3 z-20 bg-green-500 text-white text-base font-extrabold px-3 py-1 rounded-full shadow-lg">
+                -{Math.round(((price - newPrice) / price) * 100)}%
+              </span>
+            )}
+
           <Link href={`/product-detail/${id}`} className="block">
             <NcImage
               containerClassName="flex aspect-w-11 aspect-h-12 w-full h-0"

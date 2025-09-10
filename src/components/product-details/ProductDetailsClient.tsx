@@ -16,6 +16,7 @@ import NotifyAddTocart from "./NotifyAddTocart";
 import Policy from "@/app/(client)/product-detail/Policy";
 import { useCartStore } from "@/stores/cartStore";
 import { ProductInfo } from "@/types/cart";
+import CountdownTimer from "./CountdownTimer"; // Make sure the path is correct
 
 interface ProductDetailsClientProps {
   product: Product;
@@ -24,7 +25,6 @@ interface ProductDetailsClientProps {
 const ProductDetailsClient: FC<ProductDetailsClientProps> = ({ product }) => {
   const { variants, status, name, price, newPrice, brand, category, id } =
     product;
-  console.log("🚀 ~ ProductDetailsClient ~ variants:", variants);
   const addToCart = useCartStore((state) => state.addToCart);
 
   // --- STATE MANAGEMENT ---
@@ -48,10 +48,17 @@ const ProductDetailsClient: FC<ProductDetailsClientProps> = ({ product }) => {
     );
   }, [variants, selectedColor, selectedSize]);
 
-  // ✅ New memoized state to check stock
   const isOutOfStock = useMemo(() => {
     return (selectedVariant?.stock?.quantity ?? 0) === 0;
   }, [selectedVariant]);
+
+  // ✅ SET A DUMMY SALE END DATE (replace with actual data from your product)
+  const saleEndDate = useMemo(() => {
+    const date = new Date();
+    date.setDate(date.getDate() + 2); // For demonstration, sale ends in 2 days
+    date.setHours(date.getHours() + 4);
+    return date.toISOString();
+  }, []);
 
   // --- EFFECT to update images when variant changes ---
   useEffect(() => {
@@ -76,7 +83,6 @@ const ProductDetailsClient: FC<ProductDetailsClientProps> = ({ product }) => {
       toast.error("Please select a color and size.");
       return;
     }
-    // The button won't be clickable if out of stock, but this is a good safeguard
     if (isOutOfStock) {
       toast.error("This item is currently out of stock.");
       return;
@@ -199,6 +205,13 @@ const ProductDetailsClient: FC<ProductDetailsClientProps> = ({ product }) => {
             </div>
           </div>
 
+          {/* ✅ CLEANED UP: CountdownTimer handles everything */}
+          <CountdownTimer
+            price={price}
+            newPrice={newPrice}
+            endDate={saleEndDate}
+          />
+
           {/* VARIANTS */}
           <div>
             <label>
@@ -249,7 +262,6 @@ const ProductDetailsClient: FC<ProductDetailsClientProps> = ({ product }) => {
             <div className="grid grid-cols-5 sm:grid-cols-7 gap-2 mt-3">
               {availableSizesForSelectedColor.map((size, index) => {
                 const isActive = size === selectedSize;
-
                 const variantForThisSize = variants.find(
                   (v) => v.color === selectedColor && v.size === size
                 );
@@ -259,12 +271,11 @@ const ProductDetailsClient: FC<ProductDetailsClientProps> = ({ product }) => {
                 return (
                   <div
                     key={index}
-                    className={`relative h-10 sm:h-11 rounded-2xl border flex items-center justify-center 
-                      text-sm sm:text-base uppercase font-semibold select-none overflow-hidden z-0 ${
-                        isVariantOutOfStock
-                          ? "cursor-not-allowed opacity-60"
-                          : "cursor-pointer"
-                      } ${
+                    className={`relative h-10 sm:h-11 rounded-2xl border flex items-center justify-center text-sm sm:text-base uppercase font-semibold select-none overflow-hidden z-0 ${
+                      isVariantOutOfStock
+                        ? "cursor-not-allowed opacity-60"
+                        : "cursor-pointer"
+                    } ${
                       isActive
                         ? "bg-primary-6000 border-primary-6000 text-white"
                         : "border-slate-300 dark:border-slate-600 hover:bg-neutral-50 dark:hover:bg-neutral-700"
@@ -309,7 +320,7 @@ const ProductDetailsClient: FC<ProductDetailsClientProps> = ({ product }) => {
             )}
           </div>
 
-          {/* ✅ ADD TO CART & OUT OF STOCK MESSAGE */}
+          {/* ADD TO CART & OUT OF STOCK MESSAGE */}
           {isOutOfStock ? (
             <div className="flex items-center justify-center p-3.5 rounded-full bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 ring-1 ring-red-200 dark:ring-red-800">
               <XCircleIcon className="w-6 h-6" />

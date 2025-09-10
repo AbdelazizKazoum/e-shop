@@ -151,8 +151,20 @@ const CheckoutPage = () => {
                 </div>
               </div>
 
-              <div className="hidden flex-1 sm:flex justify-end">
-                <Prices price={newPrice ?? price} className="mt-0.5" />
+              <div className="hidden flex-1 sm:flex flex-col items-end justify-end">
+                <div className="flex items-center gap-2">
+                  {price !== newPrice && (
+                    <span className="line-through text-slate-400 text-xs">
+                      ${price?.toFixed(2)}
+                    </span>
+                  )}
+                  <span className="font-semibold text-primary-600 text-base">
+                    ${(newPrice ?? price)?.toFixed(2)}
+                  </span>
+                </div>
+                <span className="text-xs text-slate-500">
+                  x {quantity} = ${((newPrice ?? price) * quantity).toFixed(2)}
+                </span>
               </div>
             </div>
           </div>
@@ -224,11 +236,29 @@ const CheckoutPage = () => {
     );
   };
 
-  const subtotal = isMounted ? getCartTotal() : 0;
-  const shippingEstimate = subtotal > 0 ? 5.0 : 0;
-  const taxEstimate = subtotal * 0.1;
-  const orderTotal = subtotal + shippingEstimate + taxEstimate;
   const selectedItems = items.filter((item) => item.selected);
+
+  const subtotal = selectedItems.reduce(
+    (sum, item) => sum + (item.product.price ?? 0) * item.quantity,
+    0
+  );
+
+  const discount = selectedItems.reduce(
+    (sum, item) =>
+      sum +
+      ((item.product.price ?? 0) -
+        (item.product.newPrice ?? item.product.price ?? 0)) *
+        item.quantity,
+    0
+  );
+
+  const shippingEstimate = 0;
+  const taxEstimate = 0;
+  const orderTotal = selectedItems.reduce(
+    (sum, item) =>
+      sum + (item.product.newPrice ?? item.product.price ?? 0) * item.quantity,
+    0
+  );
 
   return (
     <SessionProvider>
@@ -297,15 +327,21 @@ const CheckoutPage = () => {
                     </span>
                   </div>
                   <div className="flex justify-between py-2.5">
+                    <span>Discount</span>
+                    <span className="font-semibold text-green-600 dark:text-green-400">
+                      -${discount.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between py-2.5">
                     <span>Shipping estimate</span>
                     <span className="font-semibold text-slate-900 dark:text-slate-200">
-                      ${shippingEstimate.toFixed(2)}
+                      $0.00
                     </span>
                   </div>
                   <div className="flex justify-between py-2.5">
                     <span>Tax estimate</span>
                     <span className="font-semibold text-slate-900 dark:text-slate-200">
-                      ${taxEstimate.toFixed(2)}
+                      $0.00
                     </span>
                   </div>
                   <div className="flex justify-between font-semibold text-slate-900 dark:text-slate-200 text-base pt-4">

@@ -30,6 +30,7 @@ const CartPage = () => {
     selectAllItems,
     deselectAllItems,
   } = useCartStore();
+  console.log("🚀 ~ CartPage ~ items:", items);
 
   useEffect(() => {
     setIsMounted(true);
@@ -245,10 +246,16 @@ const CartPage = () => {
                       )
                     )}
                   </select>
-                  <Prices
-                    contentClass="py-1 px-2 md:py-1.5 md:px-2.5 text-sm font-medium h-full"
-                    price={price}
-                  />
+                  <div className="flex items-center gap-2">
+                    {product.price !== product.newPrice && (
+                      <span className="line-through text-slate-400 text-xs">
+                        ${product.price?.toFixed(2)}
+                      </span>
+                    )}
+                    <span className="font-semibold text-primary-600 text-base">
+                      ${price?.toFixed(2)}
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -271,7 +278,21 @@ const CartPage = () => {
               </div>
 
               <div className="hidden flex-1 sm:flex justify-end">
-                <Prices price={price * quantity} className="mt-0.5" />
+                <div className="flex flex-col items-end">
+                  <div className="flex items-center gap-2">
+                    {product.price !== product.newPrice && (
+                      <span className="line-through text-slate-400 text-xs">
+                        ${product.price?.toFixed(2)}
+                      </span>
+                    )}
+                    <span className="font-semibold text-primary-600 text-base">
+                      ${price?.toFixed(2)}
+                    </span>
+                  </div>
+                  <span className="text-xs text-slate-500">
+                    x {quantity} = ${(price * quantity).toFixed(2)}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -299,10 +320,27 @@ const CartPage = () => {
     );
   };
 
-  const subtotal = getCartTotal();
-  const shippingEstimate = subtotal > 0 ? 5.0 : 0;
-  const taxEstimate = subtotal * 0.1;
-  const orderTotal = subtotal + shippingEstimate + taxEstimate;
+  // Calculate values for selected items only
+  const selectedItems = items.filter((i) => i.selected && i.variant.qte > 0);
+  const subtotal = selectedItems.reduce(
+    (sum, item) => sum + (item.product.price ?? 0) * item.quantity,
+    0
+  );
+  const discount = selectedItems.reduce(
+    (sum, item) =>
+      sum +
+      ((item.product.price ?? 0) -
+        (item.product.newPrice ?? item.product.price ?? 0)) *
+        item.quantity,
+    0
+  );
+  const shippingEstimate = 0;
+  const taxEstimate = 0;
+  const orderTotal = selectedItems.reduce(
+    (sum, item) =>
+      sum + (item.product.newPrice ?? item.product.price ?? 0) * item.quantity,
+    0
+  );
 
   const availableItems = items.filter((item) => item.variant.qte > 0);
   const allSelected =
@@ -398,15 +436,21 @@ const CartPage = () => {
                   </span>
                 </div>
                 <div className="flex justify-between py-4">
+                  <span>Discount</span>
+                  <span className="font-semibold text-green-600 dark:text-green-400">
+                    -${discount.toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex justify-between py-4">
                   <span>Shipping estimate</span>
                   <span className="font-semibold text-slate-900 dark:text-slate-200">
-                    ${shippingEstimate.toFixed(2)}
+                    $0.00
                   </span>
                 </div>
                 <div className="flex justify-between py-4">
                   <span>Tax estimate</span>
                   <span className="font-semibold text-slate-900 dark:text-slate-200">
-                    ${taxEstimate.toFixed(2)}
+                    $0.00
                   </span>
                 </div>
                 <div className="flex justify-between font-semibold text-slate-900 dark:text-slate-200 text-base pt-4">
@@ -417,10 +461,7 @@ const CartPage = () => {
               <ButtonPrimary
                 href="/checkout"
                 className="mt-8 w-full"
-                disabled={
-                  items.filter((i) => i.selected && i.variant.qte > 0)
-                    .length === 0 || loading
-                }
+                disabled={selectedItems.length === 0 || loading}
               >
                 Checkout
               </ButtonPrimary>
