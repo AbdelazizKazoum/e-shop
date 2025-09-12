@@ -277,7 +277,7 @@ const ProductCard: FC<ProductCardProps> = ({
               alt="product"
             />
           </Link>
-          <ProductStatus status={status} />
+          <ProductStatus status={status as string} />
           <LikeButton liked={isLiked} className="absolute top-3 end-3 z-10" />
           {sizes ? renderSizeList() : renderGroupButtons()}
         </div>

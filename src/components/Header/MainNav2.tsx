@@ -103,7 +103,7 @@ const MainNav2: FC<MainNav2Props> = ({ className = "" }) => {
 
             {/* ✅ 3. Conditional rendering based on auth */}
             {status === "loading" ? null : session?.user ? (
-              <AvatarDropdown />
+              <AvatarDropdown user={session.user} />
             ) : (
               <div className="flex items-center gap-4 ml-4">
                 <Link

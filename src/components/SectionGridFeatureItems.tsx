@@ -10,7 +10,7 @@ import { RenderProducts } from "./filter/RenderProducts";
 
 //
 export interface SectionGridFeatureItemsProps {
-  products: Product[];
+  products: Product[] | any;
   categories: Category[];
 }
 

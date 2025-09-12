@@ -1,5 +1,6 @@
 // types/product.ts
 
+import { Category } from "./category";
 import { Stock } from "./stock";
 
 export type Image = {

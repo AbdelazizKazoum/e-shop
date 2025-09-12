@@ -20,6 +20,7 @@ import {
   Tooltip,
   CartesianGrid,
 } from "recharts";
+import Image from "next/image";
 
 // --- TYPE DEFINITIONS ---
 export interface Order {
@@ -252,9 +253,11 @@ const RecentOrders = ({ orders }: { orders: Order[] }) => {
       <div className="space-y-4">
         {orders.map((order) => (
           <div key={order.id} className="flex items-center gap-4">
-            <img
+            <Image
               src={order.avatarUrl}
               alt={order.customerName}
+              width={40}
+              height={40}
               className="h-10 w-10 rounded-full"
             />
             <div className="flex-1">
@@ -284,9 +287,11 @@ const TopProducts = ({ products }: { products: TopProduct[] }) => (
     <div className="space-y-4">
       {products.map((product) => (
         <div key={product.id} className="flex items-center gap-4">
-          <img
+          <Image
             src={product.imageUrl}
             alt={product.name}
+            width={48}
+            height={48}
             className="h-12 w-12 rounded-md bg-neutral-100"
           />
           <div className="flex-1">
