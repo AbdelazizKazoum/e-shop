@@ -139,18 +139,25 @@ const ProductDetailsClient: FC<ProductDetailsClientProps> = ({ product }) => {
     return null;
   };
 
+  // Modern product gallery: main image + row of thumbnails
+  const [mainImageIdx, setMainImageIdx] = useState(0);
+
+  useEffect(() => {
+    setMainImageIdx(0); // Reset to first image when variant changes
+  }, [activeImages]);
+
   return (
     <div className="lg:flex">
       {/* LEFT - IMAGE GALLERY */}
-      <div className="w-full lg:w-[55%] ">
+      <div className="w-full lg:w-[55%]">
         <div className="relative">
-          <div className="aspect-w-16 aspect-h-16 relative">
+          <div className="aspect-w-16 aspect-h-16 relative border-2 border-slate-200 dark:border-slate-700 rounded-2xl shadow-lg shadow-slate-100/60 dark:shadow-slate-900/40 transition-all">
             {activeImages.length > 0 && (
               <Image
                 fill
                 sizes="(max-width: 640px) 100vw, 33vw"
-                src={activeImages[0]}
-                className="w-full rounded-2xl object-cover"
+                src={activeImages[mainImageIdx]}
+                className="w-full rounded-2xl object-cover object-center transition-all duration-300"
                 alt={name}
               />
             )}
@@ -158,22 +165,49 @@ const ProductDetailsClient: FC<ProductDetailsClientProps> = ({ product }) => {
           {renderStatus()}
           <LikeButton className="absolute right-3 top-3 " />
         </div>
-        <div className="grid grid-cols-2 gap-3 mt-3 sm:gap-6 sm:mt-6 xl:gap-8 xl:mt-8">
+        {activeImages.length > 1 && (
+          <div className="flex flex-row gap-3 mt-4 overflow-x-auto scrollbar-thin scrollbar-thumb-slate-300">
+            {activeImages.map((img, idx) => (
+              <button
+                key={idx}
+                onClick={() => setMainImageIdx(idx)}
+                className={`relative flex-shrink-0 border-2 rounded-xl overflow-hidden focus:outline-none transition-all duration-200 shadow-md shadow-slate-100/60 dark:shadow-slate-900/40 ${
+                  mainImageIdx === idx
+                    ? "border-primary-500 ring-2 ring-primary-300"
+                    : "border-slate-200 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-500"
+                }`}
+                style={{ width: 96, height: 96 }}
+                tabIndex={0}
+                aria-label={`Show image ${idx + 1}`}
+              >
+                <Image
+                  src={img}
+                  alt={`${name} thumbnail ${idx + 1}`}
+                  fill
+                  className="object-cover object-center w-full h-full rounded-xl"
+                  sizes="96px"
+                  style={{ borderRadius: 12 }}
+                />
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* <div className="grid grid-cols-2 gap-3 mt-3 sm:gap-6 sm:mt-6 xl:gap-8 xl:mt-8">
           {activeImages.slice(1).map((item, index) => (
             <div
               key={index}
               className="aspect-w-11 xl:aspect-w-10 2xl:aspect-w-11 aspect-h-16 relative"
             >
               <Image
-                sizes="(max-width: 640px) 100vw, 33vw"
+                // sizes="(max-width: 640px) 100vw, 33vw"
+                // sizes="(max-width: 640px) "
                 fill
                 src={item}
-                className="w-full rounded-2xl object-cover"
+                className="w-full rounded-2xl object-cover object-center"
                 alt={`${name} detail ${index + 2}`}
               />
-            </div>
-          ))}
-        </div>
+            </div> */}
       </div>
 
       {/* RIGHT - PRODUCT INFO & SELECTIONS */}

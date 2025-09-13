@@ -288,7 +288,7 @@ const ProductCard: FC<ProductCardProps> = ({
             <NcImage
               containerClassName="flex aspect-w-11 aspect-h-12 w-full h-0"
               src={currentImage as string}
-              className="object-cover w-full h-full drop-shadow-xl"
+              className="object-contain object-center w-full h-full drop-shadow-xl "
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 40vw"
               alt={name}
