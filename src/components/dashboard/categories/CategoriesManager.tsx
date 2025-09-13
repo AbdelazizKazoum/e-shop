@@ -19,11 +19,17 @@ const CategoryForm = ({
   loading?: boolean;
 }) => {
   const [displayText, setDisplayText] = useState(category?.displayText || "");
+  const [categoryField, setCategoryField] = useState(category?.category || "");
   const [imageFile, setImageFile] = useState<File | null>(null);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    onSave({ id: category?.id, displayText, imageFile });
+    onSave({
+      id: category?.id,
+      category: categoryField,
+      displayText,
+      imageFile,
+    });
   };
 
   return (
@@ -35,12 +41,19 @@ const CategoryForm = ({
         {category ? "Edit Category" : "Add New Category"}
       </h3>
       <div className="flex flex-col md:flex-row items-end gap-4">
-        <div className="flex-grow w-full">
+        <div className="flex-grow w-full flex flex-col gap-2">
           <Input
             label="Category Name"
             value={displayText}
             onChange={(e) => setDisplayText(e.target.value)}
             placeholder="e.g., Winter Collection"
+            required
+          />
+          <Input
+            label="Category Slug/Key"
+            value={categoryField}
+            onChange={(e) => setCategoryField(e.target.value)}
+            placeholder="e.g., winter-collection"
             required
           />
         </div>
@@ -114,11 +127,13 @@ const CategoriesManager = () => {
     if (data.id) {
       await updateCategory({
         id: data.id,
+        category: data.category,
         displayText: data.displayText,
         imageFile: data.imageFile,
       });
     } else {
       await createCategory({
+        category: data.category,
         displayText: data.displayText,
         imageFile: data.imageFile,
       });
