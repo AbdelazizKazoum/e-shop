@@ -20,9 +20,13 @@ import CountdownTimer from "./CountdownTimer"; // Make sure the path is correct
 
 interface ProductDetailsClientProps {
   product: Product;
+  productType?: "clothes" | "sunglasses";
 }
 
-const ProductDetailsClient: FC<ProductDetailsClientProps> = ({ product }) => {
+const ProductDetailsClient: FC<ProductDetailsClientProps> = ({
+  product,
+  productType = "sunglasses",
+}) => {
   const { variants, status, name, price, newPrice, brand, category, id } =
     product;
   const addToCart = useCartStore((state) => state.addToCart);
@@ -52,13 +56,18 @@ const ProductDetailsClient: FC<ProductDetailsClientProps> = ({ product }) => {
     return (selectedVariant?.stock?.quantity ?? 0) === 0;
   }, [selectedVariant]);
 
-  // ✅ SET A DUMMY SALE END DATE (replace with actual data from your product)
   const saleEndDate = useMemo(() => {
     const date = new Date();
     date.setDate(date.getDate() + 2); // For demonstration, sale ends in 2 days
     date.setHours(date.getHours() + 4);
     return date.toISOString();
   }, []);
+
+  // --- DYNAMIC CLASSES ---
+  const mainImageAspectRatioClass =
+    productType === "sunglasses"
+      ? "aspect-w-16 aspect-h-10" // Landscape for sunglasses
+      : "aspect-w-11 aspect-h-16"; // Portrait for clothes
 
   // --- EFFECT to update images when variant changes ---
   useEffect(() => {
@@ -139,25 +148,30 @@ const ProductDetailsClient: FC<ProductDetailsClientProps> = ({ product }) => {
     return null;
   };
 
-  return (
-    <div className="lg:flex">
-      {/* LEFT - IMAGE GALLERY */}
-      <div className="w-full lg:w-[55%] ">
-        <div className="relative">
-          <div className="aspect-w-16 aspect-h-16 relative">
-            {activeImages.length > 0 && (
+  const renderImageGallery = () => {
+    if (productType === "sunglasses") {
+      return (
+        <div className="grid grid-cols-2 gap-4 mt-4 md:gap-6 md:mt-6">
+          {activeImages.slice(1).map((item, index) => (
+            <div
+              key={index}
+              className="aspect-w-16 aspect-h-10 relative w-full"
+            >
               <Image
+                sizes="(max-width: 640px) 100vw, 50vw"
                 fill
-                sizes="(max-width: 640px) 100vw, 33vw"
-                src={activeImages[0]}
-                className="w-full rounded-2xl object-cover"
-                alt={name}
+                src={item}
+                className="w-full h-full rounded-2xl object-cover"
+                alt={`${name} detail ${index + 2}`}
               />
-            )}
-          </div>
-          {renderStatus()}
-          <LikeButton className="absolute right-3 top-3 " />
+            </div>
+          ))}
         </div>
+      );
+    }
+
+    if (productType === "clothes") {
+      return (
         <div className="grid grid-cols-2 gap-3 mt-3 sm:gap-6 sm:mt-6 xl:gap-8 xl:mt-8">
           {activeImages.slice(1).map((item, index) => (
             <div
@@ -174,6 +188,32 @@ const ProductDetailsClient: FC<ProductDetailsClientProps> = ({ product }) => {
             </div>
           ))}
         </div>
+      );
+    }
+
+    return null;
+  };
+
+  return (
+    <div className="lg:flex">
+      {/* LEFT - IMAGE GALLERY */}
+      <div className="w-full lg:w-[55%] ">
+        <div className="relative">
+          <div className={`relative ${mainImageAspectRatioClass}`}>
+            {activeImages.length > 0 && (
+              <Image
+                fill
+                sizes="(max-width: 640px) 100vw, 55vw"
+                src={activeImages[0]}
+                className="w-full rounded-2xl object-cover"
+                alt={name}
+              />
+            )}
+          </div>
+          {renderStatus()}
+          <LikeButton className="absolute right-3 top-3 " />
+        </div>
+        {renderImageGallery()}
       </div>
 
       {/* RIGHT - PRODUCT INFO & SELECTIONS */}
@@ -207,7 +247,6 @@ const ProductDetailsClient: FC<ProductDetailsClientProps> = ({ product }) => {
             </div>
           </div>
 
-          {/* ✅ CLEANED UP: CountdownTimer handles everything */}
           <CountdownTimer
             price={price}
             newPrice={newPrice}
