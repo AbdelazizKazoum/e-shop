@@ -3,6 +3,7 @@ import { Transition } from "@/app/headlessui";
 import Prices from "@/components/Prices";
 import { PRODUCTS } from "@/data/data";
 import Image, { StaticImageData } from "next/image";
+import { useRouter } from "next/navigation";
 
 interface Props {
   show: boolean;
@@ -25,6 +26,8 @@ const NotifyAddTocart: FC<Props> = ({
   sizeSelected,
   qualitySelected,
 }) => {
+  const router = useRouter();
+
   const renderProductCartOnNotify = () => {
     return (
       <div className="flex ">
@@ -59,6 +62,10 @@ const NotifyAddTocart: FC<Props> = ({
               <button
                 type="button"
                 className="font-medium text-primary-6000 dark:text-primary-500 "
+                onClick={(e) => {
+                  e.preventDefault();
+                  router.push("/cart");
+                }}
               >
                 View cart
               </button>

@@ -16,22 +16,20 @@ import {
 import IconDiscount from "@/components/IconDiscount";
 import Prices from "@/components/Prices";
 import toast from "react-hot-toast";
-import detail1JPG from "@/images/products/detail1.jpg";
-import detail2JPG from "@/images/products/detail2.jpg";
-import detail3JPG from "@/images/products/detail3.jpg";
 import NotifyAddTocart from "./NotifyAddTocart";
 import AccordionInfo from "@/components/AccordionInfo";
 import Image from "next/image";
-import Link from "next/link";
 
 export interface ProductQuickViewProps {
   className?: string;
   product: Product;
+  productType?: "clothes" | "sunglasses"; // Added productType
 }
 
 const ProductQuickView: FC<ProductQuickViewProps> = ({
   className = "",
   product,
+  productType = "sunglasses", // Default to sunglasses
 }) => {
   const [variants, setVariants] = useState(product.variants);
   const {
@@ -48,21 +46,18 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({
   const [loadingStock, setLoadingStock] = useState(true);
   const addToCart = useCartStore((state) => state.addToCart);
 
-  // Unique colors and sizes
-  const uniqueColors = useMemo(
-    () => Array.from(new Set(variants.map((v) => v.color))),
-    [variants]
-  );
-  const allSizes = useMemo(
-    () => Array.from(new Set(variants.map((v) => v.size))),
-    [variants]
-  );
-
   // State
   const [selectedColor, setSelectedColor] = useState(variants[0]?.color || "");
   const [selectedSize, setSelectedSize] = useState(variants[0]?.size || "");
   const [qualitySelected, setQualitySelected] = useState(1);
   const [activeImages, setActiveImages] = useState<string[]>([]);
+
+  // DYNAMIC CLASSES based on productType
+  const mainImageAspectRatioClass =
+    productType === "sunglasses"
+      ? "aspect-w-16 aspect-h-10" // Landscape for sunglasses
+      : "aspect-w-11 aspect-h-16"; // Portrait for clothes
+
   // Fetch stock for all variants on mount
   useEffect(() => {
     let mounted = true;
@@ -75,7 +70,7 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({
         if (variantIds.length === 0) return;
         const stockMap: Record<string, number> =
           await stockService.getQuantitiesForVariants(variantIds);
-        // Merge stock into variants
+
         const updatedVariants = product.variants.map((v) => ({
           ...v,
           stock: { quantity: stockMap[v.id ?? ""] ?? 0 },
@@ -83,7 +78,7 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({
         //@ts-ignore
         if (mounted) setVariants(updatedVariants);
       } catch (e) {
-        // Optionally handle error
+        console.error("Failed to fetch stock", e);
       } finally {
         if (mounted) setLoadingStock(false);
       }
@@ -95,20 +90,26 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product.variants]);
 
-  // Derived
-  const availableSizesForSelectedColor = useMemo(() => {
-    return variants.filter((v) => v.color === selectedColor).map((v) => v.size);
-  }, [variants, selectedColor]);
-
-  const selectedVariant = useMemo(() => {
-    return variants.find(
-      (v) => v.color === selectedColor && v.size === selectedSize
-    );
-  }, [variants, selectedColor, selectedSize]);
-
-  const isOutOfStock = useMemo(() => {
-    return (selectedVariant?.stock?.quantity ?? 0) === 0;
-  }, [selectedVariant]);
+  // Derived data
+  const uniqueColors = useMemo(
+    () => Array.from(new Set(variants.map((v) => v.color))),
+    [variants]
+  );
+  const availableSizesForSelectedColor = useMemo(
+    () => variants.filter((v) => v.color === selectedColor).map((v) => v.size),
+    [variants, selectedColor]
+  );
+  const selectedVariant = useMemo(
+    () =>
+      variants.find(
+        (v) => v.color === selectedColor && v.size === selectedSize
+      ),
+    [variants, selectedColor, selectedSize]
+  );
+  const isOutOfStock = useMemo(
+    () => (selectedVariant?.stock?.quantity ?? 0) === 0,
+    [selectedVariant]
+  );
 
   // Update images when variant changes
   useEffect(() => {
@@ -202,7 +203,7 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({
   };
 
   const renderSizeList = () => {
-    if (!allSizes.length) return null;
+    if (!availableSizesForSelectedColor.length) return null;
     return (
       <div>
         <div className="flex justify-between font-medium text-sm">
@@ -294,27 +295,47 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({
         </div>
       );
     }
-    if (status === "50% Discount") {
+    // ... other status cases
+    return null;
+  };
+
+  // NEW: Renders gallery based on productType
+  const renderImageGallery = () => {
+    if (productType === "sunglasses") {
       return (
-        <div className={CLASSES}>
-          <IconDiscount className="w-3.5 h-3.5" />
-          <span className="ms-1 leading-none">{status}</span>
+        <div className="hidden lg:grid grid-cols-2 gap-4 mt-4">
+          {activeImages.slice(1, 5).map((item, index) => (
+            <div
+              key={index}
+              className="aspect-w-16 aspect-h-10 relative w-full"
+            >
+              <Image
+                fill
+                src={item}
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="w-full h-full rounded-lg object-cover"
+                alt={`${name} detail ${index + 2}`}
+              />
+            </div>
+          ))}
         </div>
       );
     }
-    if (status === "Sold Out") {
+
+    if (productType === "clothes") {
       return (
-        <div className={CLASSES}>
-          <NoSymbolIcon className="w-3.5 h-3.5" />
-          <span className="ms-1 leading-none">{status}</span>
-        </div>
-      );
-    }
-    if (status === "limited edition") {
-      return (
-        <div className={CLASSES}>
-          <ClockIcon className="w-3.5 h-3.5" />
-          <span className="ms-1 leading-none">{status}</span>
+        <div className="hidden lg:grid grid-cols-2 gap-3 mt-3">
+          {activeImages.slice(1, 3).map((item, index) => (
+            <div key={index} className="aspect-w-11 aspect-h-16 relative">
+              <Image
+                fill
+                src={item}
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="w-full rounded-xl object-cover"
+                alt={`${name} detail ${index + 2}`}
+              />
+            </div>
+          ))}
         </div>
       );
     }
@@ -324,11 +345,11 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({
   const renderSectionContent = () => {
     return (
       <div className="space-y-8">
-        {/* ---------- 1 HEADING ----------  */}
         <div>
           <h2 className="text-2xl font-semibold hover:text-primary-6000 transition-colors">
             {name}
           </h2>
+
           <div className="flex items-center mt-5 space-x-4 sm:space-x-5">
             <Prices
               contentClass="py-1 px-2 md:py-1.5 md:px-3 text-lg font-semibold"
@@ -339,50 +360,41 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({
             <div className="flex items-center">
               <span className="flex items-center text-sm font-medium">
                 <StarIcon className="w-5 h-5 pb-[1px] text-yellow-400" />
-                <div className="ml-1.5 flex">
-                  <span>{rating || 0}</span>
-                  <span className="block mx-2">·</span>
-                  <span className="text-slate-600 dark:text-slate-400 underline">
-                    {reviewCount || 0} reviews
-                  </span>
-                </div>
+                <span className="ml-1.5">
+                  {rating || 0} ({reviewCount || 0} reviews)
+                </span>
               </span>
-              <span className="hidden sm:block mx-2.5">·</span>
-              <div className="hidden sm:flex items-center text-sm">
-                <SparklesIcon className="w-3.5 h-3.5" />
-                <span className="ml-1 leading-none">{status}</span>
-              </div>
             </div>
           </div>
         </div>
 
-        {/* ---------- 3 VARIANTS AND SIZE LIST ----------  */}
         <div>{renderVariants()}</div>
         <div>{renderSizeList()}</div>
 
-        {/*  ---------- 4  QTY AND ADD TO CART BUTTON */}
-        {isOutOfStock ? (
-          <div className="flex items-center justify-center p-3.5 rounded-full bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 ring-1 ring-red-200 dark:ring-red-800">
-            <span className="ml-2.5 font-semibold">Out of Stock</span>
+        {/* QTY AND ADD TO CART BUTTON */}
+        <div className="flex space-x-3.5">
+          <div className="flex items-center justify-center bg-slate-100/70 dark:bg-slate-800/70 px-2 py-3 sm:p-3.5 rounded-full">
+            <NcInputNumber
+              defaultValue={qualitySelected}
+              onChange={setQualitySelected}
+              max={selectedVariant?.stock?.quantity}
+            />
           </div>
-        ) : (
-          <div className="flex space-x-3.5 rtl:space-x-reverse">
-            <div className="flex items-center justify-center bg-slate-100/70 dark:bg-slate-800/70 px-2 py-3 sm:p-3.5 rounded-full">
-              <NcInputNumber
-                defaultValue={qualitySelected}
-                onChange={setQualitySelected}
-                max={selectedVariant?.stock?.quantity}
-              />
-            </div>
-            <ButtonPrimary
-              className="flex-1 flex-shrink-0"
-              onClick={handleAddToCart}
-            >
-              <BagIcon className="hidden sm:inline-block w-5 h-5 mb-0.5" />
-              <span className="ms-3">Add to cart</span>
-            </ButtonPrimary>
-          </div>
-        )}
+          <ButtonPrimary
+            className="flex-1 flex-shrink-0"
+            onClick={handleAddToCart}
+            disabled={isOutOfStock}
+          >
+            {isOutOfStock ? (
+              "Out of stock"
+            ) : (
+              <>
+                <BagIcon className="hidden sm:inline-block w-5 h-5 mb-0.5" />
+                <span className="ms-3">Add to cart</span>
+              </>
+            )}
+          </ButtonPrimary>
+        </div>
 
         <hr className=" border-slate-200 dark:border-slate-700"></hr>
         <AccordionInfo />
@@ -391,32 +403,13 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({
   };
 
   return (
-    <div
-      className={`nc-ProductQuickView ${className}`}
-      style={{ position: "relative" }}
-    >
+    <div className={`nc-ProductQuickView ${className} relative`}>
       {/* Loading overlay */}
       {loadingStock && (
-        <div
-          style={{
-            position: "absolute",
-            zIndex: 100,
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            background: "rgba(255,255,255,0.7)",
-            backdropFilter: "blur(2px)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            pointerEvents: "all",
-            transition: "background 0.2s",
-          }}
-        >
+        <div className="absolute z-10 inset-0 bg-white/70 dark:bg-slate-900/70 flex items-center justify-center">
           <div className="flex flex-col items-center">
             <svg
-              className="animate-spin h-10 w-10 text-primary-6000 mb-2"
+              className="animate-spin h-8 w-8 text-primary-6000"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
@@ -435,22 +428,23 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({
                 d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
               ></path>
             </svg>
-            <span className="text-primary-700 font-semibold text-lg">
+            <span className="mt-2 font-medium text-slate-700 dark:text-slate-200">
               Loading stock...
             </span>
           </div>
         </div>
       )}
+
       <div className="lg:flex">
         {/* LEFT - IMAGE GALLERY */}
         <div className="w-full lg:w-[50%] ">
           <div className="relative">
-            <div className="aspect-w-16 aspect-h-16">
+            <div className={`relative ${mainImageAspectRatioClass}`}>
               {activeImages.length > 0 && (
                 <Image
                   fill
                   src={activeImages[0]}
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  sizes="(max-width: 768px) 100vw, 50vw"
                   className="w-full rounded-xl object-cover"
                   alt={name}
                 />
@@ -459,20 +453,10 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({
             {renderStatus()}
             <LikeButton className="absolute end-3 top-3 " />
           </div>
-          <div className="hidden lg:grid grid-cols-2 gap-3 mt-3 sm:gap-6 sm:mt-6 xl:gap-5 xl:mt-5">
-            {activeImages.slice(1, 3).map((item, index) => (
-              <div key={index} className="aspect-w-3 aspect-h-4">
-                <Image
-                  fill
-                  src={item}
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  className="w-full rounded-xl object-cover"
-                  alt={`${name} detail ${index + 2}`}
-                />
-              </div>
-            ))}
-          </div>
+          {/* Render dynamic gallery */}
+          {renderImageGallery()}
         </div>
+
         {/* SIDEBAR */}
         <div className="w-full lg:w-[50%] pt-6 lg:pt-0 lg:ps-7 xl:ps-8">
           {renderSectionContent()}
