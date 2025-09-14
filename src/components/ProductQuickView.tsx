@@ -361,7 +361,31 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({
         <div>{renderSizeList()}</div>
 
         {/*  ---------- 4  QTY AND ADD TO CART BUTTON */}
-        {/* No loading overlay here, only at top level */}
+        {isOutOfStock ? (
+          <div className="flex items-center justify-center p-3.5 rounded-full bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 ring-1 ring-red-200 dark:ring-red-800">
+            <span className="ml-2.5 font-semibold">Out of Stock</span>
+          </div>
+        ) : (
+          <div className="flex space-x-3.5 rtl:space-x-reverse">
+            <div className="flex items-center justify-center bg-slate-100/70 dark:bg-slate-800/70 px-2 py-3 sm:p-3.5 rounded-full">
+              <NcInputNumber
+                defaultValue={qualitySelected}
+                onChange={setQualitySelected}
+                max={selectedVariant?.stock?.quantity}
+              />
+            </div>
+            <ButtonPrimary
+              className="flex-1 flex-shrink-0"
+              onClick={handleAddToCart}
+            >
+              <BagIcon className="hidden sm:inline-block w-5 h-5 mb-0.5" />
+              <span className="ms-3">Add to cart</span>
+            </ButtonPrimary>
+          </div>
+        )}
+
+        <hr className=" border-slate-200 dark:border-slate-700"></hr>
+        <AccordionInfo />
       </div>
     );
   };
@@ -381,16 +405,37 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({
             left: 0,
             width: "100%",
             height: "100%",
-            background: "rgba(255,255,255,0.6)",
+            background: "rgba(255,255,255,0.7)",
+            backdropFilter: "blur(2px)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             pointerEvents: "all",
+            transition: "background 0.2s",
           }}
         >
           <div className="flex flex-col items-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-300 border-t-primary-6000 mb-2" />
-            <span className="text-gray-700 font-medium text-base">
+            <svg
+              className="animate-spin h-10 w-10 text-primary-6000 mb-2"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+              ></path>
+            </svg>
+            <span className="text-primary-700 font-semibold text-lg">
               Loading stock...
             </span>
           </div>
