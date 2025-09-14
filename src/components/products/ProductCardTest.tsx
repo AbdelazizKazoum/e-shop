@@ -352,7 +352,7 @@ const ProductCard: FC<ProductCardProps> = ({
       <ModalQuickView
         show={showModalQuickView}
         onCloseModalQuickView={() => setShowModalQuickView(false)}
-        // product={data}
+        product={data}
       />
     </>
   );

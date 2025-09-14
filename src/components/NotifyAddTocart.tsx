@@ -7,7 +7,10 @@ import Image, { StaticImageData } from "next/image";
 interface Props {
   show: boolean;
   productImage: string | StaticImageData;
-  variantActive: number;
+  productName: string;
+  price: number;
+  newPrice?: number;
+  colorSelected: string;
   sizeSelected: string;
   qualitySelected: number;
 }
@@ -15,19 +18,20 @@ interface Props {
 const NotifyAddTocart: FC<Props> = ({
   show,
   productImage,
-  variantActive,
-  qualitySelected,
+  productName,
+  price,
+  newPrice,
+  colorSelected,
   sizeSelected,
+  qualitySelected,
 }) => {
-  const { name, price, variants } = PRODUCTS[0];
-
   const renderProductCartOnNotify = () => {
     return (
       <div className="flex ">
         <div className="h-24 w-20 relative flex-shrink-0 overflow-hidden rounded-xl bg-slate-100">
           <Image
             src={productImage}
-            alt={name}
+            alt={productName}
             fill
             sizes="100px"
             className="h-full w-full object-contain object-center"
@@ -38,16 +42,14 @@ const NotifyAddTocart: FC<Props> = ({
           <div>
             <div className="flex justify-between ">
               <div>
-                <h3 className="text-base font-medium ">{name}</h3>
+                <h3 className="text-base font-medium ">{productName}</h3>
                 <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                  <span>
-                    {variants ? variants[variantActive].name : `Natural`}
-                  </span>
+                  <span>{colorSelected}</span>
                   <span className="mx-2 border-l border-slate-200 dark:border-slate-700 h-4"></span>
                   <span>{sizeSelected || "XL"}</span>
                 </p>
               </div>
-              <Prices price={price} className="mt-0.5" />
+              <Prices price={price} newPrice={newPrice} className="mt-0.5" />
             </div>
           </div>
           <div className="flex flex-1 items-end justify-between text-sm">

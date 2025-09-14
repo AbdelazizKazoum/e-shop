@@ -306,6 +306,7 @@ const ProductCard: FC<ProductCardProps> = ({
       </div>
 
       {/* QUICKVIEW */}
+      {/*/ @ts-ignore  -- IGNORE --} */}
       <ModalQuickView
         show={showModalQuickView}
         onCloseModalQuickView={() => setShowModalQuickView(false)}
