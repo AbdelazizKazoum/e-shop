@@ -151,7 +151,7 @@ const ProductDetailPage = async ({ params }: ProductDetailPageProps) => {
             <Policy />
           </div>
 
-          {renderDetailSection()}
+          {/* {renderDetailSection()} */}
           <hr className="border-slate-200 dark:border-slate-700" />
           {renderReviews()}
           <hr className="border-slate-200 dark:border-slate-700" />
