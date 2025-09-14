@@ -17,7 +17,7 @@ import Image from "next/image";
 import Link from "next/link";
 import NcImage from "@/shared/NcImage/NcImage";
 import { Product, Variant } from "@/types/product";
-import { useCartStore } from "@/stores/cartStore"; // Import the cart store
+import { useCartStore } from "@/stores/cartStore";
 import { ProductInfo } from "@/types/cart";
 
 export interface ProductCardProps {
@@ -42,10 +42,10 @@ const ProductCard: FC<ProductCardProps> = ({
     status,
     variants,
     category,
-    brand, // Destructure brand
+    brand,
   } = data;
 
-  const addToCart = useCartStore((state) => state.addToCart); // Get addToCart action
+  const addToCart = useCartStore((state) => state.addToCart);
   const [variantActive, setVariantActive] = useState(
     variants && variants.length > 0 ? 0 : null
   );
@@ -53,6 +53,8 @@ const ProductCard: FC<ProductCardProps> = ({
   const [currentImage, setCurrentImage] = useState(image);
   const [userHasInteracted, setUserHasInteracted] = useState(false);
   const router = useRouter();
+
+  const [isShowingSizes, setIsShowingSizes] = useState(false);
 
   useEffect(() => {
     if (
@@ -103,7 +105,6 @@ const ProductCard: FC<ProductCardProps> = ({
             height={96}
             src={variant.images[0]?.image || (image as string)}
             alt={name}
-            rel="preload"
             className="absolute object-cover object-center"
           />
         </div>
@@ -153,7 +154,6 @@ const ProductCard: FC<ProductCardProps> = ({
     );
 
     if (targetVariant) {
-      // Create the simplified product info object
       const productInfo: any = {
         id,
         name,
@@ -163,10 +163,8 @@ const ProductCard: FC<ProductCardProps> = ({
         brand,
         category,
       };
-      // Call the Zustand store action
       //@ts-ignore
       addToCart(productInfo, targetVariant, 1);
-      // Show notification
       notifyAddTocart(targetVariant);
     } else {
       toast.error("This size is not available for the selected color.");
@@ -216,54 +214,6 @@ const ProductCard: FC<ProductCardProps> = ({
     );
   };
 
-  const renderSizeList = () => {
-    if (!variants || !variants.length) {
-      return null;
-    }
-    const uniqueSizes = Array.from(new Set(variants.map((v) => v.size)));
-
-    return (
-      <div className="absolute bottom-0 inset-x-1 space-x-1.5 rtl:space-x-reverse flex justify-center opacity-0 invisible group-hover:bottom-4 group-hover:opacity-100 group-hover:visible transition-all">
-        {uniqueSizes.map((size, index) => {
-          return (
-            <div
-              key={index}
-              className="nc-shadow-lg w-10 h-10 rounded-xl bg-white hover:bg-slate-900 hover:text-white transition-colors cursor-pointer flex items-center justify-center uppercase font-semibold tracking-tight text-sm text-slate-900"
-              onClick={() => handleAddToCart(size)}
-            >
-              {size}
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
-  const renderGroupButtons = () => {
-    return (
-      <div className="absolute bottom-0 group-hover:bottom-4 inset-x-1 flex justify-center opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
-        <ButtonPrimary
-          className="shadow-lg"
-          fontSize="text-xs"
-          sizeClass="py-2 px-4"
-          onClick={() => toast.error("This product has no options to select.")}
-        >
-          <BagIcon className="w-3.5 h-3.5 mb-0.5" />
-          <span className="ms-1">Add to bag</span>
-        </ButtonPrimary>
-        <ButtonSecondary
-          className="ms-1.5 bg-white hover:!bg-gray-100 hover:text-slate-900 transition-colors shadow-lg"
-          fontSize="text-xs"
-          sizeClass="py-2 px-4"
-          onClick={() => setShowModalQuickView(true)}
-        >
-          <ArrowsPointingOutIcon className="w-3.5 h-3.5" />
-          <span className="ms-1">Quick view</span>
-        </ButtonSecondary>
-      </div>
-    );
-  };
-
   return (
     <>
       <div
@@ -275,7 +225,6 @@ const ProductCard: FC<ProductCardProps> = ({
         ></Link>
 
         <div className="relative flex-shrink-0 bg-slate-50 dark:bg-slate-300 rounded-3xl overflow-hidden z-1 group">
-          {/* Discount badge - larger and only here */}
           {typeof price === "number" &&
             typeof newPrice === "number" &&
             price > newPrice && (
@@ -285,21 +234,96 @@ const ProductCard: FC<ProductCardProps> = ({
             )}
 
           <Link href={`/product-detail/${id}`} className="block">
-            <NcImage
+            {/* <NcImage
               containerClassName="flex aspect-w-11 aspect-h-12 w-full h-0"
               src={currentImage as string}
-              className="object-contain object-center w-full h-full drop-shadow-xl "
+              className="object-contain object-center w-full h-full drop-shadow-xl"
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 40vw"
               alt={name}
-              rel="preload"
+            /> */}
+
+            <NcImage
+              containerClassName="flex aspect-w-11 aspect-h-12 w-full h-0"
+              src={image as string}
+              className="object-cover w-full h-full drop-shadow-xl"
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 40vw"
+              alt="product"
             />
           </Link>
           <ProductStatus status={status || ""} />
           <LikeButton liked={isLiked} className="absolute top-3 end-3 z-10" />
-          {variants && variants.length > 0
-            ? renderSizeList()
-            : renderGroupButtons()}
+
+          <div
+            className="absolute bottom-0 inset-x-1 flex justify-center opacity-0 invisible group-hover:bottom-4 group-hover:opacity-100 group-hover:visible transition-all"
+            onMouseLeave={() => setIsShowingSizes(false)}
+          >
+            {isShowingSizes && variants && variants.length > 1 ? (
+              <div className="flex flex-col items-center space-y-2">
+                <span className="text-xs text-slate-600 dark:text-slate-300">
+                  Select a size
+                </span>
+                <div className="flex items-center space-x-1.5 rtl:space-x-reverse">
+                  {Array.from(new Set(variants.map((v) => v.size))).map(
+                    (size, index) => (
+                      <div
+                        key={index}
+                        className="nc-shadow-lg w-10 h-10 rounded-xl bg-white hover:bg-slate-900 hover:text-white transition-colors cursor-pointer flex items-center justify-center uppercase font-semibold tracking-tight text-sm text-slate-900"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleAddToCart(size);
+                          setIsShowingSizes(false);
+                        }}
+                      >
+                        {size}
+                      </div>
+                    )
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-1.5 rtl:space-x-reverse">
+                <ButtonPrimary
+                  className="shadow-lg"
+                  fontSize="text-xs"
+                  sizeClass="py-2 px-4"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    if (!variants || variants.length === 0) {
+                      toast.error("This product has no options to select.");
+                      return;
+                    }
+
+                    if (variants.length === 1) {
+                      handleAddToCart(variants[0].size);
+                    } else {
+                      setIsShowingSizes(true);
+                    }
+                  }}
+                >
+                  <BagIcon className="w-3.5 h-3.5 mb-0.5" />
+                  <span className="ms-1">Add to bag</span>
+                </ButtonPrimary>
+                <ButtonSecondary
+                  className="ms-1.5 bg-white hover:!bg-gray-100 hover:text-slate-900 transition-colors shadow-lg"
+                  fontSize="text-xs"
+                  sizeClass="py-2 px-4"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setShowModalQuickView(true);
+                  }}
+                >
+                  <ArrowsPointingOutIcon className="w-3.5 h-3.5" />
+                  <span className="ms-1">Quick view</span>
+                </ButtonSecondary>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="space-y-4 px-2.5 pt-5 pb-2.5">

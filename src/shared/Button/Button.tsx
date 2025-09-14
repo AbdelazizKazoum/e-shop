@@ -16,7 +16,9 @@ export interface ButtonProps {
   type?: ButtonHTMLAttributes<HTMLButtonElement>["type"];
   href?: Route;
   targetBlank?: boolean;
-  onClick?: () => void;
+  onClick?: (
+    e: React.MouseEvent<HTMLButtonElement | HTMLAnchorElement, MouseEvent>
+  ) => void;
   children?: React.ReactNode;
 }
 
