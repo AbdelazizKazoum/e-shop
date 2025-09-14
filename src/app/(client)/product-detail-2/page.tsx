@@ -126,6 +126,7 @@ const ProductDetailPage2 = ({}) => {
           qualitySelected={qualitySelected}
           show={t.visible}
           sizeSelected={sizeSelected}
+          // @ts-ignore
           variantActive={variantActive}
         />
       ),
