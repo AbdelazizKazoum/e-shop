@@ -4,6 +4,7 @@ import Label from "@/components/Label/Label";
 import NcInputNumber from "@/components/NcInputNumber";
 import Prices from "@/components/Prices";
 import { useEffect, useState } from "react";
+import NotificationModal from "@/components/modals/NotificationModal";
 import ButtonPrimary from "@/shared/Button/ButtonPrimary";
 import Input from "@/shared/Input/Input";
 import ContactInfo from "./ContactInfo";
@@ -18,13 +19,27 @@ import { SessionProvider } from "next-auth/react";
 
 const CheckoutPage = () => {
   const [tabActive, setTabActive] = useState<
-    "ContactInfo" | "ShippingAddress" | "PaymentMethod"
-  >("ShippingAddress");
+    "ContactInfo" | "ShippingAddress" | "PaymentMethod" | ""
+  >("ContactInfo");
 
   const [isMounted, setIsMounted] = useState(false);
   const { items, removeFromCart, updateQuantity, getCartTotal } =
     useCartStore();
-  const { isLoading } = useCheckoutStore();
+  const {
+    isLoading,
+    contactInfo,
+    shippingAddress,
+    paymentMethod,
+    submitOrder,
+  } = useCheckoutStore();
+
+  const [notification, setNotification] = useState({
+    isOpen: false,
+    type: "error" as "error" | "info",
+    title: "",
+    message: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
@@ -202,6 +217,10 @@ const CheckoutPage = () => {
               handleScrollToEl("ContactInfo");
             }}
             onCloseActive={() => {
+              setTabActive("");
+              // handleScrollToEl("ShippingAddress");
+            }}
+            onSave={() => {
               setTabActive("ShippingAddress");
               handleScrollToEl("ShippingAddress");
             }}
@@ -216,6 +235,10 @@ const CheckoutPage = () => {
               handleScrollToEl("ShippingAddress");
             }}
             onCloseActive={() => {
+              setTabActive("");
+              handleScrollToEl("ShippingAddress");
+            }}
+            onSave={() => {
               setTabActive("PaymentMethod");
               handleScrollToEl("PaymentMethod");
             }}
@@ -229,7 +252,10 @@ const CheckoutPage = () => {
               setTabActive("PaymentMethod");
               handleScrollToEl("PaymentMethod");
             }}
-            onCloseActive={() => setTabActive("PaymentMethod")}
+            onCloseActive={() => {
+              setTabActive("");
+              handleScrollToEl("PaymentMethod");
+            }}
           />
         </div>
       </div>
@@ -351,10 +377,63 @@ const CheckoutPage = () => {
                 </div>
                 <ButtonPrimary
                   className="mt-8 w-full"
-                  disabled={!isMounted || selectedItems.length === 0}
+                  disabled={
+                    !isMounted || selectedItems.length === 0 || isSubmitting
+                  }
+                  onClick={async () => {
+                    setIsSubmitting(true);
+                    const total = getCartTotal();
+                    try {
+                      await submitOrder(selectedItems, null, total);
+                      // Success: you may want to redirect or show a modal here
+                      setNotification({
+                        isOpen: true,
+                        type: "info",
+                        title: "Order Submitted",
+                        message: "Your order was placed successfully!",
+                      });
+                    } catch (error: any) {
+                      if (error.message === "Missing shipping information.") {
+                        setNotification({
+                          isOpen: true,
+                          type: "info",
+                          title: "Shipping Information Required",
+                          message:
+                            "Please provide your complete shipping address before placing an order.",
+                        });
+                      } else if (error.message === "Missing payment method.") {
+                        setNotification({
+                          isOpen: true,
+                          type: "info",
+                          title: "Payment Method Required",
+                          message:
+                            "Please select a payment method before placing an order.",
+                        });
+                      } else {
+                        setNotification({
+                          isOpen: true,
+                          type: "error",
+                          title: "Order Submission Failed",
+                          message:
+                            "Failed to create order. Please try again later.",
+                        });
+                      }
+                    } finally {
+                      setIsSubmitting(false);
+                    }
+                  }}
                 >
                   Confirm order
                 </ButtonPrimary>
+                <NotificationModal
+                  isOpen={notification.isOpen}
+                  onClose={() =>
+                    setNotification((prev) => ({ ...prev, isOpen: false }))
+                  }
+                  type={notification.type}
+                  title={notification.title}
+                  message={notification.message}
+                />
                 <div className="mt-5 text-sm text-slate-500 dark:text-slate-400 flex items-center justify-center">
                   <p className="block relative pl-5">
                     <svg

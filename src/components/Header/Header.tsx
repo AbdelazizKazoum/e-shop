@@ -6,9 +6,7 @@ export interface HeaderProps {}
 
 const Header = ({ user }: { user: User | null }) => {
   return (
-    <div className="nc-Header relative w-full z-40 ">
-      <MainNav2 />
-    </div>
+    <div className="nc-Header relative w-full z-40 ">{/* <MainNav2 /> */}</div>
   );
 };
 

@@ -29,9 +29,14 @@ const PaymentMethod: FC<Props> = ({
 
   const [formData, setFormData] =
     useState<Partial<PaymentMethodType>>(paymentMethod);
-  const [methodActive, setMethodActive] = useState(
-    paymentMethod.method || "Credit-Card"
-  );
+  const [methodActive, setMethodActive] = useState(paymentMethod.method || "");
+  const [errors, setErrors] = useState<{
+    method?: string;
+    cardNumber?: string;
+    cardHolder?: string;
+    expirationDate?: string;
+    cvc?: string;
+  }>({});
   const { data: session } = useSession();
 
   // State for modals
@@ -67,25 +72,52 @@ const PaymentMethod: FC<Props> = ({
       delete newFormData.cvc;
     }
     setFormData(newFormData);
+    setPaymentMethod(newFormData); // Immediately update store
+    // Remove method error if any
+    setErrors((prev) => ({ ...prev, method: undefined }));
   };
 
+  // Credit card validation helpers
+  const validateCardNumber = (num: string) =>
+    /^\d{13,19}$/.test(num.replace(/\s/g, ""));
+  const validateCardHolder = (name: string) => name.trim().length > 2;
+  const validateExpiration = (exp: string) =>
+    /^(0[1-9]|1[0-2])\/(\d{2})$/.test(exp);
+  const validateCVC = (cvc: string) => /^\d{3,4}$/.test(cvc);
+
   const handleConfirmOrder = async () => {
-    // 1. Save the final payment method details to the store
+    // Validate method
+    const newErrors: typeof errors = {};
+    if (!methodActive) {
+      newErrors.method = "Please select a payment method.";
+    }
+    if (methodActive === "Credit-Card") {
+      if (!formData.cardNumber || !validateCardNumber(formData.cardNumber)) {
+        newErrors.cardNumber = "Enter a valid card number.";
+      }
+      if (!formData.cardHolder || !validateCardHolder(formData.cardHolder)) {
+        newErrors.cardHolder = "Enter the cardholder's name.";
+      }
+      if (
+        !formData.expirationDate ||
+        !validateExpiration(formData.expirationDate)
+      ) {
+        newErrors.expirationDate = "Format MM/YY";
+      }
+      if (!formData.cvc || !validateCVC(formData.cvc)) {
+        newErrors.cvc = "Enter a valid CVC.";
+      }
+    }
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) return;
+
     setPaymentMethod(formData);
-
-    // 2. Get the current cart total
     const total = getCartTotal();
-
     try {
-      // 3. Call the submitOrder action and wait for it to complete
       await submitOrder(cartItems, session, total);
-
-      // 4. If the order submission is successful, open the success modal
       setSuccessModalOpen(true);
     } catch (error: any) {
-      // 5. If it fails, check the error type and show the appropriate modal
       if (error.message === "Missing shipping information.") {
-        // Handle missing info case
         setNotification({
           isOpen: true,
           type: "info",
@@ -94,7 +126,6 @@ const PaymentMethod: FC<Props> = ({
             "Please provide your complete shipping address before placing an order.",
         });
       } else {
-        // Handle other generic failures
         console.error("Order confirmation failed:", error);
         setNotification({
           isOpen: true,
@@ -123,7 +154,7 @@ const PaymentMethod: FC<Props> = ({
           className="pt-3.5"
           name="payment-method"
           id="Credit-Card"
-          defaultChecked={active}
+          checked={active}
           onChange={() => handleMethodChange("Credit-Card")}
         />
         <div className="flex-1">
@@ -138,6 +169,7 @@ const PaymentMethod: FC<Props> = ({
                   : "border-gray-200 dark:border-slate-600"
               }`}
             >
+              {/* ...svg... */}
               <svg
                 className="w-6 h-6 sm:w-7 sm:h-7"
                 viewBox="0 0 24 24"
@@ -191,48 +223,104 @@ const PaymentMethod: FC<Props> = ({
             }`}
           >
             <div className="max-w-lg">
-              <Label className="text-sm">Card number</Label>
+              <Label className="text-sm">
+                Card number <span className="text-red-500">*</span>
+              </Label>
               <Input
                 name="cardNumber"
                 autoComplete="off"
-                className="mt-1.5"
+                className={`mt-1.5 ${
+                  errors.cardNumber ? "border-red-500" : ""
+                }`}
                 type={"text"}
                 value={formData.cardNumber || ""}
-                onChange={handleInputChange}
+                onChange={(e) => {
+                  handleInputChange(e);
+                  if (validateCardNumber(e.target.value)) {
+                    setErrors((prev) => ({ ...prev, cardNumber: undefined }));
+                  }
+                }}
               />
+              {errors.cardNumber && (
+                <div className="text-red-500 text-xs mt-1">
+                  {errors.cardNumber}
+                </div>
+              )}
             </div>
             <div className="max-w-lg">
-              <Label className="text-sm">Name on Card</Label>
+              <Label className="text-sm">
+                Name on Card <span className="text-red-500">*</span>
+              </Label>
               <Input
                 name="cardHolder"
                 autoComplete="off"
-                className="mt-1.5"
+                className={`mt-1.5 ${
+                  errors.cardHolder ? "border-red-500" : ""
+                }`}
                 value={formData.cardHolder || ""}
-                onChange={handleInputChange}
+                onChange={(e) => {
+                  handleInputChange(e);
+                  if (validateCardHolder(e.target.value)) {
+                    setErrors((prev) => ({ ...prev, cardHolder: undefined }));
+                  }
+                }}
               />
+              {errors.cardHolder && (
+                <div className="text-red-500 text-xs mt-1">
+                  {errors.cardHolder}
+                </div>
+              )}
             </div>
             <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
               <div className="sm:w-2/3">
-                <Label className="text-sm">Expiration date (MM/YY)</Label>
+                <Label className="text-sm">
+                  Expiration date (MM/YY){" "}
+                  <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   name="expirationDate"
                   autoComplete="off"
-                  className="mt-1.5"
+                  className={`mt-1.5 ${
+                    errors.expirationDate ? "border-red-500" : ""
+                  }`}
                   placeholder="MM/YY"
                   value={formData.expirationDate || ""}
-                  onChange={handleInputChange}
+                  onChange={(e) => {
+                    handleInputChange(e);
+                    if (validateExpiration(e.target.value)) {
+                      setErrors((prev) => ({
+                        ...prev,
+                        expirationDate: undefined,
+                      }));
+                    }
+                  }}
                 />
+                {errors.expirationDate && (
+                  <div className="text-red-500 text-xs mt-1">
+                    {errors.expirationDate}
+                  </div>
+                )}
               </div>
               <div className="flex-1">
-                <Label className="text-sm">CVC</Label>
+                <Label className="text-sm">
+                  CVC <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   name="cvc"
                   autoComplete="off"
-                  className="mt-1.5"
+                  className={`mt-1.5 ${errors.cvc ? "border-red-500" : ""}`}
                   placeholder="CVC"
                   value={formData.cvc || ""}
-                  onChange={handleInputChange}
+                  onChange={(e) => {
+                    handleInputChange(e);
+                    if (validateCVC(e.target.value)) {
+                      setErrors((prev) => ({ ...prev, cvc: undefined }));
+                    }
+                  }}
                 />
+                {errors.cvc && (
+                  <div className="text-red-500 text-xs mt-1">{errors.cvc}</div>
+                )}
               </div>
             </div>
           </div>
@@ -436,9 +524,34 @@ const PaymentMethod: FC<Props> = ({
     );
   };
 
+  // Border color: red unless all required valid, green only if all required fields are valid and no errors
+  let borderColor = "border-red-500";
+  if (methodActive) {
+    if (methodActive === "Credit-Card") {
+      if (
+        formData.cardNumber &&
+        validateCardNumber(formData.cardNumber) &&
+        formData.cardHolder &&
+        validateCardHolder(formData.cardHolder) &&
+        formData.expirationDate &&
+        validateExpiration(formData.expirationDate) &&
+        formData.cvc &&
+        validateCVC(formData.cvc) &&
+        !errors.cardNumber &&
+        !errors.cardHolder &&
+        !errors.expirationDate &&
+        !errors.cvc
+      ) {
+        borderColor = "border-green-500";
+      }
+    } else if (!errors.method) {
+      borderColor = "border-green-500";
+    }
+  }
+
   return (
     <>
-      <div className="border border-slate-200 dark:border-slate-700 rounded-xl ">
+      <div className={`border rounded-xl ${borderColor}`}>
         <div className="p-6 flex flex-col sm:flex-row items-start">
           <span className="hidden sm:block">
             <svg
@@ -527,6 +640,9 @@ const PaymentMethod: FC<Props> = ({
             isActive ? "block" : "hidden"
           }`}
         >
+          {errors.method && (
+            <div className="text-red-500 text-xs mb-2">{errors.method}</div>
+          )}
           <div>{renderDebitCredit()}</div>
           <div>{renderInterNetBanking()}</div>
           <div>{renderWallet()}</div>

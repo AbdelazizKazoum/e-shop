@@ -8,21 +8,33 @@ import Input from "@/shared/Input/Input";
 import Radio from "@/shared/Radio/Radio";
 import { useCheckoutStore } from "@/stores/checkoutStore";
 import { ShippingAddress as ShippingAddressType } from "@/types/checkout";
+import { on } from "events";
 
 interface Props {
   isActive: boolean;
   onOpenActive: () => void;
   onCloseActive: () => void;
+  onSave: () => void;
 }
 
 const ShippingAddress: FC<Props> = ({
   isActive,
   onCloseActive,
   onOpenActive,
+  onSave,
 }) => {
   const { shippingAddress, setShippingAddress } = useCheckoutStore();
   const [formData, setFormData] =
     useState<Partial<ShippingAddressType>>(shippingAddress);
+  const [errors, setErrors] = useState<{
+    firstName?: string;
+    lastName?: string;
+    address?: string;
+    city?: string;
+    country?: string;
+    zipCode?: string;
+    addressType?: string;
+  }>({});
 
   useEffect(() => {
     setFormData(shippingAddress);
@@ -34,15 +46,80 @@ const ShippingAddress: FC<Props> = ({
       ...prev,
       [name]: value,
     }));
+
+    // Remove error if the new value is valid
+    if (
+      [
+        "firstName",
+        "lastName",
+        "address",
+        "city",
+        "country",
+        "zipCode",
+        "addressType",
+      ].includes(name)
+    ) {
+      if (value && value.trim() !== "") {
+        setErrors((prev) => ({ ...prev, [name]: undefined }));
+      }
+    }
   };
 
   const handleSave = () => {
+    const newErrors: typeof errors = {};
+    if (!formData.firstName || formData.firstName.trim() === "") {
+      newErrors.firstName = "First name is required.";
+    }
+    if (!formData.lastName || formData.lastName.trim() === "") {
+      newErrors.lastName = "Last name is required.";
+    }
+    if (!formData.address || formData.address.trim() === "") {
+      newErrors.address = "Address is required.";
+    }
+    if (!formData.city || formData.city.trim() === "") {
+      newErrors.city = "City is required.";
+    }
+    if (!formData.country || formData.country.trim() === "") {
+      newErrors.country = "Country is required.";
+    }
+    if (!formData.zipCode || formData.zipCode.trim() === "") {
+      newErrors.zipCode = "Postal code is required.";
+    }
+    if (!formData.addressType || formData.addressType.trim() === "") {
+      newErrors.addressType = "Address type is required.";
+    }
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) {
+      return;
+    }
     setShippingAddress(formData);
-    onCloseActive();
+    onSave();
   };
 
+  const isFormValid =
+    formData.firstName &&
+    formData.firstName.trim() !== "" &&
+    formData.lastName &&
+    formData.lastName.trim() !== "" &&
+    formData.address &&
+    formData.address.trim() !== "" &&
+    formData.city &&
+    formData.city.trim() !== "" &&
+    formData.country &&
+    formData.country.trim() !== "" &&
+    formData.zipCode &&
+    formData.zipCode.trim() !== "" &&
+    formData.addressType &&
+    formData.addressType.trim() !== "";
+
+  // Border color: red unless all valid, green only if all valid and no errors
+  let borderColor = "border-red-500";
+  if (isFormValid && Object.keys(errors).length === 0) {
+    borderColor = "border-green-500";
+  }
+
   return (
-    <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden z-0">
+    <div className={`border rounded-xl overflow-hidden z-0 ${borderColor}`}>
       <div className="flex flex-col sm:flex-row items-start p-6">
         <span className="hidden sm:block">
           <svg
@@ -127,35 +204,55 @@ const ShippingAddress: FC<Props> = ({
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-3">
           <div>
-            <Label className="text-sm">First name</Label>
+            <Label className="text-sm">
+              First name <span className="text-red-500">*</span>
+            </Label>
             <Input
               name="firstName"
-              className="mt-1.5"
+              className={`mt-1.5 ${errors.firstName ? "border-red-500" : ""}`}
               value={formData.firstName || ""}
               onChange={handleInputChange}
             />
+            {errors.firstName && (
+              <div className="text-red-500 text-xs mt-1">
+                {errors.firstName}
+              </div>
+            )}
           </div>
           <div>
-            <Label className="text-sm">Last name</Label>
+            <Label className="text-sm">
+              Last name <span className="text-red-500">*</span>
+            </Label>
             <Input
               name="lastName"
-              className="mt-1.5"
+              className={`mt-1.5 ${errors.lastName ? "border-red-500" : ""}`}
               value={formData.lastName || ""}
               onChange={handleInputChange}
             />
+            {errors.lastName && (
+              <div className="text-red-500 text-xs mt-1">{errors.lastName}</div>
+            )}
           </div>
         </div>
         <div>
-          <Label className="text-sm">Address</Label>
+          <Label className="text-sm">
+            Address <span className="text-red-500">*</span>
+          </Label>
           <Input
             name="address"
-            className="mt-1.5"
+            className={`mt-1.5 ${errors.address ? "border-red-500" : ""}`}
             value={formData.address || ""}
             onChange={handleInputChange}
           />
+          {errors.address && (
+            <div className="text-red-500 text-xs mt-1">{errors.address}</div>
+          )}
         </div>
         <div>
-          <Label className="text-sm">Apartment, suite, etc.</Label>
+          <Label className="text-sm">
+            Apartment, suite, etc.{" "}
+            <span className="font-light">(optional)</span>
+          </Label>
           <Input
             name="apartment"
             className="mt-1.5"
@@ -165,27 +262,39 @@ const ShippingAddress: FC<Props> = ({
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-3">
           <div>
-            <Label className="text-sm">City</Label>
+            <Label className="text-sm">
+              City <span className="text-red-500">*</span>
+            </Label>
             <Input
               name="city"
-              className="mt-1.5"
+              className={`mt-1.5 ${errors.city ? "border-red-500" : ""}`}
               value={formData.city || ""}
               onChange={handleInputChange}
             />
+            {errors.city && (
+              <div className="text-red-500 text-xs mt-1">{errors.city}</div>
+            )}
           </div>
           <div>
-            <Label className="text-sm">Country</Label>
+            <Label className="text-sm">
+              Country <span className="text-red-500">*</span>
+            </Label>
             <Input
               name="country"
-              className="mt-1.5"
+              className={`mt-1.5 ${errors.country ? "border-red-500" : ""}`}
               value={formData.country || ""}
               onChange={handleInputChange}
             />
+            {errors.country && (
+              <div className="text-red-500 text-xs mt-1">{errors.country}</div>
+            )}
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-3">
           <div>
-            <Label className="text-sm">State/Province</Label>
+            <Label className="text-sm">
+              State/Province <span className="font-light">(optional)</span>
+            </Label>
             <Input
               name="state"
               className="mt-1.5"
@@ -194,37 +303,51 @@ const ShippingAddress: FC<Props> = ({
             />
           </div>
           <div>
-            <Label className="text-sm">Postal code</Label>
+            <Label className="text-sm">
+              Postal code <span className="text-red-500">*</span>
+            </Label>
             <Input
               name="zipCode"
-              className="mt-1.5"
+              className={`mt-1.5 ${errors.zipCode ? "border-red-500" : ""}`}
               value={formData.zipCode || ""}
               onChange={handleInputChange}
             />
+            {errors.zipCode && (
+              <div className="text-red-500 text-xs mt-1">{errors.zipCode}</div>
+            )}
           </div>
         </div>
         <div>
-          <Label className="text-sm">Address type</Label>
+          <Label className="text-sm">
+            Address type <span className="text-red-500">*</span>
+          </Label>
           <div className="mt-1.5 grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
             <Radio
               label={`<span class="text-sm font-medium">Home <span class="font-light">(All Day Delivery)</span></span>`}
               id="Address-type-home"
               name="addressType"
               defaultChecked={formData.addressType === "Home"}
-              onChange={() =>
-                setFormData((prev) => ({ ...prev, addressType: "Home" }))
-              }
+              onChange={() => {
+                setFormData((prev) => ({ ...prev, addressType: "Home" }));
+                setErrors((prev) => ({ ...prev, addressType: undefined }));
+              }}
             />
             <Radio
               label={`<span class="text-sm font-medium">Office <span class="font-light">(Delivery <span class="font-medium">9 AM - 5 PM</span>)</span> </span>`}
               id="Address-type-office"
               name="addressType"
               defaultChecked={formData.addressType === "Office"}
-              onChange={() =>
-                setFormData((prev) => ({ ...prev, addressType: "Office" }))
-              }
+              onChange={() => {
+                setFormData((prev) => ({ ...prev, addressType: "Office" }));
+                setErrors((prev) => ({ ...prev, addressType: undefined }));
+              }}
             />
           </div>
+          {errors.addressType && (
+            <div className="text-red-500 text-xs mt-1">
+              {errors.addressType}
+            </div>
+          )}
         </div>
         <div className="flex flex-col sm:flex-row pt-6">
           <ButtonPrimary className="sm:!px-7 shadow-none" onClick={handleSave}>

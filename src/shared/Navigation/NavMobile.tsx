@@ -11,15 +11,19 @@ import SocialsList from "@/shared/SocialsList/SocialsList";
 import { ChevronDownIcon } from "@heroicons/react/24/solid";
 import SwitchDarkMode from "@/shared/SwitchDarkMode/SwitchDarkMode";
 import Link from "next/link";
+import { User } from "next-auth";
+import Image from "next/image";
 
 export interface NavMobileProps {
   data?: NavItemType[];
   onClickClose?: () => void;
+  user: User | null;
 }
 
 const NavMobile: React.FC<NavMobileProps> = ({
   data = NAVIGATION_DEMO_2,
   onClickClose,
+  user,
 }) => {
   const _renderMenuChild = (
     item: NavItemType,
@@ -188,10 +192,69 @@ const NavMobile: React.FC<NavMobileProps> = ({
       <ul className="flex flex-col py-6 px-2 space-y-1">
         {data.map(_renderItem)}
       </ul>
-      <div className="flex items-center justify-between py-6 px-5 space-x-2">
-        <ButtonPrimary href={"/"} className="!px-10">
-          Buy this template
-        </ButtonPrimary>
+      <div className="flex flex-col gap-4 py-6 px-5">
+        {user ? (
+          <div className="flex items-center gap-3 p-4 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+            {user.image ? (
+              <Image
+                src={user.image}
+                alt={
+                  user.firstName && user.lastName
+                    ? `${user.firstName} ${user.lastName}`
+                    : user.name || "User"
+                }
+                width={48}
+                height={48}
+                className="w-12 h-12 rounded-full object-cover border border-slate-200 dark:border-slate-700"
+              />
+            ) : (
+              <div className="w-12 h-12 rounded-full bg-slate-300 dark:bg-slate-700 flex items-center justify-center">
+                {/* User icon SVG */}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-8 h-8 text-white"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15.75 7.5a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 19.25a7.75 7.75 0 1115.5 0v.25a.75.75 0 01-.75.75H5.25a.75.75 0 01-.75-.75v-.25z"
+                  />
+                </svg>
+              </div>
+            )}
+            <div className="flex flex-col">
+              <span className="font-semibold text-base text-slate-900 dark:text-white">
+                {user.firstName && user.lastName
+                  ? `${user.firstName} ${user.lastName}`
+                  : user.name || "User"}
+              </span>
+              <span className="text-xs text-slate-500 dark:text-slate-400">
+                {user.email}
+              </span>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3 w-full">
+            <ButtonPrimary
+              href="/login"
+              className="w-full !px-10"
+              onClick={onClickClose}
+            >
+              Login
+            </ButtonPrimary>
+            <ButtonPrimary
+              href="/signup"
+              className="w-full !px-10 !bg-green-600 hover:!bg-green-700"
+              onClick={onClickClose}
+            >
+              Register
+            </ButtonPrimary>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -9,7 +9,6 @@ import CartDropdown from "./CartDropdown";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import { useFilterStore } from "@/stores/filterStore"; // 👈 import store
-import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { User } from "next-auth";
 
@@ -84,7 +83,7 @@ const MainNav2Logged = ({ user }: { user: User | null }) => {
       <div className="h-20 flex justify-between">
         {/* Left: Logo and Menu */}
         <div className="flex items-center lg:hidden flex-1">
-          <MenuBar />
+          <MenuBar user={user} />
         </div>
         <div className="lg:flex-1 flex items-center">
           <Logo className="flex-shrink-0" />
@@ -101,7 +100,7 @@ const MainNav2Logged = ({ user }: { user: User | null }) => {
           {user ? (
             <AvatarDropdown user={user} />
           ) : (
-            <div className="flex items-center gap-4 ml-4 mr-2">
+            <div className="hidden sm:flex items-center gap-4 ml-4 mr-2">
               <Link
                 href="/login"
                 className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200"

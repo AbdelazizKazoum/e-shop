@@ -8,20 +8,29 @@ interface NotificationModalProps {
   message?: string;
 }
 
-// SVG icon for the 'info' type
+// SVG icon for the 'info' type (teal for ecommerce style)
 const InfoIcon = () => (
   <svg
-    className="h-12 w-12 text-blue-500"
+    className="h-12 w-12 text-teal-500"
     fill="none"
     viewBox="0 0 24 24"
     strokeWidth="2.5"
     stroke="currentColor"
     aria-hidden="true"
   >
+    <circle
+      cx="12"
+      cy="12"
+      r="10"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      fill="none"
+    />
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
-      d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.852l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+      d="M12 8v4m0 4h.01"
+      strokeWidth="2.5"
     />
   </svg>
 );
@@ -67,16 +76,14 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
   const config = {
     info: {
       icon: <InfoIcon />,
-      iconBg: "bg-blue-100 dark:bg-blue-900/50",
-      buttonClass:
-        "bg-blue-600 hover:bg-blue-700 focus:ring-blue-500",
+      iconBg: "bg-teal-100 dark:bg-teal-900/50",
+      buttonClass: "bg-teal-600 hover:bg-teal-700 focus:ring-teal-500",
       buttonText: "OK",
     },
     error: {
       icon: <ErrorIcon />,
       iconBg: "bg-red-100 dark:bg-red-900/50",
-      buttonClass:
-        "bg-red-600 hover:bg-red-700 focus:ring-red-500",
+      buttonClass: "bg-red-600 hover:bg-red-700 focus:ring-red-500",
       buttonText: "Try Again",
     },
   };

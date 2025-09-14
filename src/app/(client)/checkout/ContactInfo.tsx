@@ -13,12 +13,19 @@ interface Props {
   isActive: boolean;
   onOpenActive: () => void;
   onCloseActive: () => void;
+  onSave: () => void;
 }
 
-const ContactInfo: FC<Props> = ({ isActive, onCloseActive, onOpenActive }) => {
+const ContactInfo: FC<Props> = ({
+  isActive,
+  onCloseActive,
+  onOpenActive,
+  onSave,
+}) => {
   const { contactInfo, setContactInfo } = useCheckoutStore();
   const [formData, setFormData] =
     useState<Partial<ContactInfoType>>(contactInfo);
+  const [errors, setErrors] = useState<{ email?: string; phone?: string }>({});
 
   useEffect(() => {
     // Sync local form data if global state changes
@@ -31,15 +38,58 @@ const ContactInfo: FC<Props> = ({ isActive, onCloseActive, onOpenActive }) => {
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
+
+    // Remove error if the new value is valid
+    if (name === "email" && typeof value === "string") {
+      if (validateEmail(value)) {
+        setErrors((prev) => ({ ...prev, email: undefined }));
+      }
+    }
+    if (name === "phone" && typeof value === "string") {
+      if (validatePhone(value)) {
+        setErrors((prev) => ({ ...prev, phone: undefined }));
+      }
+    }
+  };
+
+  // Simple validation helpers
+  const validateEmail = (email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+  const validatePhone = (phone: string) => {
+    return /^\+?\d{7,15}$/.test(phone.replace(/\s/g, ""));
   };
 
   const handleSave = () => {
+    const newErrors: { email?: string; phone?: string } = {};
+    if (!formData.email || !validateEmail(formData.email)) {
+      newErrors.email = "Please enter a valid email address.";
+    }
+    if (!formData.phone || !validatePhone(formData.phone)) {
+      newErrors.phone = "Please enter a valid phone number.";
+    }
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) {
+      return;
+    }
     setContactInfo(formData);
-    onCloseActive();
+    onSave();
   };
 
+  const isFormValid =
+    formData.email &&
+    validateEmail(formData.email) &&
+    formData.phone &&
+    validatePhone(formData.phone);
+
+  // Border color: red unless all valid, green only if all valid and no errors
+  let borderColor = "border-red-500";
+  if (isFormValid && Object.keys(errors).length === 0) {
+    borderColor = "border-green-500";
+  }
+
   return (
-    <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden z-0">
+    <div className={`border rounded-xl overflow-hidden z-0 ${borderColor}`}>
       <div className="flex flex-col sm:flex-row items-start p-6 ">
         <span className="hidden sm:block">
           <svg
@@ -120,21 +170,27 @@ const ContactInfo: FC<Props> = ({ isActive, onCloseActive, onOpenActive }) => {
           <Label className="text-sm">Your phone number</Label>
           <Input
             name="phone"
-            className="mt-1.5"
+            className={`mt-1.5 ${errors.phone ? "border-red-500" : ""}`}
             value={formData.phone || ""}
             onChange={handleInputChange}
             type={"tel"}
           />
+          {errors.phone && (
+            <div className="text-red-500 text-xs mt-1">{errors.phone}</div>
+          )}
         </div>
         <div className="max-w-lg">
           <Label className="text-sm">Email address</Label>
           <Input
             name="email"
-            className="mt-1.5"
+            className={`mt-1.5 ${errors.email ? "border-red-500" : ""}`}
             type={"email"}
             value={formData.email || ""}
             onChange={handleInputChange}
           />
+          {errors.email && (
+            <div className="text-red-500 text-xs mt-1">{errors.email}</div>
+          )}
         </div>
         <div>
           <Checkbox
