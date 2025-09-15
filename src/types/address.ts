@@ -1,4 +1,4 @@
-import { User } from "./user";
+import { User } from "next-auth";
 
 export interface Address {
   id: string;
