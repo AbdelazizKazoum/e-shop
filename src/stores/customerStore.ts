@@ -10,6 +10,7 @@ interface CustomerState {
   selectedCustomer: Customer | null;
   loading: boolean;
   error: string | null;
+  filters: any; // Add filters to state
   // Pagination state
   currentPage: number;
   limit: number;
@@ -23,6 +24,7 @@ interface CustomerActions {
   fetchCustomerById: (id: string) => Promise<void>;
   clearSelectedCustomer: () => void;
   setPage: (page: number) => void;
+  setFilters: (filters: any) => void; // Action to set filters
 }
 
 // Combines state and actions into a single type for the store
@@ -35,6 +37,7 @@ const initialState: CustomerState = {
   selectedCustomer: null,
   loading: false,
   error: null,
+  filters: {}, // Initial state for filters
   currentPage: 1,
   limit: 10, // Default items per page
   totalCustomers: 0,
@@ -50,7 +53,7 @@ export const useCustomerStore = create<CustomerStore>((set, get) => ({
    * Fetches all customers with filtering and pagination.
    */
   fetchAllCustomers: async (params) => {
-    set({ loading: true, error: null });
+    set({ loading: true, error: null, filters: params.filters });
     try {
       const { limit } = get();
       const response = await customerService.fetchAllCustomers(
@@ -103,9 +106,18 @@ export const useCustomerStore = create<CustomerStore>((set, get) => ({
    * Sets the current page for pagination and triggers a refetch.
    */
   setPage: (page: number) => {
-    const { fetchAllCustomers } = get();
+    const { fetchAllCustomers, filters } = get();
     // Note: This will refetch with the last used filters.
     // You might want to store filters in the state if they need to persist across page changes.
-    fetchAllCustomers({ page });
+    fetchAllCustomers({ page, filters });
+  },
+
+  /**
+   * Sets the filters and triggers a refetch for the first page.
+   */
+  setFilters: (filters: any) => {
+    const { fetchAllCustomers } = get();
+    set({ currentPage: 1 });
+    fetchAllCustomers({ page: 1, filters });
   },
 }));

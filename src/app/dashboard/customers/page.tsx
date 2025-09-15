@@ -15,6 +15,8 @@ import {
   X,
   Camera,
 } from "lucide-react";
+import { useCustomerStore } from "@/stores/customerStore"; // Assuming this is the correct path
+import Image from "next/image";
 
 // --- TYPE DEFINITIONS ---
 export interface Customer {
@@ -29,76 +31,19 @@ export interface Customer {
   provider: "google" | "credentials";
 }
 
-// --- MOCK DATA ---
-const mockCustomers: Customer[] = [
-  {
-    id: "1960a6a1-b347-4427-9262-6c4c71daa01b",
-    email: "abdelazizkazoum1@gmail.com",
-    image:
-      "https://lh3.googleusercontent.com/a/ACg8ocK1hIA-M7JNI_BABdPg2Kqb2zs4XcO1gfD5noqb1OVE1G0a4Q=s96-c",
-    firstName: "Abdelaziz",
-    lastName: "KAZOUM",
-    role: "client",
-    status: "Active",
-    created_at: "2025-09-08T13:50:16.000Z",
-    provider: "google",
-  },
-  {
-    id: "2a7b8c9d-e0f1-2a3b-4c5d-6e7f8a9b0c1d",
-    email: "jane.doe@example.com",
-    image: null,
-    firstName: "Jane",
-    lastName: "Doe",
-    role: "client",
-    status: "Active",
-    created_at: "2025-09-07T10:20:00.000Z",
-    provider: "credentials",
-  },
-  {
-    id: "3b8c9d0e-1f2a-3b4c-5d6e-7f8a9b0c1d2e",
-    email: "john.smith@workplace.com",
-    image: "https://placehold.co/100x100/e2e8f0/475569?text=JS",
-    firstName: "John",
-    lastName: "Smith",
-    role: "client",
-    status: "Inactive",
-    created_at: "2025-09-06T15:00:00.000Z",
-    provider: "credentials",
-  },
-  {
-    id: "4c9d0e1f-2a3b-4c5d-6e7f-8a9b0c1d2e3f",
-    email: "emily.jones@webmail.com",
-    image: "https://placehold.co/100x100/e2e8f0/475569?text=EJ",
-    firstName: "Emily",
-    lastName: "Jones",
-    role: "client",
-    status: "Suspended",
-    created_at: "2025-09-05T09:00:00.000Z",
-    provider: "google",
-  },
-  {
-    id: "5d0e1f2a-3b4c-5d6e-7f8a-9b0c1d2e3f4a",
-    email: "michael.brown@corp.com",
-    image: null,
-    firstName: "Michael",
-    lastName: "Brown",
-    role: "admin",
-    status: "Active",
-    created_at: "2025-09-04T18:45:00.000Z",
-    provider: "credentials",
-  },
-  {
-    id: "6e1f2a3b-4c5d-6e7f-8a9b-0c1d2e3f4a5b",
-    email: "sarah.davis@provider.net",
-    image: "https://placehold.co/100x100/e2e8f0/475569?text=SD",
-    firstName: "Sarah",
-    lastName: "Davis",
-    role: "client",
-    status: "Active",
-    created_at: "2025-09-03T12:30:00.000Z",
-    provider: "google",
-  },
-];
+// --- HOOK for Debouncing ---
+function useDebounce(value: string, delay: number) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+  return debouncedValue;
+}
 
 // --- UI COMPONENTS ---
 
@@ -289,7 +234,6 @@ const Pagination = ({
   );
 };
 
-// --- NEW COMPONENT: EditCustomerModal ---
 const EditCustomerModal = ({
   customer,
   onClose,
@@ -328,7 +272,6 @@ const EditCustomerModal = ({
         </div>
 
         <div className="p-6 overflow-y-auto space-y-6">
-          {/* View Only Section */}
           <div className="p-4 rounded-md bg-neutral-50 dark:bg-neutral-800/50 border dark:border-neutral-700/50">
             <h3 className="font-medium mb-2 text-neutral-600 dark:text-neutral-300 text-sm">
               Profile Information
@@ -349,7 +292,6 @@ const EditCustomerModal = ({
             </div>
           </div>
 
-          {/* Editable Section */}
           <div>
             <h3 className="font-medium mb-4 text-neutral-600 dark:text-neutral-300 text-sm">
               Update Details
@@ -437,7 +379,6 @@ const CustomerList = ({
 
   return (
     <div>
-      {/* Table Header */}
       <div className="hidden md:grid md:grid-cols-12 gap-4 p-4 text-sm font-medium text-neutral-500 dark:text-neutral-400 border-b dark:border-neutral-700">
         <div className="col-span-4">Customer</div>
         <div className="col-span-2">Status</div>
@@ -445,7 +386,6 @@ const CustomerList = ({
         <div className="col-span-2">Joined Date</div>
         <div className="col-span-2 text-right">Actions</div>
       </div>
-      {/* Table Body */}
       <div className="space-y-4 md:space-y-0">
         {customers.map((customer) => (
           <div
@@ -454,10 +394,12 @@ const CustomerList = ({
           >
             <div className="md:col-span-4 flex items-center gap-3">
               {customer.image ? (
-                <img
+                <Image
                   src={customer.image}
-                  alt=""
-                  className="h-10 w-10 rounded-full"
+                  alt={`${customer.firstName || ""} ${customer.lastName || ""}`}
+                  width={40}
+                  height={40}
+                  className="h-10 w-10 rounded-full object-cover"
                 />
               ) : (
                 <div className="h-10 w-10 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center">
@@ -628,55 +570,57 @@ const FilterHeader = ({
 };
 
 export default function CustomersPage() {
-  const [loading, setLoading] = useState(true);
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
+  // Local state for UI interaction
   const [searchTerm, setSearchTerm] = useState("");
-  const [filters, setFilters] = useState<any>({});
+  const [activeFilters, setActiveFilters] = useState<any>({});
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
 
-  const limit = 5;
+  // State from Zustand store
+  const {
+    customers,
+    totalCustomers,
+    totalPages,
+    currentPage,
+    loading,
+    fetchAllCustomers,
+    setPage,
+  } = useCustomerStore();
 
-  const filteredCustomers = useMemo(() => {
-    return mockCustomers.filter((customer) => {
-      const search = searchTerm.toLowerCase();
-      const fullName = `${customer.firstName || ""} ${
-        customer.lastName || ""
-      }`.toLowerCase();
-      const email = customer.email.toLowerCase();
+  // Debounce search term to avoid excessive API calls
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
-      const matchesSearch = fullName.includes(search) || email.includes(search);
-      const matchesStatus =
-        !filters.status || customer.status === filters.status;
-      const matchesRole = !filters.role || customer.role === filters.role;
-
-      return matchesSearch && matchesStatus && matchesRole;
-    });
-  }, [searchTerm, filters]);
-
-  const total = filteredCustomers.length;
-  const totalPages = Math.ceil(total / limit);
-
+  // Effect for fetching data based on dependencies
   useEffect(() => {
-    setLoading(true);
-    setTimeout(() => {
-      const paginatedCustomers = filteredCustomers.slice(
-        (currentPage - 1) * limit,
-        currentPage * limit
-      );
-      setCustomers(paginatedCustomers);
-      setLoading(false);
-    }, 500);
-  }, [currentPage, filteredCustomers]);
+    const combinedFilters = {
+      ...activeFilters,
+      customer: debouncedSearchTerm || undefined,
+    };
+    fetchAllCustomers({ page: currentPage, filters: combinedFilters });
+  }, [currentPage, debouncedSearchTerm, activeFilters, fetchAllCustomers]);
+
+  // Initial fetch check (to preserve state if already loaded)
+  useEffect(() => {
+    if (useCustomerStore.getState().customers.length === 0) {
+      fetchAllCustomers({ page: 1 });
+    }
+  }, [fetchAllCustomers]);
 
   const handleFilter = (newFilters: any) => {
-    setCurrentPage(1);
-    setFilters(newFilters);
+    const cleanedFilters = Object.fromEntries(
+      Object.entries(newFilters).filter(([_, v]) => v !== "")
+    );
+    setPage(1); // Reset to page 1 on new filter
+    setActiveFilters(cleanedFilters);
   };
 
   const handleSearch = (term: string) => {
-    setCurrentPage(1);
+    setPage(1); // Reset to page 1 on new search
     setSearchTerm(term);
+  };
+
+  const handleReload = () => {
+    const { filters } = useCustomerStore.getState();
+    fetchAllCustomers({ page: currentPage, filters });
   };
 
   return (
@@ -684,16 +628,25 @@ export default function CustomersPage() {
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
         <PageTitle
           title="Customers"
-          subtitle={`Manage all customers (${total} total)`}
+          subtitle={`Manage all customers (${totalCustomers} total)`}
         />
+        <button
+          onClick={handleReload}
+          disabled={loading}
+          className="flex items-center gap-2 rounded-md border border-neutral-200 dark:border-neutral-700 px-3 py-2 text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 disabled:opacity-50"
+        >
+          <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+          <span>Reload Data</span>
+        </button>
       </div>
       <div className="mt-8">
         <FilterHeader onFilter={handleFilter} onSearch={handleSearch} />
-        <div className="border rounded-lg nc-dark-box-bg-has-hover p-0 md:p-6">
-          {loading ? (
+        <div className="nc-box-has-hover nc-dark-box-bg-has-hover p-0 md:p-6">
+          {loading && customers.length === 0 ? (
             <CustomerListSkeleton />
           ) : (
             <CustomerList
+              //@ts-ignore
               customers={customers}
               onEditCustomer={setEditingCustomer}
             />
@@ -702,7 +655,7 @@ export default function CustomersPage() {
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}
-              onPageChange={setCurrentPage}
+              onPageChange={setPage}
             />
           )}
         </div>
