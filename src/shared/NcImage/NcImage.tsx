@@ -14,7 +14,12 @@ const NcImage: FC<NcImageProps> = ({
 }) => {
   return (
     <div className={containerClassName}>
-      <Image className={className} alt={alt} {...args} />
+      <Image
+        className={className}
+        alt={alt}
+        {...args}
+        blurDataURL="/small-placeholder.jpg" // tiny blurred version
+      />
     </div>
   );
 };

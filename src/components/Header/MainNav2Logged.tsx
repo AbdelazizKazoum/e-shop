@@ -10,6 +10,8 @@ import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import { useFilterStore } from "@/stores/filterStore"; // 👈 import store
 import Link from "next/link";
+import ButtonPrimary from "@/shared/Button/ButtonPrimary";
+import ButtonSecondary from "@/shared/Button/ButtonSecondary";
 import { User } from "next-auth";
 
 export interface MainNav2LoggedProps {}
@@ -100,19 +102,13 @@ const MainNav2Logged = ({ user }: { user: User | null }) => {
           {user ? (
             <AvatarDropdown user={user} />
           ) : (
-            <div className="hidden sm:flex items-center gap-4 ml-4 mr-2">
-              <Link
-                href="/login"
-                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200"
-              >
+            <div className="hidden sm:flex items-center gap-2 ml-4 mr-2">
+              <ButtonSecondary href="/login" sizeClass="px-4 py-2 sm:px-5">
                 Login
-              </Link>
-              <Link
-                href="/signup"
-                className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg shadow-md hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:outline-none transition-colors duration-200"
-              >
+              </ButtonSecondary>
+              <ButtonPrimary href="/signup" sizeClass="px-4 py-2 sm:px-5">
                 Register
-              </Link>
+              </ButtonPrimary>
             </div>
           )}
 
