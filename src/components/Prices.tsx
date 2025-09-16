@@ -22,11 +22,21 @@ const Prices: FC<PricesProps> = ({
       >
         {showDiscount && (
           <span className="text-slate-400 line-through text-xs">
-            ${price.toFixed(2)}
+            $
+            {typeof price === "number"
+              ? price.toFixed(2)
+              : Number(price).toFixed(2)}
           </span>
         )}
         <span className="text-green-500  !leading-none text-base">
-          ${showDiscount ? newPrice!.toFixed(2) : price.toFixed(2)}
+          $
+          {showDiscount
+            ? typeof newPrice === "number"
+              ? newPrice.toFixed(2)
+              : Number(newPrice).toFixed(2)
+            : typeof price === "number"
+            ? price.toFixed(2)
+            : Number(price).toFixed(2)}
         </span>
       </div>
     </div>

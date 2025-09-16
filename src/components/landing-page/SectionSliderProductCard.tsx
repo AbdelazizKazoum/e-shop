@@ -26,6 +26,7 @@ const SectionSliderProductCard: FC<SectionSliderProductCardProps> = ({
   subHeading = "REY backpacks & bags",
   data = [],
 }) => {
+  console.log("🚀 ~ SectionSliderProductCard ~ data:", data);
   const sliderRef = useRef(null);
 
   //

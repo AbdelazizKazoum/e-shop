@@ -8,7 +8,6 @@ import Link from "next/link";
 import { CheckCircleIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import toast from "react-hot-toast";
 import MightLikeSection from "./MightLikeSection";
-import { SuggestedProduct } from "./SuggestedProductItem";
 
 export interface NotifyAddTocartProps {
   show: boolean;
@@ -34,7 +33,7 @@ const NotifyAddTocart: FC<NotifyAddTocartProps> = ({
   t,
 }) => {
   // For demonstration, create a placeholder product list.
-  const demoSuggestedProducts: SuggestedProduct[] = [
+  const demoSuggestedProducts = [
     {
       id: "prod_123_gloves",
       name: "Leather Gloves",
@@ -122,7 +121,7 @@ const NotifyAddTocart: FC<NotifyAddTocartProps> = ({
 
       {renderProductCartOnNotify()}
 
-      <MightLikeSection suggestedProducts={demoSuggestedProducts} />
+      <MightLikeSection />
     </Transition>
   );
 };
