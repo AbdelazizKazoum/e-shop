@@ -331,9 +331,16 @@ const ProductCard: FC<ProductCardProps> = ({
           </div>
 
           <div className="flex justify-between items-end ">
-            <span className="font-semibold text-lg text-green-600">
-              {newPrice ? `$${newPrice}` : `€${price}`}
-            </span>
+            <div className="flex flex-col">
+              {newPrice ? (
+                <span className="text-sm text-slate-400 line-through">
+                  €{price}
+                </span>
+              ) : null}
+              <span className="font-semibold text-lg text-green-600">
+                {newPrice ? `€${newPrice}` : `€${price}`}
+              </span>
+            </div>
             <div className="flex items-center mb-0.5">
               <StarIcon className="w-5 h-5 pb-[1px] text-amber-400" />
               <span className="text-sm ms-1 text-slate-500 dark:text-slate-400">
