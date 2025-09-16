@@ -18,7 +18,7 @@ const Prices: FC<PricesProps> = ({
   return (
     <div className={className}>
       <div
-        className={`flex items-center border-2 border-green-500 rounded-lg gap-2 ${contentClass}`}
+        className={`inline-flex items-center border-2 border-green-500 rounded-lg gap-2 ${contentClass}`}
       >
         {showDiscount && (
           <span className="text-slate-400 line-through text-xs">

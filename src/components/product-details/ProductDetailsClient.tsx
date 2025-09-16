@@ -114,8 +114,11 @@ const ProductDetailsClient: FC<ProductDetailsClientProps> = ({
     addToCart(productInfo, selectedVariant, qualitySelected);
 
     toast.custom(
-      (t) => (
+      (
+        t // The 't' object is provided by react-hot-toast
+      ) => (
         <NotifyAddTocart
+          t={t} // ==> ADD THIS PROP
           show={t.visible}
           productImage={
             selectedVariant.images[0]?.image || (product.image as string)
