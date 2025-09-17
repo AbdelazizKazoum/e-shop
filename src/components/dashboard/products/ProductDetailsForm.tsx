@@ -6,27 +6,42 @@ import Textarea from "@/components/ui/form/Textarea";
 import Select from "@/components/ui/form/Select";
 import ImageUpload from "@/components/ui/form/ImageUpload";
 import { useProductStore } from "@/stores/productStore";
+import { useBrandStore } from "@/stores/brandStore"; // <-- import brand store
 import type { ProductCreateInput } from "@/types/product";
 import { toast } from "react-toastify";
 import { Loader2 } from "lucide-react";
-
-// type Props = {
-//   onProductCreated: () => void;
-// };
+import BrandSelect from "./BrandSelect";
 
 export default function ProductDetailsForm({ onProductCreated }: any) {
   const [mainImageFile, setMainImageFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+  const [selectedBrand, setSelectedBrand] = useState("");
 
+  // Category logic
   const categories = useProductStore((state) => state.categories);
   const fetchCategories = useProductStore((state) => state.fetchCategories);
 
-  // Fetch categories if empty
   useEffect(() => {
     if (!categories || categories.length === 0) {
       fetchCategories();
     }
   }, [categories, fetchCategories]);
+
+  // Brand logic
+  const {
+    brands,
+    fetchBrands,
+    page,
+    limit,
+    total,
+    loading: brandsLoading,
+  } = useBrandStore();
+  const [brandSearch, setBrandSearch] = useState("");
+  const [brandPage, setBrandPage] = useState(1);
+
+  useEffect(() => {
+    fetchBrands({ page: brandPage, limit: 10, filter: brandSearch });
+  }, [fetchBrands, brandPage, brandSearch]);
 
   const createProduct = useProductStore((state) => state.createProduct);
 
@@ -36,7 +51,7 @@ export default function ProductDetailsForm({ onProductCreated }: any) {
 
     const productData: ProductCreateInput = {
       name: formData.get("name") as string,
-      brand: formData.get("brand") as string,
+      brand: selectedBrand, // <-- use selectedBrand
       description: formData.get("description") as string,
       categoryId: formData.get("category") as string,
       gender: formData.get("gender") as string,
@@ -59,11 +74,6 @@ export default function ProductDetailsForm({ onProductCreated }: any) {
 
         onProductCreated(newProduct as any);
         setMainImageFile(null);
-        // Optionally reset the form:
-        // event.currentTarget.reset();
-      } else {
-        // Optionally handle failure (toast already shown in store)
-        // toast.error("Product creation failed.");
       }
     } catch (err) {
       console.error("Failed to create product:", err);
@@ -85,12 +95,10 @@ export default function ProductDetailsForm({ onProductCreated }: any) {
           required
           placeholder="e.g., Classic Cotton Tee"
         />
-        <Input
-          name="brand"
-          label="Brand"
-          type="text"
+        <BrandSelect
+          value={selectedBrand}
+          onChange={setSelectedBrand}
           required
-          placeholder="e.g., Acme Apparel"
         />
         <div className="md:col-span-2">
           <Textarea
@@ -135,16 +143,14 @@ export default function ProductDetailsForm({ onProductCreated }: any) {
         </div>
       </div>
       <div className="mt-8 flex justify-end">
-        <div className="mt-8 flex justify-end">
-          <button
-            type="submit"
-            className="flex items-center gap-2 rounded-md bg-primary-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 disabled:opacity-70"
-            disabled={loading}
-          >
-            {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-            {loading ? "Saving..." : "Save Product"}
-          </button>
-        </div>
+        <button
+          type="submit"
+          className="flex items-center gap-2 rounded-md bg-primary-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 disabled:opacity-70"
+          disabled={loading}
+        >
+          {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+          {loading ? "Saving..." : "Save Product"}
+        </button>
       </div>
     </form>
   );
