@@ -12,6 +12,7 @@ import { Category } from "@/types/category";
 
 type ProductState = {
   products: Product[];
+  productsByCategory: Product[]; // <-- Add this line
   categories: Category[];
   selectedProduct: Product | null;
 
@@ -83,10 +84,13 @@ type ProductState = {
   deleteVariant: (variantId: string) => Promise<any>;
 
   resetError: () => void;
+
+  fetchProductsByCategory: (category: string) => Promise<void>;
 };
 
 export const useProductStore = create<ProductState>((set, get) => ({
   products: [],
+  productsByCategory: [], // <-- Add this line
   selectedProduct: null,
   categories: [],
 
@@ -360,4 +364,20 @@ export const useProductStore = create<ProductState>((set, get) => ({
   // === RESET ERROR STATE ===========================================
   // =================================================================
   resetError: () => set({ error: null }),
+
+  /**
+   * Fetch products by category (name or ID)
+   */
+  fetchProductsByCategory: async (category: string) => {
+    set({ loading: true, error: null });
+    try {
+      const products = await productService.getProductsByCategory(category);
+      set({ productsByCategory: products, loading: false }); // <-- Use productsByCategory
+    } catch (err: any) {
+      set({
+        error: err.message || "Failed to fetch products by category",
+        loading: false,
+      });
+    }
+  },
 }));

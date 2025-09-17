@@ -308,4 +308,19 @@ export const productService = {
     const res = await axiosClient.delete(`/products/variants/${variantId}`);
     return res.data;
   },
+
+  // =================================================================
+  // === GET PRODUCTS BY CATEGORY ====================================
+  // =================================================================
+  /**
+   * Fetch products by category (name or ID)
+   * @param category - category name or ID
+   * @returns Array of products in the category
+   */
+  async getProductsByCategory(category: string): Promise<Product[]> {
+    const res = await axiosClient.get(`/products/by-category`, {
+      params: { category },
+    });
+    return res.data;
+  },
 };
