@@ -13,6 +13,11 @@ import PageTitle from "@/components/dashboard/PageTitle";
 // --- TABS & MAIN PAGE ---
 const tabs = [
   { name: "Categories", icon: Tag, component: CategoriesManager },
+  {
+    name: "Brands",
+    icon: Building,
+    component: require("@/components/dashboard/brands/BrandsManager").default,
+  },
   { name: "Suppliers", icon: Building, component: SuppliersManager },
   { name: "Offers", icon: Percent, component: OffersManager },
   { name: "Currency", icon: DollarSign, component: CurrencyManager },

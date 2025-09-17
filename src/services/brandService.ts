@@ -15,7 +15,7 @@ export const brandService = {
     if (params?.page) query.page = params.page;
     if (params?.limit) query.limit = params.limit;
     if (params?.filter) query.filter = params.filter;
-    const res = await axiosClient.get(`/products/brands`, { params: query });
+    const res = await axiosClient.get(`/brands`, { params: query });
     return res.data;
   },
 
@@ -23,7 +23,7 @@ export const brandService = {
   // === GET BRAND BY ID =============================================
   // =================================================================
   async getBrandById(brandId: string): Promise<Brand> {
-    const res = await axiosClient.get(`/products/brands/${brandId}`);
+    const res = await axiosClient.get(`/brands/${brandId}`);
     return res.data;
   },
 
@@ -37,7 +37,7 @@ export const brandService = {
     if (imageFile) {
       formData.append("imageFile", imageFile);
     }
-    const res = await axiosClient.post(`/products/brands`, formData, {
+    const res = await axiosClient.post(`/brands`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
     return res.data;
@@ -53,7 +53,7 @@ export const brandService = {
     if (imageFile) {
       formData.append("imageFile", imageFile);
     }
-    const res = await axiosClient.patch(`/products/brands/${id}`, formData, {
+    const res = await axiosClient.patch(`/brands/${id}`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
     return res.data;
@@ -63,6 +63,6 @@ export const brandService = {
   // === DELETE BRAND ================================================
   // =================================================================
   async deleteBrand(brandId: string): Promise<void> {
-    await axiosClient.delete(`/products/brands/${brandId}`);
+    await axiosClient.delete(`/brands/${brandId}`);
   },
 };
