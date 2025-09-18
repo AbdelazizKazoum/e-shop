@@ -23,6 +23,8 @@ import { Category } from "@/types/category";
 import Select from "@/components/ui/form/Select";
 import Textarea from "@/components/ui/form/Textarea";
 import Input from "@/components/ui/form/Input";
+import BrandSelect from "@/components/dashboard/products/BrandSelect";
+import { useBrandStore } from "@/stores/brandStore";
 
 // --- TYPE DEFINITIONS (would be in src/lib/types.ts) ---
 export interface Image {
@@ -195,12 +197,16 @@ const UpdateProductForm = ({
 }) => {
   const [formData, setFormData] = useState(product);
   const [newMainImage, setNewMainImage] = useState<File | null>(null);
+  const [selectedBrand, setSelectedBrand] = useState(product.brand?.id || "");
 
   const { loading, updateProduct } = useProductStore();
+  const { brands, fetchBrands } = useBrandStore();
 
   useEffect(() => {
     setFormData(product);
-  }, [product]);
+    setSelectedBrand(product.brand?.id || "");
+    fetchBrands({ page: 1, limit: 10, filter: "" });
+  }, [product, fetchBrands]);
 
   const handleInputChange = (
     e: React.ChangeEvent<
@@ -225,13 +231,14 @@ const UpdateProductForm = ({
 
     const submissionData = {
       ...formData,
+      brand: selectedBrand, // <-- use brand ID here
       categoryId: formData.category.id,
-      imageFile: newMainImage ?? undefined, // only send if new image uploaded
+      imageFile: newMainImage ?? undefined,
     };
 
     try {
       // @ts-ignore
-      await updateProduct(submissionData); // call store action
+      await updateProduct(submissionData);
     } catch (err) {
       console.error("❌ Failed to update product:", err);
     }
@@ -252,11 +259,10 @@ const UpdateProductForm = ({
                   onChange={handleInputChange}
                 />
               </div>
-              <Input
-                label="Brand"
-                name="brand"
-                value={formData.brand}
-                onChange={handleInputChange}
+              <BrandSelect
+                value={selectedBrand}
+                onChange={setSelectedBrand}
+                required
               />
               <Select
                 label="Gender"

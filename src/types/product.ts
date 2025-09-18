@@ -1,5 +1,6 @@
 // types/product.ts
 
+import { Brand } from "./brand";
 import { Category } from "./category";
 import { Stock } from "./stock";
 
@@ -37,7 +38,7 @@ export type Product = {
   id?: string;
   name: string;
   description?: string;
-  brand: string;
+  brand: Brand;
   gender: string;
   quantity?: number;
   image: string | File;

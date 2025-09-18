@@ -248,7 +248,7 @@ const ProductList = ({ products }: { products: Product[] }) => {
                 </div>
               </td>
               <td className="px-4 py-3 text-neutral-600 dark:text-neutral-300">
-                {product.brand}
+                {product.brand?.name}
               </td>
               <td className="px-4 py-3 text-neutral-600 dark:text-neutral-300">
                 {product.gender}
