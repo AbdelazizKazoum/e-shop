@@ -2,37 +2,48 @@ import { create } from "zustand";
 
 interface FilterState {
   categories: string[];
+  brands: string[]; // 👈 Add brands array
   sizes: string[];
   priceRange: [number, number];
   isOnSale: boolean;
   sortOrder: string;
   gender: string;
-  name: string; // 👈 Product Name
+  name: string;
 
   // actions
   setCategories: (categories: string[]) => void;
+  setBrands: (brands: string[]) => void; // 👈 Add setBrands action
   setSizes: (sizes: string[]) => void;
   setPriceRange: (range: [number, number]) => void;
   setIsOnSale: (onSale: boolean) => void;
   setSortOrder: (order: string) => void;
   setGender: (gender: string) => void;
-  setName: (name: string) => void; // 👈 Product Name
+  setName: (name: string) => void;
   resetFilters: () => void;
 }
 
 export const useFilterStore = create<FilterState>((set) => ({
   categories: [],
+  brands: [], // 👈 Initialize brands
   sizes: [],
   priceRange: [0, 500],
   isOnSale: true,
   sortOrder: "",
   gender: "",
-  name: "", // 👈 NEW
+  name: "",
 
   setCategories: (categories) =>
     set(() => {
       console.log("Selected categories:", categories);
       return { categories };
+    }),
+
+  setBrands: (
+    brands // 👈 Implement setBrands
+  ) =>
+    set(() => {
+      console.log("Selected brands:", brands);
+      return { brands };
     }),
 
   setSizes: (sizes) =>
@@ -76,12 +87,13 @@ export const useFilterStore = create<FilterState>((set) => ({
       console.log("Filters reset");
       return {
         categories: [],
+        brands: [], // 👈 Reset brands
         sizes: [],
         priceRange: [100, 500],
         isOnSale: true,
         sortOrder: "",
         gender: "",
-        name: "", // 👈 reset product name
+        name: "",
       };
     }),
 }));

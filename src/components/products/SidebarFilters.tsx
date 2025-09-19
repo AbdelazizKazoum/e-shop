@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Checkbox from "@/shared/Checkbox/Checkbox";
 import Slider from "rc-slider";
 import Radio from "@/shared/Radio/Radio";
 import MySwitch from "@/components/MySwitch";
 import { useFilterStore } from "@/stores/filterStore";
 import { Category } from "@/types/category";
+import { Brand } from "@/types/brand"; // <-- Import Brand type
 
 const DATA_sizes = [
   { name: "XS" },
@@ -35,17 +36,24 @@ const PRICE_RANGE = [0, 500];
 
 interface SidebarFiltersProps {
   categories: Category[];
+  brands: Brand[]; // <-- Add brands prop
 }
 
-const SidebarFilters: React.FC<SidebarFiltersProps> = ({ categories }) => {
+const SidebarFilters: React.FC<SidebarFiltersProps> = ({
+  categories,
+  brands,
+}) => {
+  console.log("🚀 ~ SidebarFilters ~ brands:", brands);
   const {
     categories: selectedCategories,
+    brands: selectedBrands, // <-- Get selected brands from store
     sizes: selectedSizes,
     priceRange,
     isOnSale,
     sortOrder,
     gender,
     setCategories,
+    setBrands, // <-- Add setBrands
     setSizes,
     setPriceRange,
     setIsOnSale,
@@ -61,6 +69,13 @@ const SidebarFilters: React.FC<SidebarFiltersProps> = ({ categories }) => {
     setCategories(updated);
   };
 
+  const handleChangeBrands = (checked: boolean, name: string) => {
+    const updated = checked
+      ? [...selectedBrands, name]
+      : selectedBrands.filter((i) => i !== name);
+    setBrands(updated);
+  };
+
   const handleChangeSizes = (checked: boolean, name: string) => {
     const updated = checked
       ? [...selectedSizes, name]
@@ -69,139 +84,145 @@ const SidebarFilters: React.FC<SidebarFiltersProps> = ({ categories }) => {
   };
 
   // Render functions
-  const renderCategories = () => {
-    return (
-      <div className="flex flex-col pb-8 space-y-4">
-        <h3 className="font-semibold mb-2.5">Categories</h3>
-        {categories
-          .filter((c) => c.displayText?.trim() !== "")
-          .map((item) => (
-            <Checkbox
-              key={item.id}
-              name={item.displayText || ""}
-              label={item.displayText}
-              defaultChecked={selectedCategories.includes(
-                item.displayText || ""
-              )}
-              sizeClassName="w-5 h-5"
-              labelClassName="text-sm font-normal"
-              onChange={(checked) =>
-                handleChangeCategories(checked, item.displayText || "")
-              }
-            />
-          ))}
-      </div>
-    );
-  };
-
-  const renderSizes = () => {
-    return (
-      <div className="flex flex-col py-8 space-y-4">
-        <h3 className="font-semibold mb-2.5">Sizes</h3>
-        {DATA_sizes.map((item) => (
+  const renderCategories = () => (
+    <div className="flex flex-col pb-8 space-y-4">
+      <h3 className="font-semibold mb-2.5">Categories</h3>
+      {categories
+        .filter((c) => c.displayText?.trim() !== "")
+        .map((item) => (
           <Checkbox
-            key={item.name}
-            name={item.name}
-            label={item.name}
-            defaultChecked={selectedSizes.includes(item.name)}
-            onChange={(checked) => handleChangeSizes(checked, item.name)}
+            key={item.id}
+            name={item.displayText || ""}
+            label={item.displayText}
+            defaultChecked={selectedCategories.includes(item.displayText || "")}
             sizeClassName="w-5 h-5"
             labelClassName="text-sm font-normal"
+            onChange={(checked) =>
+              handleChangeCategories(checked, item.displayText || "")
+            }
           />
         ))}
-      </div>
-    );
-  };
+    </div>
+  );
 
-  const renderPriceRange = () => {
-    return (
-      <div className="flex flex-col py-8 space-y-5 pr-3">
-        <span className="font-semibold">Price range</span>
-        <Slider
-          range
-          min={PRICE_RANGE[0]}
-          max={PRICE_RANGE[1]}
-          step={1}
-          defaultValue={[priceRange[0], priceRange[1]]}
-          allowCross={false}
-          onChange={(value: number | number[]) =>
-            setPriceRange(value as [number, number])
-          }
+  const renderBrands = () => (
+    <div className="flex flex-col pb-8 space-y-4">
+      <h3 className="font-semibold mb-2.5">Brands</h3>
+      {brands.map((brand) => (
+        <Checkbox
+          key={brand.id}
+          name={brand.name}
+          label={brand.name}
+          defaultChecked={selectedBrands.includes(brand.name)}
+          sizeClassName="w-5 h-5"
+          labelClassName="text-sm font-normal"
+          onChange={(checked) => handleChangeBrands(checked, brand.name)}
         />
-        <div className="flex justify-between space-x-5 mt-2">
-          <div>
-            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-              Min price
-            </label>
-            <input
-              type="text"
-              disabled
-              className="block w-32 pr-10 pl-4 sm:text-sm border-neutral-200 dark:border-neutral-700 rounded-full bg-transparent"
-              value={priceRange[0]}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-              Max price
-            </label>
-            <input
-              type="text"
-              disabled
-              className="block w-32 pr-10 pl-4 sm:text-sm border-neutral-200 dark:border-neutral-700 rounded-full bg-transparent"
-              value={priceRange[1]}
-            />
-          </div>
+      ))}
+    </div>
+  );
+
+  const renderSizes = () => (
+    <div className="flex flex-col py-8 space-y-4">
+      <h3 className="font-semibold mb-2.5">Sizes</h3>
+      {DATA_sizes.map((item) => (
+        <Checkbox
+          key={item.name}
+          name={item.name}
+          label={item.name}
+          defaultChecked={selectedSizes.includes(item.name)}
+          onChange={(checked) => handleChangeSizes(checked, item.name)}
+          sizeClassName="w-5 h-5"
+          labelClassName="text-sm font-normal"
+        />
+      ))}
+    </div>
+  );
+
+  const renderPriceRange = () => (
+    <div className="flex flex-col py-8 space-y-5 pr-3">
+      <span className="font-semibold">Price range</span>
+      <Slider
+        range
+        min={PRICE_RANGE[0]}
+        max={PRICE_RANGE[1]}
+        step={1}
+        defaultValue={[priceRange[0], priceRange[1]]}
+        allowCross={false}
+        onChange={(value: number | number[]) =>
+          setPriceRange(value as [number, number])
+        }
+      />
+      <div className="flex justify-between space-x-5 mt-2">
+        <div>
+          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+            Min price
+          </label>
+          <input
+            type="text"
+            disabled
+            className="block w-32 pr-10 pl-4 sm:text-sm border-neutral-200 dark:border-neutral-700 rounded-full bg-transparent"
+            value={priceRange[0]}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+            Max price
+          </label>
+          <input
+            type="text"
+            disabled
+            className="block w-32 pr-10 pl-4 sm:text-sm border-neutral-200 dark:border-neutral-700 rounded-full bg-transparent"
+            value={priceRange[1]}
+          />
         </div>
       </div>
-    );
-  };
+    </div>
+  );
 
-  const renderSortOrder = () => {
-    return (
-      <div className="flex flex-col py-8 space-y-4">
-        <h3 className="font-semibold mb-2.5">Sort order</h3>
-        {DATA_sortOrderRadios.map((item) => (
-          <Radio
-            key={item.id}
-            id={item.id}
-            name="sortOrder"
-            label={item.name}
-            defaultChecked={sortOrder === item.id}
-            sizeClassName="w-5 h-5"
-            onChange={setSortOrder}
-            className="!text-sm"
-          />
-        ))}
-      </div>
-    );
-  };
+  const renderSortOrder = () => (
+    <div className="flex flex-col py-8 space-y-4">
+      <h3 className="font-semibold mb-2.5">Sort order</h3>
+      {DATA_sortOrderRadios.map((item) => (
+        <Radio
+          key={item.id}
+          id={item.id}
+          name="sortOrder"
+          label={item.name}
+          defaultChecked={sortOrder === item.id}
+          sizeClassName="w-5 h-5"
+          onChange={setSortOrder}
+          className="!text-sm"
+        />
+      ))}
+    </div>
+  );
 
-  const renderGender = () => {
-    return (
-      <div className="flex flex-col py-8 space-y-4">
-        <h3 className="font-semibold mb-2.5">Gender</h3>
-        {DATA_genders.map((item) => (
-          <Radio
-            key={item.id}
-            id={item.id}
-            name="gender"
-            label={item.name}
-            defaultChecked={gender === item.id}
-            sizeClassName="w-5 h-5"
-            onChange={setGender}
-            className="!text-sm"
-          />
-        ))}
-      </div>
-    );
-  };
+  const renderGender = () => (
+    <div className="flex flex-col py-8 space-y-4">
+      <h3 className="font-semibold mb-2.5">Gender</h3>
+      {DATA_genders.map((item) => (
+        <Radio
+          key={item.id}
+          id={item.id}
+          name="gender"
+          label={item.name}
+          defaultChecked={gender === item.id}
+          sizeClassName="w-5 h-5"
+          onChange={setGender}
+          className="!text-sm"
+        />
+      ))}
+    </div>
+  );
 
   return (
     <div className="divide-y divide-slate-200 dark:divide-slate-700">
       {renderCategories()}
+      {renderBrands()} {/* <-- Add brands filter here */}
       {renderSizes()}
       {renderPriceRange()}
-      {renderGender()} {/* 👈 Added gender filter */}
+      {renderGender()}
       <div className="py-8 pr-2">
         <MySwitch
           label="On sale!"
@@ -214,4 +235,5 @@ const SidebarFilters: React.FC<SidebarFiltersProps> = ({ categories }) => {
     </div>
   );
 };
+
 export default SidebarFilters;

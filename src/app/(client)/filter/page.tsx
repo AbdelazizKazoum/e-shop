@@ -3,13 +3,15 @@ import SectionSliderCollections from "@/components/SectionSliderLargeProduct";
 import SectionPromo1 from "@/components/SectionPromo1";
 // import { PRODUCTS } from "@/data/data";
 import { fetchCategories, fetchProducts } from "@/lib/actions/products";
+import { fetchAllBrands } from "@/lib/actions/brand"; // <-- Import fetchAllBrands
 import { RenderProducts } from "@/components/filter/RenderProducts";
 import SidebarFilters from "@/components/products/SidebarFilters";
 
 const PageCollection2 = async ({}) => {
-  const [products, categories] = await Promise.all([
+  const [products, categories, brands] = await Promise.all([
     fetchProducts(1, 10),
     fetchCategories(),
+    fetchAllBrands(), // <-- Fetch brands
   ]);
 
   return (
@@ -32,7 +34,8 @@ const PageCollection2 = async ({}) => {
             {/* LOOP ITEMS */}
             <div className="flex flex-col lg:flex-row">
               <div className="lg:w-1/3 xl:w-1/4 pr-4">
-                <SidebarFilters categories={categories} />
+                <SidebarFilters categories={categories} brands={brands} />{" "}
+                {/* Pass brands */}
               </div>
               <div className="flex-shrink-0 mb-10 lg:mb-0 lg:mx-4 border-t lg:border-t-0"></div>
               <RenderProducts
