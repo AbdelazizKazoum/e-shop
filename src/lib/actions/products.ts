@@ -35,3 +35,5 @@ export async function getProductById(id: string) {
   if (!res.ok) throw new Error("Failed to fetch product");
   return (await res.json()) || [];
 }
+
+

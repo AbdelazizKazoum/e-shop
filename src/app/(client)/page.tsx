@@ -16,9 +16,10 @@ import { PRODUCTS, SPORT_PRODUCTS } from "@/data/data";
 import SectionGridFeatureItems from "@/components/SectionGridFeatureItems";
 import { fetchLandingPageData } from "@/lib/actions/landingPage";
 import SectionSliderProductCard from "@/components/landing-page/SectionSliderProductCard";
+import DiscoverBrands from "@/components/DiscoverBrands";
 
 async function PageHome() {
-  const { newArrivals, bestSellers, featuredProducts, categories } =
+  const { newArrivals, bestSellers, featuredProducts, categories, topBrands } =
     await fetchLandingPageData();
 
   return (
@@ -26,7 +27,8 @@ async function PageHome() {
       <SectionHero2 />
 
       <div className="mt-24 lg:mt-32">
-        <DiscoverMoreSlider />
+        {/* <DiscoverMoreSlider /> */}
+        <DiscoverBrands brands={topBrands} />
       </div>
 
       <div className="container relative space-y-24 my-24 lg:space-y-32 lg:my-32">

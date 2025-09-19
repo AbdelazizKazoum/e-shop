@@ -30,8 +30,10 @@ const CardCategory3: FC<CardCategory3Props> = ({
         <div>
           <div className="absolute inset-5 sm:inset-8">
             <Image
-              alt=""
+              alt={name || ""}
               src={featuredImage || ""}
+              width={200} // Add width
+              height={120} // Add height
               className="absolute end-0 w-1/2 max-w-[260px] h-full object-contain drop-shadow-xl"
             />
           </div>
