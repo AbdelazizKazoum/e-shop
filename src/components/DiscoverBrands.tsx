@@ -5,6 +5,7 @@ import Heading from "./Heading/Heading";
 import CardCategory3 from "./CardCategories/CardCategory3";
 // @ts-ignore
 import Glide from "@glidejs/glide/dist/glide.esm";
+import { Brand } from "@/types/brand";
 
 const COLORS = ["bg-yellow-50", "bg-red-50", "bg-blue-50", "bg-green-50"];
 
