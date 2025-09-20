@@ -44,10 +44,11 @@ export function RenderProducts({
   // ✅ FIX: Select each piece of state individually.
   // This avoids creating a new object on every render.
   const categories = useFilterStore((state) => state.categories);
+  const brands = useFilterStore((state) => state.brands); // 👈 Add this line
   const sizes = useFilterStore((state) => state.sizes);
   const priceRange = useFilterStore((state) => state.priceRange);
-  const sortOrder = useFilterStore((state) => state.sortOrder); // 👈 added
-  const gender = useFilterStore((state) => state.gender); // 👈 added
+  const sortOrder = useFilterStore((state) => state.sortOrder);
+  const gender = useFilterStore((state) => state.gender);
   const name = useFilterStore((state) => state.name); // 👈 added
 
   // Add any other filters you need here in the same way
@@ -58,21 +59,21 @@ export function RenderProducts({
   // ✅ FIX: Use the individual state values in the dependency array.
   // React can now correctly track when they actually change.
   useEffect(() => {
-    if (categories.length <= 0) {
+    if (categories.length <= 0 && brands.length <= 0) {
       if (!hasMounted) return;
     }
 
     const queryFilters = {
       name,
       categories: categories,
+      brands: brands, // 👈 Add brands to filters
       sizes: sizes,
       minPrice: priceRange[0],
       maxPrice: priceRange[1],
-      sortOrder, // 👈 included
-      gender, // 👈 included
+      sortOrder,
+      gender,
     };
 
-    // only trigger fetch if filters or pagination change
     setFiltersApplied(true);
 
     fetchProductsClient(page, limit, queryFilters);
@@ -80,6 +81,7 @@ export function RenderProducts({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     categories,
+    brands, // 👈 Add brands to dependencies
     sizes,
     priceRange,
     sortOrder,

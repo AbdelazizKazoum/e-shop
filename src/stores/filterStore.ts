@@ -38,9 +38,7 @@ export const useFilterStore = create<FilterState>((set) => ({
       return { categories };
     }),
 
-  setBrands: (
-    brands // 👈 Implement setBrands
-  ) =>
+  setBrands: (brands) =>
     set(() => {
       console.log("Selected brands:", brands);
       return { brands };

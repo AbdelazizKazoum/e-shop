@@ -12,12 +12,12 @@ export interface CardCategory3Props {
   color?: string;
 }
 
-const CardCategory3: FC<CardCategory3Props> = ({
+const BrandCard: FC<CardCategory3Props> = ({
   className = "",
   featuredImage = CATS_DISCOVER[2].featuredImage,
-  name = CATS_DISCOVER[2].name,
-  desc = CATS_DISCOVER[2].desc,
-  color = CATS_DISCOVER[2].color,
+  name = "",
+  desc = "",
+  color = "bg-blue-50",
 }) => {
   return (
     <Link
@@ -69,4 +69,4 @@ const CardCategory3: FC<CardCategory3Props> = ({
   );
 };
 
-export default CardCategory3;
+export default BrandCard;
