@@ -3,13 +3,15 @@ import SectionSliderCollections from "@/components/SectionSliderLargeProduct";
 import SectionPromo1 from "@/components/SectionPromo1";
 import HeaderFilterSearchPage from "@/components/products/HeaderFilterSearchPage";
 import { RenderProducts } from "@/components/filter/RenderProducts";
-import { fetchCategories, fetchProducts } from "@/lib/actions/products";
+import { fetchCategories, fetchProducts } from "@/lib/actions/products"; // 👈 import fetchBrands
 import SearchInput from "@/components/products/SearchInput";
+import { fetchAllBrands } from "@/lib/actions/brand";
 
 const PageSearch = async ({}) => {
-  const [products, categories] = await Promise.all([
+  const [products, categories, brands] = await Promise.all([
     fetchProducts(1, 10),
     fetchCategories(),
+    fetchAllBrands(), // 👈 fetch brands
   ]);
 
   return (
@@ -27,15 +29,11 @@ const PageSearch = async ({}) => {
       <div className="container py-16 lg:pb-28 lg:pt-20 space-y-16 lg:space-y-28">
         <main>
           {/* FILTER */}
-          <HeaderFilterSearchPage categories={categories} />
-
-          {/* LOOP ITEMS */}
-          {/* <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-10 mt-8 lg:mt-10">
-            {PRODUCTS.map((item, index) => (
-              <ProductCard data={item} key={index} />
-            ))}
-          </div> */}
-
+          <HeaderFilterSearchPage
+            categories={categories}
+            brands={brands}
+          />{" "}
+          {/* 👈 pass brands */}
           <RenderProducts
             initialProducts={products}
             className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-10 mt-8 lg:mt-10"

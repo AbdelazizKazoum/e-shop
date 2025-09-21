@@ -9,14 +9,17 @@ import { Transition } from "@/app/headlessui";
 import TabFilters from "./TabFilters";
 import { useFilterStore } from "@/stores/filterStore";
 import type { Category } from "@/types/category";
+import { Brand } from "@/types/brand";
 export interface HeaderFilterSearchPageProps {
   className?: string;
   categories: Category[]; //
+  brands?: Brand[]; // <-- Add brands prop
 }
 
 const HeaderFilterSearchPage: FC<HeaderFilterSearchPageProps> = ({
   className = "mb-12",
-  categories,
+  categories = [],
+  brands = [],
 }) => {
   const [isOpen, setIsOpen] = useState(true);
   const [tabActive, setTabActive] = useState("All items");
@@ -108,7 +111,7 @@ const HeaderFilterSearchPage: FC<HeaderFilterSearchPageProps> = ({
         leaveTo="opacity-0"
       >
         <div className="w-full border-b border-neutral-200/70 dark:border-neutral-700 my-8"></div>
-        <TabFilters categories={categories} />
+        <TabFilters categories={categories} brands={brands} />
       </Transition>
     </div>
   );

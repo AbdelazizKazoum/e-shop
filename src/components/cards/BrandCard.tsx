@@ -3,6 +3,7 @@ import ButtonSecondary from "@/shared/Button/ButtonSecondary";
 import Link from "next/link";
 import Image, { StaticImageData } from "next/image";
 import { CATS_DISCOVER } from "../CardCategories/data";
+import { useFilterStore } from "@/stores/filterStore"; // 👈 import
 
 export interface CardCategory3Props {
   className?: string;
@@ -19,10 +20,18 @@ const BrandCard: FC<CardCategory3Props> = ({
   desc = "",
   color = "bg-blue-50",
 }) => {
+  // 👇 Handler to set brand filter before navigation
+  const handleClick = () => {
+    if (name) {
+      useFilterStore.getState().setBrands([name]);
+    }
+  };
+
   return (
     <Link
-      href={"/collection"}
+      href={"/filter"}
       className={`nc-CardCategory3 block ${className}`}
+      onClick={handleClick} // 👈 add handler
     >
       <div
         className={`relative w-full aspect-w-16 aspect-h-11 sm:aspect-h-9 h-0 rounded-2xl overflow-hidden group ${color}`}
