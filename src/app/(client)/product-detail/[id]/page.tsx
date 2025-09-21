@@ -70,7 +70,7 @@ const ProductDetailPage = async ({ params }: ProductDetailPageProps) => {
   const session = await getServerSession(authOptions);
   const user = session?.user;
 
-  const { rating, reviewCount, description } = product;
+  const { rating, reviewCount, description, reviews } = product;
 
   // --- JSON-LD STRUCTURED DATA SCRIPT ---
   const jsonLd = {
@@ -159,11 +159,10 @@ const ProductDetailPage = async ({ params }: ProductDetailPageProps) => {
 
           {/* {renderDetailSection()} */}
           <hr className="border-slate-200 dark:border-slate-700" />
-          {renderReviews()}
           <ProductReviews
             rating={rating}
             reviewCount={reviewCount}
-            reviews={[]}
+            reviews={reviews}
             product={{ id: product.id }}
             user={user}
           />

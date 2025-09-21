@@ -52,7 +52,9 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({
               <ReviewItem
                 key={review.id}
                 data={{
-                  name: review.user?.name || "Anonymous",
+                  name:
+                    review.user?.firstName + " " + review.user?.lastName ||
+                    "Anonymous",
                   avatar: review.user?.image || undefined,
                   date: new Date(review.reviewDate).toLocaleDateString(),
                   comment: review.comment,
