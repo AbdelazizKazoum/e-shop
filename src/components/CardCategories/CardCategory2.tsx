@@ -2,6 +2,7 @@ import React, { FC } from "react";
 import NcImage from "@/shared/NcImage/NcImage";
 import Link from "next/link";
 import { StaticImageData } from "next/image";
+import { useFilterStore } from "@/stores/filterStore"; // 👈 import
 
 export interface CardCategory2Props {
   className?: string;
@@ -20,22 +21,32 @@ const CardCategory2: FC<CardCategory2Props> = ({
   name,
   desc,
 }) => {
+  // Handler to set category filter before navigation
+  const handleClick = () => {
+    if (name) {
+      useFilterStore.getState().setCategories([name]);
+    }
+  };
+
   return (
     <Link
-      href={"/collection"}
+      href={"/filter"}
       className={`nc-CardCategory2 ${className}`}
       data-nc-id="CardCategory2"
+      onClick={handleClick} // 👈 add handler
     >
       <div
         className={`flex-1 relative w-full h-0 rounded-2xl overflow-hidden group ${ratioClass} ${bgClass}`}
       >
-        <div className="pt-14">
+        <div className="">
           <NcImage
             alt=""
             containerClassName="w-full h-full flex justify-center"
             src={featuredImage}
             className="object-cover rounded-2xl"
             sizes="400px"
+            height={400}
+            width={400}
           />
         </div>
         <span className="opacity-0 group-hover:opacity-100 absolute inset-0 bg-black bg-opacity-10 transition-opacity rounded-2xl"></span>

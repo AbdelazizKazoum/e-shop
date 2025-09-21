@@ -26,43 +26,41 @@ async function PageHome() {
     <div className="nc-PageHome relative overflow-hidden">
       <SectionHero2 />
 
+      <div className=" mt-24 lg:mt-32 container relative space-y-24 my-24 lg:space-y-32 lg:my-32">
+        <SectionSliderCategories data={categories} />
+      </div>
+
+      <div className="container relative space-y-24 my-24 lg:space-y-32 lg:my-32">
+        <SectionSliderProductCard data={newArrivals} />
+      </div>
+
       <div className="mt-24 lg:mt-32">
         {/* <DiscoverMoreSlider /> */}
         <DiscoverBrands brands={topBrands} />
       </div>
 
       <div className="container relative space-y-24 my-24 lg:space-y-32 lg:my-32">
-        <SectionSliderProductCard data={newArrivals} />
-
-        <div className="py-24 lg:py-32 border-t border-b border-slate-200 dark:border-slate-700">
-          <SectionHowItWork />
-        </div>
-        {/* <SectionPromo1 /> */}
-
+        {/* <SectionPromo1 />
         <div className="relative py-24 lg:py-32">
           <BackgroundSection />
           <SectionGridMoreExplore data={categories} />
-        </div>
-
+        </div> */}
         <SectionSliderProductCard
           heading="Best Sellers"
           subHeading="Best selling of the month"
           data={bestSellers}
         />
-
+        {/* HOW IT WORKS */}{" "}
+        <div className="py-24 lg:py-32 border-t border-b border-slate-200 dark:border-slate-700">
+          <SectionHowItWork />
+        </div>
         <SectionPromo2 />
-
         <SectionSliderLargeProduct cardStyle="style2" />
-
-        <SectionSliderCategories />
-
         <SectionPromo3 />
-
         <SectionGridFeatureItems
           products={featuredProducts}
           categories={categories}
         />
-
         <div className="relative py-24 lg:py-32">
           <BackgroundSection />
           <div>

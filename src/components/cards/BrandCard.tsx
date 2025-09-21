@@ -53,12 +53,12 @@ const BrandCard: FC<CardCategory3Props> = ({
           <div className="absolute inset-5 sm:inset-8 flex flex-col">
             <div className="max-w-xs">
               <span className={`block mb-2 text-sm text-slate-700`}>
-                {name}
+                {desc}
               </span>
-              {desc && (
+              {name && (
                 <h2
                   className={`text-xl md:text-2xl text-slate-900 font-semibold`}
-                  dangerouslySetInnerHTML={{ __html: desc }}
+                  dangerouslySetInnerHTML={{ __html: name }}
                 ></h2>
               )}
             </div>
