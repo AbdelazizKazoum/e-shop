@@ -45,7 +45,7 @@ export const productService = {
     limit = 10,
     filters?: {
       name?: string;
-      categories: string[];
+      categories?: string[];
       brands?: string[];
       gender?: string;
       rating?: number;

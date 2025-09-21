@@ -47,7 +47,7 @@ type ProductState = {
     limit?: number,
     filters?: {
       name?: string;
-      brand?: string;
+      brands?: string[];
       gender?: string;
       rating?: number;
       minPrice?: number;
@@ -141,7 +141,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
     limit = 10,
     filters?: {
       name?: string;
-      brand?: string;
+      brands?: string[];
       gender?: string;
       rating?: number;
       minPrice?: number;
