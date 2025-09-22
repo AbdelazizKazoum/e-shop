@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useState, useRef } from "react";
 import Input from "@/components/ui/form/Input";
 import Textarea from "@/components/ui/form/Textarea";
 import Select from "@/components/ui/form/Select";
@@ -16,6 +16,9 @@ export default function ProductDetailsForm({ onProductCreated }: any) {
   const [mainImageFile, setMainImageFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [selectedBrand, setSelectedBrand] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState<string>("");
+  const tagInputRef = useRef<HTMLInputElement>(null);
 
   // Category logic
   const categories = useProductStore((state) => state.categories);
@@ -45,13 +48,46 @@ export default function ProductDetailsForm({ onProductCreated }: any) {
 
   const createProduct = useProductStore((state) => state.createProduct);
 
+  const handleTagInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTagInput(e.target.value);
+  };
+
+  const handleTagInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if ((e.key === "Enter" || e.key === ",") && tagInput.trim().length > 0) {
+      e.preventDefault();
+      addTag(tagInput.trim());
+    }
+  };
+
+  const addTag = (tag: string) => {
+    if (tag.length > 0 && !tags.includes(tag.toLowerCase())) {
+      setTags([...tags, tag]);
+    }
+    setTagInput("");
+    tagInputRef.current?.focus();
+  };
+
+  const removeTag = (tag: string) => {
+    setTags(tags.filter((t) => t !== tag));
+  };
+
+  const handleTagPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    const pasted = e.clipboardData.getData("text");
+    const splitTags = pasted
+      .split(",")
+      .map((t) => t.trim())
+      .filter((t) => t.length > 0);
+    splitTags.forEach(addTag);
+    e.preventDefault();
+  };
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
 
     const productData: ProductCreateInput = {
       name: formData.get("name") as string,
-      brand: selectedBrand, // <-- use selectedBrand
+      brand: selectedBrand,
       description: formData.get("description") as string,
       categoryId: formData.get("category") as string,
       gender: formData.get("gender") as string,
@@ -60,6 +96,7 @@ export default function ProductDetailsForm({ onProductCreated }: any) {
         ? Number(formData.get("newPrice"))
         : undefined,
       image: mainImageFile || undefined,
+      tags: tags, // <-- Use array of tags
     };
 
     try {
@@ -135,6 +172,52 @@ export default function ProductDetailsForm({ onProductCreated }: any) {
           placeholder="19.99"
           step="0.01"
         />
+        {/* --- Keywords input moved here --- */}
+        <div className="md:col-span-2">
+          <label className="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+            Keywords (press Enter or comma to add)
+          </label>
+          <div className="flex flex-wrap items-center gap-2 border border-neutral-300 dark:border-neutral-700 rounded-md bg-white dark:bg-neutral-900 px-2 py-2 shadow-sm">
+            {tags.map((tag) => (
+              <span
+                key={tag}
+                className="flex items-center bg-primary-100 text-primary-700 rounded px-2 py-0.5 text-xs font-medium mr-1 mb-1"
+              >
+                {tag}
+                <button
+                  type="button"
+                  className="ml-1 text-primary-500 hover:text-red-500"
+                  onClick={() => removeTag(tag)}
+                  aria-label={`Remove ${tag}`}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    padding: 0,
+                    cursor: "pointer",
+                  }}
+                >
+                  &times;
+                </button>
+              </span>
+            ))}
+            <input
+              ref={tagInputRef}
+              type="text"
+              value={tagInput}
+              onChange={handleTagInputChange}
+              onKeyDown={handleTagInputKeyDown}
+              onPaste={handleTagPaste}
+              className="flex-1 bg-transparent py-2 text-sm text-neutral-800 dark:text-neutral-200 border-none outline-none focus:ring-0"
+              placeholder="Type keyword and press Enter or comma"
+              style={{
+                minWidth: "120px",
+                boxShadow: "none",
+                borderRadius: "0.375rem",
+              }}
+            />
+          </div>
+        </div>
+        {/* --- End keywords input --- */}
         <div className="md:col-span-2">
           <ImageUpload
             label="Main Image"

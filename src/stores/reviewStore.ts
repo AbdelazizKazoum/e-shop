@@ -9,7 +9,7 @@ type ReviewState = {
   page: number;
   limit: number;
   averageRating: number | null;
-  reviewCount: number;
+  reviewCount: number | null;
   loading: boolean;
   error: string | null;
   fetchReviews: (
@@ -35,7 +35,7 @@ export const useReviewStore = create<ReviewState>((set, get) => ({
   page: 1,
   limit: 10,
   averageRating: null,
-  reviewCount: 0,
+  reviewCount: null,
   loading: false,
   error: null,
 

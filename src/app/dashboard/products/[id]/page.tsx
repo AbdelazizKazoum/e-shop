@@ -234,6 +234,7 @@ const UpdateProductForm = ({
       brand: selectedBrand, // <-- use brand ID here
       categoryId: formData.category.id,
       imageFile: newMainImage ?? undefined,
+      tags, // <-- ADD THIS LINE to send tags array
     };
 
     try {
@@ -242,6 +243,44 @@ const UpdateProductForm = ({
     } catch (err) {
       console.error("❌ Failed to update product:", err);
     }
+  };
+
+  // --- Keywords/tags logic ---
+  const [tags, setTags] = useState<string[]>(product.tags ?? []);
+  const [tagInput, setTagInput] = useState<string>("");
+  const tagInputRef = useRef<HTMLInputElement>(null);
+
+  const handleTagInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTagInput(e.target.value);
+  };
+
+  const handleTagInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if ((e.key === "Enter" || e.key === ",") && tagInput.trim().length > 0) {
+      e.preventDefault();
+      addTag(tagInput.trim());
+    }
+  };
+
+  const addTag = (tag: string) => {
+    if (tag.length > 0 && !tags.includes(tag.toLowerCase())) {
+      setTags([...tags, tag]);
+    }
+    setTagInput("");
+    tagInputRef.current?.focus();
+  };
+
+  const removeTag = (tag: string) => {
+    setTags(tags.filter((t) => t !== tag));
+  };
+
+  const handleTagPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    const pasted = e.clipboardData.getData("text");
+    const splitTags = pasted
+      .split(",")
+      .map((t) => t.trim())
+      .filter((t) => t.length > 0);
+    splitTags.forEach(addTag);
+    e.preventDefault();
   };
 
   return (
@@ -282,43 +321,73 @@ const UpdateProductForm = ({
                   onChange={handleInputChange}
                 />
               </div>
-              <Input
-                label="Price ($)"
-                name="price"
-                type="number"
-                value={formData.price}
-                onChange={handleInputChange}
-                step="0.01"
-              />
-              <Input
-                label="New Price ($)"
-                name="newPrice"
-                type="number"
-                value={formData.newPrice || ""}
-                onChange={handleInputChange}
-                step="0.01"
-              />
-              <Select
-                label="Category"
-                name="category"
-                value={formData.category.id}
-                onChange={handleCategoryChange}
-              >
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.displayText}
-                  </option>
-                ))}
-              </Select>
-              <Select
-                label="Status"
-                name="status"
-                value={formData.status}
-                onChange={handleInputChange}
-              >
-                <option value="active">Active</option>
-                <option value="archived">Archived</option>
-              </Select>
+              {/* Price Inputs */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <input
+                  name="price"
+                  type="number"
+                  value={formData.price}
+                  onChange={handleInputChange}
+                  required
+                  placeholder="Price"
+                  className="input-class"
+                />
+                <input
+                  name="newPrice"
+                  type="number"
+                  value={formData.newPrice || ""}
+                  onChange={handleInputChange}
+                  placeholder="Sale Price (optional)"
+                  className="input-class"
+                />
+              </div>
+
+              {/* --- Keywords/tags input (place here) --- */}
+              <div className="md:col-span-2 mt-4">
+                <label className="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                  Keywords (press Enter or comma to add)
+                </label>
+                <div className="flex flex-wrap items-center gap-2 border border-neutral-300 dark:border-neutral-700 rounded-md bg-white dark:bg-neutral-900 px-2 py-2 shadow-sm">
+                  {tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="flex items-center bg-primary-100 text-primary-700 rounded px-2 py-0.5 text-xs font-medium mr-1 mb-1"
+                    >
+                      {tag}
+                      <button
+                        type="button"
+                        className="ml-1 text-primary-500 hover:text-red-500"
+                        onClick={() => removeTag(tag)}
+                        aria-label={`Remove ${tag}`}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          padding: 0,
+                          cursor: "pointer",
+                        }}
+                      >
+                        &times;
+                      </button>
+                    </span>
+                  ))}
+                  <input
+                    ref={tagInputRef}
+                    type="text"
+                    value={tagInput}
+                    onChange={handleTagInputChange}
+                    onKeyDown={handleTagInputKeyDown}
+                    onPaste={handleTagPaste}
+                    className="flex-1 bg-transparent py-2 text-sm text-neutral-800 dark:text-neutral-200 border-none outline-none focus:ring-0"
+                    placeholder="Type keyword and press Enter or comma"
+                    style={{
+                      minWidth: "120px",
+                      boxShadow: "none",
+                      borderRadius: "0.375rem",
+                    }}
+                  />
+                </div>
+              </div>
+              {/* --- End keywords input --- */}
             </div>
           </div>
           <div className="lg:col-span-1">
@@ -329,15 +398,15 @@ const UpdateProductForm = ({
             />
           </div>
         </div>
-      </div>
-      <div className="mt-6 flex justify-end">
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded-md bg-primary-500 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 disabled:opacity-50"
-        >
-          {loading ? "Saving..." : "Save Changes"}
-        </button>
+        <div className="mt-6 flex justify-end">
+          <button
+            type="submit"
+            disabled={loading}
+            className="rounded-md bg-primary-500 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 disabled:opacity-50"
+          >
+            {loading ? "Saving..." : "Save Changes"}
+          </button>
+        </div>
       </div>
     </form>
   );

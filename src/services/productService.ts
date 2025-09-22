@@ -6,6 +6,7 @@ import type {
   ProductUpdateInput,
   VariantInput,
 } from "@/types/product";
+import { ta } from "zod/v4/locales/index.cjs";
 
 export const productService = {
   // =================================================================
@@ -83,6 +84,7 @@ export const productService = {
       gender: data.gender,
       price: data.price,
       newPrice: data.newPrice,
+      tags: data.tags || [], // <-- Add this line
     };
     formData.append("data", JSON.stringify(productData));
 
@@ -114,6 +116,7 @@ export const productService = {
     if (data.newPrice !== undefined) productData.newPrice = data.newPrice;
     if (data.status) productData.status = data.status;
     if (data.trending !== undefined) productData.trending = data.trending;
+    if (data.tags) productData.tags = data.tags; // <-- Add this line
 
     formData.append("data", JSON.stringify(productData));
 

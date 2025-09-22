@@ -35,19 +35,20 @@ export type Review = {
 };
 
 export type Product = {
-  id?: string;
+  id: string;
   name: string;
   description?: string;
-  brand: Brand;
+  brand?: Brand;
   gender: string;
   quantity?: number;
-  image: string | File;
+  image?: string;
   rating?: number;
   reviewCount?: number;
   price: number;
-  newPrice: number;
-  status?: string;
+  newPrice?: number;
+  status?: "active" | "inactive" | "archived";
   trending?: boolean;
+  tags?: string[]; // <-- Add this line
   createAt?: string;
   category: Category;
   variants: Variant[];
@@ -84,6 +85,7 @@ export type ProductCreateInput = {
   trending?: boolean;
   categoryId: string; // for linking category
   variants?: VariantInput[];
+  tags?: string[]; // <-- Add this line
 };
 
 export type ProductUpdateInput = Partial<ProductCreateInput> & {
