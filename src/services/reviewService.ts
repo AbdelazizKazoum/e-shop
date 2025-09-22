@@ -1,6 +1,12 @@
 import axiosClient from "@/lib/axiosClient";
 import { Review, ReviewCreateInput, ReviewUpdateInput } from "@/types/review";
 
+// Define the return type for average rating response
+export type ProductAverageRatingResponse = {
+  rating: number;
+  reviewCount: number;
+};
+
 export const reviewService = {
   // =================================================================
   // === CREATE REVIEW ===============================================
@@ -30,7 +36,9 @@ export const reviewService = {
   // =================================================================
   // === GET PRODUCT AVERAGE RATING ==================================
   // =================================================================
-  async getProductAverageRating(productId: string): Promise<number> {
+  async getProductAverageRating(
+    productId: string
+  ): Promise<ProductAverageRatingResponse> {
     const res = await axiosClient.get(
       `/reviews/product/${productId}/average-rating`
     );

@@ -1,8 +1,9 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { StarIcon } from "@heroicons/react/24/solid";
 import { getServerSession } from "next-auth";
+import dynamic from "next/dynamic";
 
 import { getProductById } from "@/lib/actions/products";
 import ProductDetailsClient from "@/components/product-details/ProductDetailsClient";
@@ -12,8 +13,16 @@ import SectionPromo2 from "@/components/SectionPromo2";
 import Policy from "../Policy";
 import SectionSliderProductCard from "@/components/landing-page/SectionSliderProductCard";
 import { fetchLandingPageData } from "@/lib/actions/landingPage";
-import ProductReviews from "@/components/product-details/ProductReviews";
 import authOptions from "@/lib/auth";
+
+// Dynamic import for ProductReviews component
+const ProductReviews = dynamic(
+  () => import("@/components/product-details/ProductReviews"),
+  {
+    ssr: false, // If you want to only render on client
+    loading: () => <div>Loading reviews...</div>,
+  }
+);
 
 // Define props for both the page and metadata function
 interface ProductDetailPageProps {
@@ -159,13 +168,15 @@ const ProductDetailPage = async ({ params }: ProductDetailPageProps) => {
 
           {/* {renderDetailSection()} */}
           <hr className="border-slate-200 dark:border-slate-700" />
-          <ProductReviews
-            rating={rating}
-            reviewCount={reviewCount}
-            reviews={reviews}
-            product={{ id: product.id }}
-            user={user}
-          />
+          <Suspense fallback={<div>Loading reviews...</div>}>
+            <ProductReviews
+              rating={rating}
+              reviewCount={reviewCount}
+              reviews={reviews}
+              product={{ id: product.id }}
+              user={user}
+            />
+          </Suspense>
 
           <hr className="border-slate-200 dark:border-slate-700" />
 

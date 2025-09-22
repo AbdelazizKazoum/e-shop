@@ -9,6 +9,7 @@ type ReviewState = {
   page: number;
   limit: number;
   averageRating: number | null;
+  reviewCount: number;
   loading: boolean;
   error: string | null;
   fetchReviews: (
@@ -34,6 +35,7 @@ export const useReviewStore = create<ReviewState>((set, get) => ({
   page: 1,
   limit: 10,
   averageRating: null,
+  reviewCount: 0,
   loading: false,
   error: null,
 
@@ -65,7 +67,11 @@ export const useReviewStore = create<ReviewState>((set, get) => ({
     set({ loading: true, error: null });
     try {
       const avg = await reviewService.getProductAverageRating(productId);
-      set({ averageRating: avg, loading: false });
+      set({
+        averageRating: avg.rating,
+        reviewCount: avg.reviewCount,
+        loading: false,
+      });
     } catch (err: any) {
       const errorMessage = err.message || "Failed to fetch average rating.";
       set({ error: errorMessage, loading: false });
