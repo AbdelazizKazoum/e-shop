@@ -1,4 +1,5 @@
 import { UploadCloud } from "lucide-react";
+import Image from "next/image";
 import { useState } from "react";
 
 const ImageUploadPreview = ({
@@ -34,10 +35,13 @@ const ImageUploadPreview = ({
         className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-neutral-300 bg-neutral-50 hover:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700 relative overflow-hidden ${size}`}
       >
         {preview ? (
-          <img
+          <Image
             src={preview}
             alt="Preview"
-            className="h-full w-full object-cover"
+            fill
+            className="object-cover"
+            sizes="100vw"
+            style={{ objectFit: "cover" }}
           />
         ) : (
           <UploadCloud className="h-8 w-8 text-neutral-400" />

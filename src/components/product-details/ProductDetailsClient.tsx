@@ -169,7 +169,7 @@ const ProductDetailsClient: FC<ProductDetailsClientProps> = ({
     if (!status) return null;
     const CLASSES =
       "absolute top-3 left-3 px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 nc-shadow-lg rounded-full flex items-center justify-center text-slate-700 dark:text-slate-300";
-    if (status === "New in") {
+    if (status === "active") {
       return (
         <div className={CLASSES}>
           <SparklesIcon className="w-3.5 h-3.5" />

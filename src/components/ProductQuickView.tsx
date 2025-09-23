@@ -287,15 +287,30 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({
     if (!status) return null;
     const CLASSES =
       "absolute top-3 start-3 px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 nc-shadow-lg rounded-full flex items-center justify-center text-slate-700 dark:text-slate-300";
-    if (status === "New in") {
+    if (status === "active") {
       return (
         <div className={CLASSES}>
           <SparklesIcon className="w-3.5 h-3.5" />
-          <span className="ms-1 leading-none">{status}</span>
+          <span className="ms-1 leading-none">Active</span>
         </div>
       );
     }
-    // ... other status cases
+    if (status === "inactive") {
+      return (
+        <div className={CLASSES}>
+          <ClockIcon className="w-3.5 h-3.5" />
+          <span className="ms-1 leading-none">Inactive</span>
+        </div>
+      );
+    }
+    if (status === "archived") {
+      return (
+        <div className={CLASSES}>
+          <NoSymbolIcon className="w-3.5 h-3.5" />
+          <span className="ms-1 leading-none">Archived</span>
+        </div>
+      );
+    }
     return null;
   };
 
