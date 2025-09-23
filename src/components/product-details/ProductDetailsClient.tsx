@@ -316,10 +316,10 @@ const ProductDetailsClient: FC<ProductDetailsClientProps> = ({
             {/* VARIANTS */}
             <div>
               <label>
-                <span className="text-sm font-medium">
+                {/* <span className="text-sm font-medium">
                   Color:
                   <span className="ml-1 font-semibold">{selectedColor}</span>
-                </span>
+                </span> */}
               </label>
               <div className="flex mt-3 space-x-2">
                 {uniqueColors.map((color, index) => (
@@ -447,7 +447,14 @@ const ProductDetailsClient: FC<ProductDetailsClientProps> = ({
             )}
 
             <hr className="2xl:!my-10 border-slate-200 dark:border-slate-700" />
-            <AccordionInfo />
+            <AccordionInfo
+              data={[
+                {
+                  name: "Description",
+                  content: product.description || "",
+                },
+              ]}
+            />
             <div className="hidden xl:block">
               <Policy />
             </div>

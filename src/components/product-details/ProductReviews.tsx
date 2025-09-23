@@ -26,6 +26,7 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({
   product,
   user,
 }) => {
+  console.log("🚀 ~ ProductReviews ~ user:", user);
   const [showModal, setShowModal] = useState(false);
   const [isOpenModalViewAllReviews, setIsOpenModalViewAllReviews] =
     useState(false);
