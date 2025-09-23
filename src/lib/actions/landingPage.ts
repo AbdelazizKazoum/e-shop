@@ -1,3 +1,5 @@
+import { handleError } from "../utils/errorHandler";
+
 const API_URL = process.env.API_URL;
 
 /**
@@ -12,7 +14,7 @@ export async function fetchLandingPageData() {
   });
 
   if (!res.ok) {
-    throw new Error("Failed to fetch landing page data");
+    await handleError(res, "fetchLandingPageData");
   }
 
   return await res.json();

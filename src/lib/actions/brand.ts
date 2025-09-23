@@ -1,12 +1,16 @@
 "use server";
 
+import { handleError } from "../utils/errorHandler";
+
 const API_URL = process.env.API_URL;
 
 export async function fetchTopBrands() {
   const res = await fetch(`${API_URL}/brands?page=1&limit=5`, {
     next: { revalidate: 60 },
   });
-  if (!res.ok) throw new Error("Failed to fetch brands");
+  if (!res.ok) {
+    await handleError(res, "fetchTopBrands");
+  }
   return (await res.json())?.data || [];
 }
 
@@ -17,6 +21,8 @@ export async function fetchAllBrands() {
   });
 
   console.log("🚀 ~ fetchAllBrands ~ res:", res);
-  if (!res.ok) throw new Error("Failed to fetch all brands");
+  if (!res.ok) {
+    await handleError(res, "fetchAllBrands");
+  }
   return (await res.json()) || [];
 }
