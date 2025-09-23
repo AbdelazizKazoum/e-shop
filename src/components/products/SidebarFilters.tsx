@@ -32,7 +32,7 @@ const DATA_genders = [
   { name: "Unisex", id: "unisex" },
 ];
 
-const PRICE_RANGE = [0, 500];
+const PRICE_RANGE = [0, 1000];
 
 interface SidebarFiltersProps {
   categories: Category[];

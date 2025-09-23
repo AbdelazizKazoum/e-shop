@@ -44,7 +44,7 @@ const DATA_sortOrderRadios = [
   { name: "Price Hight - Low", id: "Price-hight-low" },
 ];
 
-const PRICE_RANGE = [1, 500];
+const PRICE_RANGE = [1, 1000];
 
 const TabFilters = ({
   categories = [],

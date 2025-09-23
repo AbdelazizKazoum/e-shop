@@ -26,7 +26,7 @@ export const useFilterStore = create<FilterState>((set) => ({
   categories: [],
   brands: [], // 👈 Initialize brands
   sizes: [],
-  priceRange: [0, 500],
+  priceRange: [0, 1000],
   isOnSale: true,
   sortOrder: "",
   gender: "",
@@ -87,7 +87,7 @@ export const useFilterStore = create<FilterState>((set) => ({
         categories: [],
         brands: [], // 👈 Reset brands
         sizes: [],
-        priceRange: [100, 500],
+        priceRange: [100, 1000],
         isOnSale: true,
         sortOrder: "",
         gender: "",
