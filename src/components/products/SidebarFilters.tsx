@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import Checkbox from "@/shared/Checkbox/Checkbox";
 import Slider from "rc-slider";
 import Radio from "@/shared/Radio/Radio";
@@ -59,7 +59,15 @@ const SidebarFilters: React.FC<SidebarFiltersProps> = ({
     setIsOnSale,
     setSortOrder,
     setGender,
+    resetFilters, // <-- Add resetFilters from store
   } = useFilterStore();
+
+  // Reset filters only when leaving (unmounting) this component
+  useEffect(() => {
+    return () => {
+      resetFilters();
+    };
+  }, [resetFilters]);
 
   // Handlers
   const handleChangeCategories = (checked: boolean, name: string) => {
