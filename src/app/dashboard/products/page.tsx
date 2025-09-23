@@ -198,97 +198,160 @@ const ProductList = ({ products }: { products: Product[] }) => {
   const router = useRouter();
 
   return (
-    <div className="w-full overflow-x-auto">
-      <table className="w-full text-left">
-        <thead>
-          <tr className="border-b border-neutral-200/70 dark:border-neutral-700/50">
-            <th className="px-4 py-3 text-sm font-medium text-neutral-500">
-              Product
-            </th>
-            <th className="px-4 py-3 text-sm font-medium text-neutral-500">
-              Brand
-            </th>
-            <th className="px-4 py-3 text-sm font-medium text-neutral-500">
-              Gender
-            </th>
-            <th className="px-4 py-3 text-sm font-medium text-neutral-500">
-              Created At
-            </th>
-            <th className="px-4 py-3 text-sm font-medium text-neutral-500 text-center">
-              Status
-            </th>
-            <th className="px-4 py-3 text-sm font-medium text-neutral-500 text-center">
-              Actions
-            </th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-neutral-200/70 dark:divide-neutral-700/50">
-          {products.map((product) => (
-            <tr
-              key={product.id}
-              className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
-            >
-              <td className="px-4 py-3">
-                <div className="flex items-center gap-3">
-                  <Image
-                    src={product.image as string}
-                    alt={product.name}
-                    width={48}
-                    height={48}
-                    className="h-12 w-12 rounded-md object-cover"
-                  />
-                  <div>
-                    <p className="font-medium text-neutral-800 dark:text-neutral-100">
-                      {product.name}
-                    </p>
-                    <p className="text-sm text-neutral-500">
-                      {product.category.displayText}
-                    </p>
-                  </div>
-                </div>
-              </td>
-              <td className="px-4 py-3 text-neutral-600 dark:text-neutral-300">
-                {product.brand?.name}
-              </td>
-              <td className="px-4 py-3 text-neutral-600 dark:text-neutral-300">
-                {product.gender}
-              </td>
-              <td className="px-4 py-3 text-neutral-600 dark:text-neutral-300">
-                {product.createAt}
-              </td>
-              <td className="px-4 py-3 text-center">
-                <span
-                  className={`inline-block rounded-full px-2.5 py-1 text-xs font-medium ${
-                    product.status === "active"
-                      ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300"
-                      : "bg-neutral-200 text-neutral-800 dark:bg-neutral-700 dark:text-neutral-300"
-                  }`}
-                >
-                  {product.status === "active" ? "Active" : "Archived"}
-                </span>
-              </td>
-              <td className="px-4 py-3">
-                <div className="flex justify-center items-center gap-2">
-                  {/* View button (you can keep as-is or wire it later) */}
-                  <button className="p-2 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-500 hover:text-primary-600 dark:hover:text-primary-400">
-                    <Eye size={18} />
-                  </button>
-
-                  {/* Edit button → navigate to /dashboard/products/:id */}
-                  <button
-                    onClick={() =>
-                      router.push(`/dashboard/products/${product.id}`)
-                    }
-                    className="p-2 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-500 hover:text-primary-600 dark:hover:text-primary-400"
-                  >
-                    <Pencil size={18} />
-                  </button>
-                </div>
-              </td>
+    <div className="w-full">
+      {/* Table for md+ screens */}
+      <div className="hidden md:block overflow-x-auto">
+        <table className="w-full text-left">
+          <thead>
+            <tr className="border-b border-neutral-200/70 dark:border-neutral-700/50">
+              <th className="px-4 py-3 text-sm font-medium text-neutral-500">
+                Product
+              </th>
+              <th className="px-4 py-3 text-sm font-medium text-neutral-500">
+                Brand
+              </th>
+              <th className="px-4 py-3 text-sm font-medium text-neutral-500">
+                Gender
+              </th>
+              <th className="px-4 py-3 text-sm font-medium text-neutral-500">
+                Created At
+              </th>
+              <th className="px-4 py-3 text-sm font-medium text-neutral-500 text-center">
+                Status
+              </th>
+              <th className="px-4 py-3 text-sm font-medium text-neutral-500 text-center">
+                Actions
+              </th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="divide-y divide-neutral-200/70 dark:divide-neutral-700/50">
+            {products.map((product) => (
+              <tr
+                key={product.id}
+                className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
+              >
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-3">
+                    <Image
+                      src={product.image as string}
+                      alt={product.name}
+                      width={48}
+                      height={48}
+                      className="h-12 w-12 rounded-md object-cover"
+                    />
+                    <div>
+                      <p className="font-medium text-neutral-800 dark:text-neutral-100">
+                        {product.name}
+                      </p>
+                      <p className="text-sm text-neutral-500">
+                        {product.category.displayText}
+                      </p>
+                    </div>
+                  </div>
+                </td>
+                <td className="px-4 py-3 text-neutral-600 dark:text-neutral-300">
+                  {product.brand?.name}
+                </td>
+                <td className="px-4 py-3 text-neutral-600 dark:text-neutral-300">
+                  {product.gender}
+                </td>
+                <td className="px-4 py-3 text-neutral-600 dark:text-neutral-300">
+                  {product.createAt}
+                </td>
+                <td className="px-4 py-3 text-center">
+                  <span
+                    className={`inline-block rounded-full px-2.5 py-1 text-xs font-medium ${
+                      product.status === "active"
+                        ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300"
+                        : "bg-neutral-200 text-neutral-800 dark:bg-neutral-700 dark:text-neutral-300"
+                    }`}
+                  >
+                    {product.status === "active" ? "Active" : "Archived"}
+                  </span>
+                </td>
+                <td className="px-4 py-3">
+                  <div className="flex justify-center items-center gap-2">
+                    <button className="p-2 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-500 hover:text-primary-600 dark:hover:text-primary-400">
+                      <Eye size={18} />
+                    </button>
+                    <button
+                      onClick={() =>
+                        router.push(`/dashboard/products/${product.id}`)
+                      }
+                      className="p-2 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-500 hover:text-primary-600 dark:hover:text-primary-400"
+                    >
+                      <Pencil size={18} />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Card/List for mobile screens */}
+      <div className="md:hidden space-y-4">
+        {products.map((product) => (
+          <div
+            key={product.id}
+            className="p-4 bg-white dark:bg-neutral-800/50 rounded-lg border border-neutral-200 dark:border-neutral-700 flex flex-col gap-3"
+          >
+            <div className="flex items-center gap-3">
+              <Image
+                src={product.image as string}
+                alt={product.name}
+                width={48}
+                height={48}
+                className="h-12 w-12 rounded-md object-cover"
+              />
+              <div>
+                <p className="font-medium text-neutral-800 dark:text-neutral-100">
+                  {product.name}
+                </p>
+                <p className="text-sm text-neutral-500">
+                  {product.category.displayText}
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2 text-sm text-neutral-600 dark:text-neutral-300">
+              <span>
+                <strong>Brand:</strong> {product.brand?.name}
+              </span>
+              <span>
+                <strong>Gender:</strong> {product.gender}
+              </span>
+              <span>
+                <strong>Created:</strong> {product.createAt}
+              </span>
+            </div>
+            <div className="flex items-center justify-between mt-2">
+              <span
+                className={`inline-block rounded-full px-2.5 py-1 text-xs font-medium ${
+                  product.status === "active"
+                    ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300"
+                    : "bg-neutral-200 text-neutral-800 dark:bg-neutral-700 dark:text-neutral-300"
+                }`}
+              >
+                {product.status === "active" ? "Active" : "Archived"}
+              </span>
+              <div className="flex gap-2">
+                <button className="p-2 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-500 hover:text-primary-600 dark:hover:text-primary-400">
+                  <Eye size={18} />
+                </button>
+                <button
+                  onClick={() =>
+                    router.push(`/dashboard/products/${product.id}`)
+                  }
+                  className="p-2 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-500 hover:text-primary-600 dark:hover:text-primary-400"
+                >
+                  <Pencil size={18} />
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
