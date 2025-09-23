@@ -46,7 +46,7 @@ export type Product = {
   reviewCount?: number;
   price: number;
   newPrice?: number;
-  status?: "active" | "inactive" | "archived";
+  status?: "active" | "inactive" | "archived" | string;
   trending?: boolean;
   tags?: string[]; // <-- Add this line
   createAt?: string;
