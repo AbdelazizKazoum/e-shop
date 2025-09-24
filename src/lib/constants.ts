@@ -43,6 +43,18 @@ export const NAV_LINKS: NavLink[] = [
   //   ],
   // },
   { href: "/dashboard/customers", label: "Customers", icon: Users },
-  { href: "/dashboard/stock", label: "Stock", icon: Archive },
+  {
+    href: "/dashboard/stock",
+    label: "Stock",
+    icon: Archive,
+    children: [
+      { href: "/dashboard/stock", label: "All Stock", icon: List },
+      {
+        href: "/dashboard/stock/movement",
+        label: "Stock Movement",
+        icon: Package,
+      },
+    ],
+  },
   { href: "/dashboard/parameters", label: "Parameters", icon: Users },
 ];
