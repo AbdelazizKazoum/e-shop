@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
 import facebookSvg from "@/images/Facebook.svg";
 import googleSvg from "@/images/Google.svg";
 import Input from "@/shared/Input/Input";
@@ -27,6 +28,8 @@ const PageLogin = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,13 +43,10 @@ const PageLogin = () => {
         password,
       });
 
-      console.log("🚀 ~ handleSubmit ~ res:", res);
-
       if (res?.ok) {
-        // Login success, redirect to home
-        window.location.href = "/";
+        // Redirect to callbackUrl if exists, else to home
+        window.location.href = callbackUrl || "/";
       } else {
-        // Login failed
         setError("Email or password is incorrect.");
       }
     } catch (err: any) {
@@ -57,7 +57,7 @@ const PageLogin = () => {
   };
 
   const handleSocialLogin = (provider: string) => {
-    signIn(provider, { callbackUrl: "/" });
+    signIn(provider, { callbackUrl: callbackUrl || "/" });
   };
 
   return (

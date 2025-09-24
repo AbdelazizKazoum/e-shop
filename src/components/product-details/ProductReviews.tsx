@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { StarIcon } from "@heroicons/react/24/solid";
+import { StarIcon, ExclamationTriangleIcon } from "@heroicons/react/24/solid";
 import ButtonSecondary from "@/shared/Button/ButtonSecondary";
 import ReviewItem from "@/components/ReviewItem";
 import { Review } from "@/types/review";
@@ -8,6 +8,8 @@ import AddReviewModal from "../modals/AddReviewModal";
 import { User } from "next-auth";
 import ModalViewAllReviews1 from "@/app/(client)/product-detail/ModalViewAllReviews1";
 import { useReviewStore } from "@/stores/reviewStore";
+import { useRouter, usePathname } from "next/navigation";
+import ButtonPrimary from "@/shared/Button/ButtonPrimary";
 
 interface ProductReviewsProps {
   rating: number;
@@ -15,8 +17,63 @@ interface ProductReviewsProps {
   reviews: Review[];
   onAddReview?: () => void;
   product: { id: string };
-  user?: User; // Assuming user object with at least an id
+  user?: User;
 }
+
+const AuthModal: React.FC<{
+  open: boolean;
+  onClose: () => void;
+  onLogin: () => void;
+  onSignup: () => void;
+}> = ({ open, onClose, onLogin, onSignup }) => {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-xl w-full max-w-sm p-8 relative animate-fadeIn">
+        <button
+          className="absolute top-3 right-3 text-slate-400 hover:text-slate-700 dark:hover:text-white"
+          onClick={onClose}
+          aria-label="Close"
+        >
+          <svg
+            width={24}
+            height={24}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path d="M6 6l12 12M6 18L18 6" />
+          </svg>
+        </button>
+        <div className="flex flex-col items-center text-center">
+          <ExclamationTriangleIcon className="w-12 h-12 text-yellow-400 mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Login Required</h3>
+          <p className="text-slate-600 dark:text-slate-300 mb-6">
+            You must log in to leave a review on this product.
+          </p>
+          <div className="flex flex-col gap-3 w-full">
+            <ButtonPrimary onClick={onLogin}>Login</ButtonPrimary>
+            <div className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+              New user?{" "}
+              <button
+                onClick={onSignup}
+                className="text-green-600 hover:underline font-medium"
+                style={{
+                  background: "none",
+                  border: "none",
+                  padding: 0,
+                  cursor: "pointer",
+                }}
+              >
+                Create an account
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const ProductReviews: React.FC<ProductReviewsProps> = ({
   rating,
@@ -26,10 +83,13 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({
   product,
   user,
 }) => {
-  console.log("🚀 ~ ProductReviews ~ user:", user);
   const [showModal, setShowModal] = useState(false);
   const [isOpenModalViewAllReviews, setIsOpenModalViewAllReviews] =
     useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  const router = useRouter();
+  const pathname = usePathname();
 
   // Get latest values from the store
   const averageRating = useReviewStore((s) => s.averageRating);
@@ -46,6 +106,22 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({
       ? storeReviews.slice(0, 2)
       : reviews.slice(0, 2);
 
+  const handleAddReviewClick = () => {
+    if (!user) {
+      setShowAuthModal(true);
+    } else {
+      setShowModal(true);
+    }
+  };
+
+  const handleLogin = () => {
+    router.push(`/login?callbackUrl=${encodeURIComponent(pathname)}`);
+  };
+
+  const handleSignup = () => {
+    router.push(`/signup?callbackUrl=${encodeURIComponent(pathname)}`);
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between">
@@ -57,7 +133,7 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({
         </h2>
         <ButtonSecondary
           className="border border-slate-300 dark:border-slate-700"
-          onClick={() => setShowModal(true)}
+          onClick={handleAddReviewClick}
         >
           Add a Review
         </ButtonSecondary>
@@ -95,6 +171,14 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({
         onClose={() => setShowModal(false)}
         productId={product.id}
         userId={user?.id}
+      />
+
+      {/* Auth Modal */}
+      <AuthModal
+        open={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onLogin={handleLogin}
+        onSignup={handleSignup}
       />
 
       {/* MODAL VIEW ALL REVIEW */}

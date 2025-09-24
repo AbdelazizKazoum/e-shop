@@ -9,6 +9,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { register } from "@/services/authService";
+import { useSearchParams } from "next/navigation";
 
 const loginSocials = [
   {
@@ -32,6 +33,8 @@ const PageSignUp = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || "/";
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -43,7 +46,6 @@ const PageSignUp = () => {
     setError(null);
 
     try {
-      // ✅ Send as one object string
       const payload = {
         firstName: form.firstName,
         lastName: form.lastName,
@@ -56,12 +58,12 @@ const PageSignUp = () => {
 
       await register(formData);
 
-      // ✅ Auto login after signup
+      // ✅ Auto login after signup, redirect to callbackUrl if present
       await signIn("credentials", {
         email: form.email,
         password: form.password,
         redirect: true,
-        callbackUrl: "/",
+        callbackUrl,
       });
     } catch (err: any) {
       console.error("Signup error:", err.response?.data || err.message);
@@ -87,7 +89,7 @@ const PageSignUp = () => {
               <button
                 key={index}
                 type="button"
-                onClick={() => signIn(item.provider, { callbackUrl: "/" })}
+                onClick={() => signIn(item.provider, { callbackUrl })}
                 disabled={loading}
                 className="flex w-full rounded-lg bg-primary-50 dark:bg-neutral-800 px-4 py-3 transform transition-transform sm:px-6 hover:translate-y-[-2px]"
               >
@@ -175,7 +177,14 @@ const PageSignUp = () => {
           {/* Link to login */}
           <p className="text-center">
             Already have an account?{" "}
-            <Link href="/login" className="text-green-600">
+            <Link
+              href={
+                callbackUrl
+                  ? `/login?callbackUrl=${encodeURIComponent(callbackUrl)}`
+                  : "/login"
+              }
+              className="text-green-600"
+            >
               Sign in
             </Link>
           </p>
