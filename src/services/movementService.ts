@@ -1,29 +1,56 @@
 import axiosClient from "@/lib/axiosClient";
 
 /**
- * Fetches stock movements with optional pagination and filters.
- * @param params - An object containing pagination and filter options.
+ * Create a new stock movement.
+ */
+export const createStockMovement = (data: any) => {
+  return axiosClient.post("/stock-movements", data);
+};
+
+/**
+ * Fetch all stock movements with optional filters and pagination.
  */
 export const getAllStockMovements = (
-  params: { page?: number; limit?: number; [key: string]: any } = {}
+  params: {
+    page?: number;
+    limit?: number;
+    type?: string;
+    reason?: string;
+    variantId?: string;
+    supplierId?: string;
+    userId?: string;
+    startDate?: string;
+    endDate?: string;
+  } = {}
 ) => {
   const queryParams = new URLSearchParams();
-  if (params.page) queryParams.append("page", params.page.toString());
-  if (params.limit) queryParams.append("limit", params.limit.toString());
-
   Object.entries(params).forEach(([key, value]) => {
-    if (
-      key !== "page" &&
-      key !== "limit" &&
-      value !== undefined &&
-      value !== "" &&
-      value !== null
-    ) {
+    if (value !== undefined && value !== "" && value !== null) {
       queryParams.append(key, String(value));
     }
   });
-
   return axiosClient.get(`/stock-movements?${queryParams.toString()}`);
+};
+
+/**
+ * Fetch a single stock movement by ID.
+ */
+export const getStockMovementById = (id: string) => {
+  return axiosClient.get(`/stock-movements/${id}`);
+};
+
+/**
+ * Update a stock movement by ID.
+ */
+export const updateStockMovement = (id: string, data: any) => {
+  return axiosClient.patch(`/stock-movements/${id}`, data);
+};
+
+/**
+ * Delete a stock movement by ID.
+ */
+export const deleteStockMovement = (id: string) => {
+  return axiosClient.delete(`/stock-movements/${id}`);
 };
 
 /**
