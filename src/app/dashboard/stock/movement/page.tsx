@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, FormEvent, useMemo } from "react";
+import React, { useState, useEffect, FormEvent, useMemo, useRef } from "react";
 import {
   ChevronDown,
   Search,
@@ -13,7 +13,12 @@ import {
   ArrowUp,
   ArrowDown,
   X,
+  User,
+  Tag as TagIcon,
+  FileText,
+  Building,
 } from "lucide-react";
+import VariantSelect from "@/components/dashboard/stock/VariantSelect";
 
 // --- TYPE DEFINITIONS & ENUMS ---
 export enum StockMovementType {
@@ -32,6 +37,11 @@ export enum StockMovementReason {
 export interface Supplier {
   id: string;
   name: string;
+}
+
+export interface SupplyOrder {
+  id: string;
+  supplier: Supplier;
 }
 
 export interface StockProduct {
@@ -55,6 +65,7 @@ export interface StockMovement {
   reason: StockMovementReason;
   note?: string;
   supplier?: Supplier | null;
+  supplierOrder?: SupplyOrder | null;
   createdAt: string;
 }
 
@@ -65,55 +76,88 @@ const mockSuppliers: Supplier[] = [
   { id: "sup-3", name: "Apparel Co." },
 ];
 
+const mockSupplyOrders: SupplyOrder[] = [
+  { id: "so-123", supplier: mockSuppliers[0] },
+  { id: "so-456", supplier: mockSuppliers[1] },
+];
+
+const mockVariantsForSearch: StockVariant[] = [
+  {
+    id: "var-1",
+    color: "#417505",
+    size: "L",
+    product: {
+      id: "prod-1",
+      name: "PC Gamer Ultra",
+      image: "https://placehold.co/100x100/1e293b/ffffff?text=PC",
+    },
+  },
+  {
+    id: "var-2",
+    color: "#ff0000",
+    size: "M",
+    product: {
+      id: "prod-1",
+      name: "PC Gamer Ultra",
+      image: "https://placehold.co/100x100/1e293b/ffffff?text=PC",
+    },
+  },
+  {
+    id: "var-3",
+    color: "#ffffff",
+    size: "XL",
+    product: {
+      id: "prod-2",
+      name: "Pro Smartphone",
+      image: "https://placehold.co/100x100/3b82f6/ffffff?text=Phone",
+    },
+  },
+  {
+    id: "var-4",
+    color: "#000000",
+    size: "S",
+    product: {
+      id: "prod-3",
+      name: "Classic Hoodie",
+      image: "https://placehold.co/100x100/8b5cf6/ffffff?text=Hoodie",
+    },
+  },
+  {
+    id: "var-5",
+    color: "#fde047",
+    size: "XXL",
+    product: {
+      id: "prod-4",
+      name: "Summer T-Shirt",
+      image: "https://placehold.co/100x100/f59e0b/ffffff?text=Tee",
+    },
+  },
+];
+
 const mockStockMovements: StockMovement[] = [
   {
     id: "sm-1",
-    productDetail: {
-      id: "var-1",
-      color: "#417505",
-      size: "L",
-      product: {
-        id: "prod-1",
-        name: "PC Gamer Ultra",
-        image: "https://placehold.co/100x100/1e293b/ffffff?text=PC",
-      },
-    },
+    productDetail: mockVariantsForSearch[0],
     type: StockMovementType.ADD,
     quantity: 50,
     reason: StockMovementReason.SUPPLIER_DELIVERY,
     supplier: mockSuppliers[0],
+    supplierOrder: mockSupplyOrders[0],
     createdAt: "2025-09-10T09:20:29.247Z",
   },
   {
     id: "sm-2",
-    productDetail: {
-      id: "var-2",
-      color: "#ff0000",
-      size: "M",
-      product: {
-        id: "prod-1",
-        name: "PC Gamer Ultra",
-        image: "https://placehold.co/100x100/1e293b/ffffff?text=PC",
-      },
-    },
+    productDetail: mockVariantsForSearch[1],
     type: StockMovementType.ADD,
     quantity: 30,
     reason: StockMovementReason.SUPPLIER_DELIVERY,
     supplier: mockSuppliers[0],
+    supplierOrder: mockSupplyOrders[0],
     createdAt: "2025-09-09T11:15:10.366Z",
   },
   {
     id: "sm-3",
-    productDetail: {
-      id: "var-3",
-      color: "#ffffff",
-      size: "XL",
-      product: {
-        id: "prod-2",
-        name: "Pro Smartphone",
-        image: "https://placehold.co/100x100/3b82f6/ffffff?text=Phone",
-      },
-    },
+    productDetail: mockVariantsForSearch[2],
     type: StockMovementType.REMOVE,
     quantity: 2,
     reason: StockMovementReason.MANUAL_ADJUSTMENT,
@@ -122,34 +166,17 @@ const mockStockMovements: StockMovement[] = [
   },
   {
     id: "sm-4",
-    productDetail: {
-      id: "var-4",
-      color: "#000000",
-      size: "S",
-      product: {
-        id: "prod-3",
-        name: "Classic Hoodie",
-        image: "https://placehold.co/100x100/8b5cf6/ffffff?text=Hoodie",
-      },
-    },
+    productDetail: mockVariantsForSearch[3],
     type: StockMovementType.ADD,
     quantity: 100,
     reason: StockMovementReason.SUPPLIER_DELIVERY,
     supplier: mockSuppliers[1],
+    supplierOrder: mockSupplyOrders[1],
     createdAt: "2025-09-07T18:00:00.000Z",
   },
   {
     id: "sm-5",
-    productDetail: {
-      id: "var-5",
-      color: "#fde047",
-      size: "XXL",
-      product: {
-        id: "prod-4",
-        name: "Summer T-Shirt",
-        image: "https://placehold.co/100x100/f59e0b/ffffff?text=Tee",
-      },
-    },
+    productDetail: mockVariantsForSearch[4],
     type: StockMovementType.ADD,
     quantity: 5,
     reason: StockMovementReason.CUSTOMER_RETURN,
@@ -157,16 +184,7 @@ const mockStockMovements: StockMovement[] = [
   },
   {
     id: "sm-6",
-    productDetail: {
-      id: "var-3",
-      color: "#ffffff",
-      size: "XL",
-      product: {
-        id: "prod-2",
-        name: "Pro Smartphone",
-        image: "https://placehold.co/100x100/3b82f6/ffffff?text=Phone",
-      },
-    },
+    productDetail: mockVariantsForSearch[2],
     type: StockMovementType.CORRECTION,
     quantity: -1,
     reason: StockMovementReason.INVENTORY_CORRECTION,
@@ -174,6 +192,26 @@ const mockStockMovements: StockMovement[] = [
     createdAt: "2025-09-05T09:00:00.000Z",
   },
 ];
+
+// --- HOOKS ---
+const useOnClickOutside = <T extends HTMLElement = HTMLElement>(
+  ref: React.RefObject<T>,
+  handler: (event: MouseEvent | TouchEvent) => void
+) => {
+  useEffect(() => {
+    const listener = (event: MouseEvent | TouchEvent) => {
+      const el = ref?.current;
+      if (!el || el.contains(event.target as Node)) return;
+      handler(event);
+    };
+    document.addEventListener("mousedown", listener);
+    document.addEventListener("touchstart", listener);
+    return () => {
+      document.removeEventListener("mousedown", listener);
+      document.removeEventListener("touchstart", listener);
+    };
+  }, [ref, handler]);
+};
 
 // --- UI COMPONENTS ---
 
@@ -314,14 +352,43 @@ const Pagination = ({
 };
 
 const AddMovementModal = ({ onClose }: { onClose: () => void }) => {
+  const [selectedVariantId, setSelectedVariantId] = useState<
+    string | undefined
+  >(undefined);
+  const [selectedVariant, setSelectedVariant] = useState<any>(null);
+
+  // Fetch the full variant object when selectedVariantId changes
+  useEffect(() => {
+    if (!selectedVariantId) {
+      setSelectedVariant(null);
+      return;
+    }
+    // Optionally, you can fetch the full variant details here if needed.
+    // For now, just set the ID.
+    setSelectedVariant({ id: selectedVariantId });
+  }, [selectedVariantId]);
+
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+    if (!selectedVariantId) {
+      alert("Please select a product variant.");
+      return;
+    }
     const formData = new FormData(e.currentTarget as HTMLFormElement);
-    const data = Object.fromEntries(formData.entries());
+    const data = {
+      variantId: selectedVariantId,
+      type: formData.get("type"),
+      quantity: formData.get("quantity"),
+      reason: formData.get("reason"),
+      supplierId: formData.get("supplierId") || undefined,
+      supplierOrderId: formData.get("supplierOrderId") || undefined,
+      note: formData.get("note") || undefined,
+    };
     console.log("New Stock Movement:", data);
     alert("New movement logged! (Check console)");
     onClose();
   };
+
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
       <form
@@ -339,10 +406,10 @@ const AddMovementModal = ({ onClose }: { onClose: () => void }) => {
           </button>
         </div>
         <div className="p-6 space-y-4">
-          <Input
-            name="product"
-            label="Product/Variant SKU"
-            placeholder="Enter product SKU or name..."
+          <VariantSelect
+            value={selectedVariantId}
+            onChange={setSelectedVariantId}
+            label="Product Variant"
             required
           />
           <div className="grid grid-cols-2 gap-4">
@@ -370,6 +437,14 @@ const AddMovementModal = ({ onClose }: { onClose: () => void }) => {
               </option>
             ))}
           </Select>
+          <Select name="supplierOrderId" label="Supply Order (Optional)">
+            <option value="">None</option>
+            {mockSupplyOrders.map((so) => (
+              <option key={so.id} value={so.id}>
+                {so.id} ({so.supplier.name})
+              </option>
+            ))}
+          </Select>
           <Input
             name="note"
             label="Notes (Optional)"
@@ -385,6 +460,159 @@ const AddMovementModal = ({ onClose }: { onClose: () => void }) => {
           </button>
         </div>
       </form>
+    </div>
+  );
+};
+
+const StockMovementDetailsModal = ({
+  movement,
+  onClose,
+}: {
+  movement: StockMovement;
+  onClose: () => void;
+}) => {
+  const typeInfo = (type: StockMovementType) => {
+    switch (type) {
+      case "add":
+        return {
+          text: "Add",
+          color: "text-green-800 dark:text-green-200",
+          bgColor: "bg-green-100 dark:bg-green-900/50",
+          icon: <ArrowUp size={20} />,
+        };
+      case "remove":
+        return {
+          text: "Remove",
+          color: "text-red-800 dark:text-red-200",
+          bgColor: "bg-red-100 dark:bg-red-900/50",
+          icon: <ArrowDown size={20} />,
+        };
+      case "correction":
+        return {
+          text: "Correction",
+          color: "text-blue-800 dark:text-blue-200",
+          bgColor: "bg-blue-100 dark:bg-blue-900/50",
+          icon: <Edit size={20} />,
+        };
+      default:
+        return {
+          text: "Unknown",
+          color: "text-neutral-800 dark:text-neutral-200",
+          bgColor: "bg-neutral-100 dark:bg-neutral-900/50",
+          icon: <FileText size={20} />,
+        };
+    }
+  };
+
+  const movementDisplay = typeInfo(movement.type);
+
+  return (
+    <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-neutral-900 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+        <div className="flex justify-between items-center p-4 border-b dark:border-neutral-700">
+          <div>
+            <h2 className="text-lg font-semibold">Movement Details</h2>
+            <p className="text-sm text-neutral-500 font-mono">{movement.id}</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="p-6 overflow-y-auto space-y-6">
+          {/* Product Info */}
+          <div>
+            <h3 className="font-medium mb-2 text-neutral-700 dark:text-neutral-300">
+              Product Variant
+            </h3>
+            <div className="flex items-center gap-4 p-3 rounded-md bg-neutral-50 dark:bg-neutral-800 border dark:border-neutral-200 dark:border-neutral-700">
+              <img
+                src={movement.productDetail.product.image}
+                alt={movement.productDetail.product.name}
+                className="w-16 h-16 rounded-md object-cover"
+              />
+              <div>
+                <p className="font-semibold">
+                  {movement.productDetail.product.name}
+                </p>
+                <div className="flex items-center gap-2 text-sm text-neutral-500">
+                  <span>Size: {movement.productDetail.size}</span>
+                  <span className="flex items-center gap-1.5">
+                    / Color:
+                    <span
+                      className="h-4 w-4 rounded-full border border-neutral-300"
+                      style={{ backgroundColor: movement.productDetail.color }}
+                    ></span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Movement Details */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h3 className="font-medium mb-2 text-neutral-700 dark:text-neutral-300">
+                Movement Details
+              </h3>
+              <div className="space-y-3 text-sm">
+                <div
+                  className={`inline-flex items-center gap-3 rounded-lg px-4 py-2 ${movementDisplay.bgColor} ${movementDisplay.color}`}
+                >
+                  {movementDisplay.icon}
+                  <span className="font-bold text-xl">
+                    {movement.quantity > 0 ? "+" : ""}
+                    {movement.quantity}
+                  </span>
+                  <span className="text-sm capitalize font-semibold">
+                    {movementDisplay.text}
+                  </span>
+                </div>
+                <p className="capitalize">
+                  <span className="text-neutral-500">Reason:</span>{" "}
+                  {movement.reason.replace(/_/g, " ")}
+                </p>
+                <p>
+                  <span className="text-neutral-500">Date:</span>{" "}
+                  {new Date(movement.createdAt).toLocaleString()}
+                </p>
+              </div>
+            </div>
+            <div>
+              <h3 className="font-medium mb-2 text-neutral-700 dark:text-neutral-300">
+                Source & Context
+              </h3>
+              <div className="space-y-2 text-sm">
+                <p>
+                  <span className="text-neutral-500">Supplier:</span>{" "}
+                  {movement.supplier?.name || "N/A"}
+                </p>
+                <p>
+                  <span className="text-neutral-500">Supply Order:</span>{" "}
+                  <span className="font-mono">
+                    {movement.supplierOrder?.id || "N/A"}
+                  </span>
+                </p>
+                <p>
+                  <span className="text-neutral-500">Note:</span>{" "}
+                  {movement.note || "None"}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="flex justify-end p-4 bg-neutral-50 dark:bg-neutral-800/50 border-t dark:border-neutral-700">
+          <button
+            onClick={onClose}
+            className="rounded-md bg-primary-500 px-6 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-600"
+          >
+            Close
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
@@ -485,7 +713,7 @@ const FilterHeader = ({
 const StockMovementListSkeleton = () => (
   <div className="animate-pulse">
     <div className="hidden md:grid md:grid-cols-12 gap-4 p-4 mb-2">
-      {[...Array(6)].map((i) => (
+      {[...Array(6)].map((_, i) => (
         <div
           key={i}
           className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded col-span-2"
@@ -508,31 +736,47 @@ const StockMovementListSkeleton = () => (
           <div className="col-span-2 h-5 w-16 bg-neutral-300 dark:bg-neutral-600 rounded mt-2 md:mt-0"></div>
           <div className="col-span-2 h-5 w-24 bg-neutral-300 dark:bg-neutral-600 rounded mt-2 md:mt-0"></div>
           <div className="col-span-2 h-5 w-24 bg-neutral-300 dark:bg-neutral-600 rounded mt-2 md:mt-0"></div>
-          <div className="col-span-2 h-5 w-20 bg-neutral-300 dark:bg-neutral-600 rounded mt-2 md:mt-0"></div>
+          <div className="col-span-2 flex justify-end items-center gap-2 mt-2 md:mt-0">
+            <div className="w-8 h-8 bg-neutral-300 dark:bg-neutral-600 rounded-md"></div>
+          </div>
         </div>
       ))}
     </div>
   </div>
 );
 
-const StockMovementList = ({ movements }: { movements: StockMovement[] }) => {
+const StockMovementList = ({
+  movements,
+  onViewMovement,
+}: {
+  movements: StockMovement[];
+  onViewMovement: (movement: StockMovement) => void;
+}) => {
   const typeInfo = (type: StockMovementType, quantity: number) => {
+    const baseClasses =
+      "flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium";
     switch (type) {
       case "add":
         return (
-          <span className="flex items-center gap-1 text-green-600">
+          <span
+            className={`${baseClasses} bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300`}
+          >
             <ArrowUp size={14} /> +{quantity}
           </span>
         );
       case "remove":
         return (
-          <span className="flex items-center gap-1 text-red-500">
+          <span
+            className={`${baseClasses} bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300`}
+          >
             <ArrowDown size={14} /> -{quantity}
           </span>
         );
       case "correction":
         return (
-          <span className="flex items-center gap-1 text-blue-500">
+          <span
+            className={`${baseClasses} bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300`}
+          >
             <Edit size={14} /> {quantity > 0 ? `+${quantity}` : quantity}
           </span>
         );
@@ -546,7 +790,8 @@ const StockMovementList = ({ movements }: { movements: StockMovement[] }) => {
         <div className="col-span-2">Quantity</div>
         <div className="col-span-2">Reason</div>
         <div className="col-span-2">Supplier</div>
-        <div className="col-span-2">Date</div>
+        <div className="col-span-1">Date</div>
+        <div className="col-span-1 text-right">Actions</div>
       </div>
       <div className="space-y-4 md:space-y-0">
         {movements.map((item) => (
@@ -575,7 +820,7 @@ const StockMovementList = ({ movements }: { movements: StockMovement[] }) => {
                 </div>
               </div>
             </div>
-            <div className="mt-2 md:mt-0 md:col-span-2 font-semibold">
+            <div className="mt-2 md:mt-0 md:col-span-2">
               {typeInfo(item.type, item.quantity)}
             </div>
             <div className="mt-2 md:mt-0 md:col-span-2 text-sm text-neutral-600 dark:text-neutral-300 capitalize">
@@ -584,8 +829,16 @@ const StockMovementList = ({ movements }: { movements: StockMovement[] }) => {
             <div className="mt-2 md:mt-0 md:col-span-2 text-sm text-neutral-500">
               {item.supplier?.name || "N/A"}
             </div>
-            <div className="mt-2 md:mt-0 md:col-span-2 text-sm text-neutral-500">
+            <div className="mt-2 md:mt-0 md:col-span-1 text-sm text-neutral-500">
               {new Date(item.createdAt).toLocaleDateString()}
+            </div>
+            <div className="mt-2 md:mt-0 md:col-span-1 flex justify-end">
+              <button
+                onClick={() => onViewMovement(item)}
+                className="p-2 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700"
+              >
+                <FileText size={16} />
+              </button>
             </div>
           </div>
         ))}
@@ -602,6 +855,9 @@ export default function StockMovementsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState<any>({});
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [viewingMovement, setViewingMovement] = useState<StockMovement | null>(
+    null
+  );
 
   const limit = 5;
 
@@ -662,7 +918,10 @@ export default function StockMovementsPage() {
           {loading ? (
             <StockMovementListSkeleton />
           ) : (
-            <StockMovementList movements={movements} />
+            <StockMovementList
+              movements={movements}
+              onViewMovement={setViewingMovement}
+            />
           )}
           {!loading && totalPages > 1 && (
             <Pagination
@@ -675,6 +934,12 @@ export default function StockMovementsPage() {
       </div>
       {isModalOpen && (
         <AddMovementModal onClose={() => setIsModalOpen(false)} />
+      )}
+      {viewingMovement && (
+        <StockMovementDetailsModal
+          movement={viewingMovement}
+          onClose={() => setViewingMovement(null)}
+        />
       )}
     </>
   );
