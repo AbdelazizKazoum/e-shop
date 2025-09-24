@@ -19,20 +19,7 @@ import {
   Building,
 } from "lucide-react";
 import VariantSelect from "@/components/dashboard/stock/VariantSelect";
-
-// --- TYPE DEFINITIONS & ENUMS ---
-export enum StockMovementType {
-  ADD = "add",
-  REMOVE = "remove",
-  CORRECTION = "correction",
-}
-
-export enum StockMovementReason {
-  SUPPLIER_DELIVERY = "supplier_delivery",
-  INVENTORY_CORRECTION = "inventory_correction",
-  CUSTOMER_RETURN = "customer_return",
-  MANUAL_ADJUSTMENT = "manual_adjustment",
-}
+import { StockMovementReason, StockMovementType } from "@/types/stockMovement";
 
 export interface Supplier {
   id: string;
