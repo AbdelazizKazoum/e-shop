@@ -23,7 +23,7 @@ const DiscoverBrands = ({ brands = [] }: { brands: Brand[] }) => {
         1279: { gap: 20, perView: 2.15 },
         1023: { gap: 20, perView: 1.6 },
         768: { gap: 20, perView: 1.2 },
-        500: { gap: 20, perView: 1 },
+        500: { gap: 20, perView: 1.3 },
       },
     };
     if (!sliderRef.current) return;
@@ -46,7 +46,7 @@ const DiscoverBrands = ({ brands = [] }: { brands: Brand[] }) => {
       <Heading
         className="mb-12 lg:mb-14 text-neutral-900 dark:text-neutral-50 nc-p-r-container "
         desc=""
-        rightDescText="Explore the best brands"
+        // rightDescText="Explore the best brands"
         hasNextPrev
       >
         Top Brands
