@@ -291,7 +291,7 @@ const ProductCard: FC<ProductCardProps> = ({
                 <ButtonPrimary
                   className="shadow-lg"
                   fontSize="text-xs"
-                  sizeClass="py-2 px-4"
+                  sizeClass="p-2 sm:py-2 sm:px-4"
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -308,21 +308,21 @@ const ProductCard: FC<ProductCardProps> = ({
                     }
                   }}
                 >
-                  <BagIcon className="w-3.5 h-3.5 mb-0.5" />
-                  <span className="ms-1">Add to bag</span>
+                  <BagIcon className="w-4 h-4" />
+                  <span className="hidden sm:inline ms-1">Add to bag</span>
                 </ButtonPrimary>
                 <ButtonSecondary
                   className="ms-1.5 bg-white hover:!bg-gray-100 hover:text-slate-900 transition-colors shadow-lg"
                   fontSize="text-xs"
-                  sizeClass="py-2 px-4"
+                  sizeClass="p-2 sm:py-2 sm:px-4"
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
                     setShowModalQuickView(true);
                   }}
                 >
-                  <ArrowsPointingOutIcon className="w-3.5 h-3.5" />
-                  <span className="ms-1">Quick view</span>
+                  <ArrowsPointingOutIcon className="w-4 h-4" />
+                  <span className="hidden sm:inline ms-1">Quick view</span>
                 </ButtonSecondary>
               </div>
             )}
