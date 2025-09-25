@@ -51,11 +51,11 @@ const CardCategory2: FC<CardCategory2Props> = ({
         </div>
         <span className="opacity-0 group-hover:opacity-100 absolute inset-0 bg-black bg-opacity-10 transition-opacity rounded-full"></span>
       </div>
-      <div className="mt-5 flex-1 text-center">
+      <div className="mt-4 flex-1 text-center">
         <h2 className="text-base sm:text-lg text-neutral-900 dark:text-neutral-100 font-semibold">
           {name}
         </h2>
-        <span className="block mt-0.5 sm:mt-1.5 text-sm text-neutral-500 dark:text-neutral-400">
+        <span className="block mt-1 text-sm text-neutral-500 dark:text-neutral-400">
           {desc}
         </span>
       </div>

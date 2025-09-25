@@ -231,7 +231,7 @@ const ProductCard: FC<ProductCardProps> = ({
           {typeof price === "number" &&
             typeof newPrice === "number" &&
             price > newPrice && (
-              <span className="absolute top-3 left-3 z-20 bg-green-500 text-white text-base font-extrabold px-3 py-1 rounded-full shadow-lg">
+              <span className="absolute top-3 left-3 z-20 bg-green-500 text-white text-xs sm:text-base font-extrabold px-2 py-1 sm:px-3 rounded-full shadow-lg">
                 -{Math.round(((price - newPrice) / price) * 100)}%
               </span>
             )}
@@ -346,7 +346,7 @@ const ProductCard: FC<ProductCardProps> = ({
             <Prices price={price} newPrice={newPrice} />
             <div className="flex items-center mb-0.5">
               <StarIcon className="w-4 h-4 pb-[1px] text-amber-400" />
-              <span className="text-xs ms-1 text-slate-500 dark:text-slate-400">
+              <span className="text-sm ms-1 text-slate-500 dark:text-slate-400">
                 {rating || "0"}
               </span>
             </div>
