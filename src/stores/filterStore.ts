@@ -81,11 +81,26 @@ export const useFilterStore = create<FilterState>((set) => ({
     }),
 
   resetFilters: () =>
-    set(() => {
+    set((state) => {
+      const isAlreadyReset =
+        state.categories.length === 0 &&
+        state.brands.length === 0 &&
+        state.sizes.length === 0 &&
+        state.priceRange[0] === 0 &&
+        state.priceRange[1] === 1000 &&
+        state.isOnSale === true &&
+        state.sortOrder === "" &&
+        state.gender === "" &&
+        state.name === "";
+
+      if (isAlreadyReset) {
+        return {}; // Don't update state if it's already reset
+      }
+
       console.log("Filters reset");
       return {
         categories: [],
-        brands: [], // 👈 Reset brands
+        brands: [],
         sizes: [],
         priceRange: [0, 1000],
         isOnSale: true,

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { FC, useEffect, useState } from "react";
+import React, { FC, useEffect, useState, useRef } from "react";
 import { Product } from "@/types/product";
 import { useProductStore } from "@/stores/productStore";
 import { useFilterStore } from "@/stores/filterStore";
@@ -50,11 +50,29 @@ export function RenderProducts({
   const sortOrder = useFilterStore((state) => state.sortOrder);
   const gender = useFilterStore((state) => state.gender);
   const name = useFilterStore((state) => state.name); // 👈 added
+  const resetFilters = useFilterStore((state) => state.resetFilters);
 
   // Add any other filters you need here in the same way
 
   const [hasMounted, setHasMounted] = useState(false);
   const [filtersApplied, setFiltersApplied] = useState(false);
+  const isUnmounting = useRef(false);
+
+  // Reset filters only when the component is truly unmounting
+  useEffect(() => {
+    isUnmounting.current = false;
+    return () => {
+      isUnmounting.current = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (isUnmounting.current) {
+        resetFilters();
+      }
+    };
+  }, [resetFilters]);
 
   // ✅ FIX: Use the individual state values in the dependency array.
   // React can now correctly track when they actually change.

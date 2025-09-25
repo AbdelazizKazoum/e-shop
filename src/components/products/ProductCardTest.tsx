@@ -329,13 +329,15 @@ const ProductCard: FC<ProductCardProps> = ({
           </div>
         </div>
 
-        <div className="space-y-4 px-2.5 pt-5 pb-2.5">
+        <div className="space-y-2.5 px-2.5 pt-4 pb-2.5">
           {renderVariants()}
           <div>
-            <h2 className="nc-ProductCard__title text-base font-semibold transition-colors">
+            <h2 className="nc-ProductCard__title text-sm font-semibold transition-colors md:text-base">
               {name}
             </h2>
-            <p className={`text-sm text-slate-500 dark:text-slate-400 mt-1 `}>
+            <p
+              className={`text-xs text-slate-500 dark:text-slate-400 mt-1 md:text-sm`}
+            >
               {category?.displayText}
             </p>
           </div>
@@ -343,9 +345,9 @@ const ProductCard: FC<ProductCardProps> = ({
           <div className="flex justify-between items-end ">
             <Prices price={price} newPrice={newPrice} />
             <div className="flex items-center mb-0.5">
-              <StarIcon className="w-5 h-5 pb-[1px] text-amber-400" />
-              <span className="text-sm ms-1 text-slate-500 dark:text-slate-400">
-                {rating || "0"} ({reviewCount || 0} reviews)
+              <StarIcon className="w-4 h-4 pb-[1px] text-amber-400" />
+              <span className="text-xs ms-1 text-slate-500 dark:text-slate-400">
+                {rating || "0"}
               </span>
             </div>
           </div>
