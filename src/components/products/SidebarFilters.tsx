@@ -62,12 +62,13 @@ const SidebarFilters: React.FC<SidebarFiltersProps> = ({
     resetFilters, // <-- Add resetFilters from store
   } = useFilterStore();
 
-  // Reset filters only when leaving (unmounting) this component
-  useEffect(() => {
-    return () => {
-      resetFilters();
-    };
-  }, [resetFilters]);
+  // // Reset filters only when leaving (unmounting) this component
+  // useEffect(() => {
+  //   return () => {
+  //     resetFilters();
+  //     console.log("Filters reset");
+  //   };
+  // }, [resetFilters]);
 
   // Handlers
   const handleChangeCategories = (checked: boolean, name: string) => {
