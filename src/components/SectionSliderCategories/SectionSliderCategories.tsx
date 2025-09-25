@@ -94,49 +94,23 @@ const SectionSliderCategories: FC<SectionSliderCategoriesProps> = ({
               </li>
             ))}
             <li className={`glide__slide ${itemClassName}`}>
-              <div
-                className={`flex-1 relative w-full h-0 rounded-2xl overflow-hidden group aspect-w-1 aspect-h-1 bg-slate-100`}
-              >
-                <div>
-                  <div className="absolute inset-y-6 inset-x-10 flex flex-col sm:items-center justify-center">
-                    <div className="flex relative text-slate-900">
-                      <span className="text-lg font-semibold ">
-                        More Products
+              <Link href={"/filter"} className="nc-CardCategory2 block">
+                <div
+                  className={`flex-1 relative w-full h-0 rounded-full overflow-hidden group aspect-w-1 aspect-h-1 bg-slate-100`}
+                >
+                  <div className="transform group-hover:scale-105 transition-transform duration-300 w-full h-full flex items-center justify-center">
+                    <div className="text-center">
+                      <h2 className="text-base sm:text-lg text-neutral-900 dark:text-neutral-100 font-semibold">
+                        More categories
+                      </h2>
+                      <span className="block mt-0.5 sm:mt-1.5 text-sm text-neutral-500 dark:text-neutral-400">
+                        Show me more
                       </span>
-                      <svg
-                        className="absolute left-full w-5 h-5 ml-2 rotate-45 group-hover:scale-110 transition-transform"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M18.0701 9.57L12.0001 3.5L5.93005 9.57"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeMiterlimit="10"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        ></path>
-                        <path
-                          d="M12 20.4999V3.66992"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeMiterlimit="10"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        ></path>
-                      </svg>
                     </div>
-                    <span className="text-sm mt-1 text-slate-800">
-                      Show me more
-                    </span>
                   </div>
+                  <span className="opacity-0 group-hover:opacity-100 absolute inset-0 bg-black bg-opacity-10 transition-opacity rounded-full"></span>
                 </div>
-                <Link
-                  href={"/filter"}
-                  className="opacity-0 group-hover:opacity-100 absolute inset-0 bg-black bg-opacity-10 transition-opacity"
-                ></Link>
-              </div>
+              </Link>
             </li>
           </ul>
         </div>

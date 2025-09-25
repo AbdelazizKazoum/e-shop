@@ -23,7 +23,7 @@ const SectionSliderProductCard: FC<SectionSliderProductCardProps> = ({
   headingFontClassName,
   headingClassName,
   heading,
-  subHeading = "REY backpacks & bags",
+  // subHeading = "REY backpacks & bags",
   data = [],
 }) => {
   console.log("🚀 ~ SectionSliderProductCard ~ data:", data);
@@ -76,7 +76,7 @@ const SectionSliderProductCard: FC<SectionSliderProductCardProps> = ({
         <Heading
           className={headingClassName}
           fontClass={headingFontClassName}
-          rightDescText={subHeading}
+          // rightDescText={subHeading}
           hasNextPrev
         >
           {heading || `New Arrivals`}
