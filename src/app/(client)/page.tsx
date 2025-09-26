@@ -26,20 +26,20 @@ async function PageHome() {
     <div className="nc-PageHome relative overflow-hidden">
       <SectionHero2 />
 
-      <div className=" mt-24 lg:mt-32 container relative space-y-24 my-24 lg:space-y-32 lg:my-32">
+      <div className="container mt-16 lg:mt-24">
         <SectionSliderCategories data={categories} />
       </div>
 
-      <div className="container relative space-y-24 my-24 lg:space-y-32 lg:my-32">
+      <div className="container mt-16 lg:mt-24">
         <SectionSliderProductCard data={newArrivals} />
       </div>
 
-      <div className="mt-24 lg:mt-32">
+      <div className="mt-16 lg:mt-24">
         {/* <DiscoverMoreSlider /> */}
         <DiscoverBrands brands={topBrands} />
       </div>
 
-      <div className="container relative space-y-24 my-24 lg:space-y-32 lg:my-32">
+      <div className="container relative space-y-16 my-16 lg:space-y-24 lg:my-24">
         {/* <SectionPromo1 />
         <div className="relative py-24 lg:py-32">
           <BackgroundSection />
@@ -51,7 +51,7 @@ async function PageHome() {
           data={bestSellers}
         />
         {/* HOW IT WORKS */}{" "}
-        <div className="py-24 lg:py-32 border-t border-b border-slate-200 dark:border-slate-700">
+        <div className="py-16 lg:py-24 border-t border-b border-slate-200 dark:border-slate-700">
           <SectionHowItWork />
         </div>
         <SectionPromo2 />
@@ -61,7 +61,7 @@ async function PageHome() {
           products={featuredProducts}
           categories={categories}
         />
-        <div className="relative py-24 lg:py-32">
+        <div className="relative py-16 lg:py-24">
           <BackgroundSection />
           <div>
             <Heading rightDescText="From the Ciseco blog">
