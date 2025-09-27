@@ -1,7 +1,7 @@
 import Input from "@/components/ui/form/Input";
 import Select from "@/components/ui/form/Select";
 import VariantSelect from "../VariantSelect";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useState, useRef } from "react";
 import { X } from "lucide-react";
 import {
   StockMovementReason,
@@ -10,6 +10,7 @@ import {
   SupplyOrder,
 } from "@/types/stockMovement";
 import { useMovementStore } from "@/stores/movementStore";
+import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 
 // --- MOCK DATA ---
 export const mockSuppliers: Supplier[] = [
@@ -29,6 +30,15 @@ const AddMovementModal = ({ onClose }: { onClose: () => void }) => {
     string | undefined
   >(undefined);
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
+
+  const modalRef = useRef<HTMLFormElement>(null);
+
+  // Close modal when clicking outside (only when not loading)
+  useOnClickOutside(modalRef, () => {
+    if (!loading) {
+      onClose();
+    }
+  });
 
   // Fetch the full variant object when selectedVariantId changes
   useEffect(() => {
@@ -71,6 +81,7 @@ const AddMovementModal = ({ onClose }: { onClose: () => void }) => {
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
       <form
+        ref={modalRef}
         onSubmit={handleSubmit}
         className="bg-white dark:bg-neutral-900 rounded-lg shadow-xl w-full max-w-lg"
       >
