@@ -9,8 +9,8 @@ const API_URL = process.env.API_URL;
  * @returns A promise that resolves to an object containing landing page data.
  */
 export async function fetchLandingPageData() {
-  const res = await fetch(`${API_URL}/products/landing-page`, {
-    next: { revalidate: 60 }, // Revalidate every 60 seconds
+  const res = await fetch(`${process.env.API_URL}/products/landing-page`, {
+    next: { tags: ["landing-page"] }, // ✅ use a tag instead of fixed revalidate
   });
 
   if (!res.ok) {
