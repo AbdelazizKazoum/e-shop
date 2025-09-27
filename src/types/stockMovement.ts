@@ -1,11 +1,5 @@
 import { User } from "next-auth";
 
-export interface StockMovement {
-  id: string;
-  // Add other stock movement properties here
-  user: User;
-}
-
 export enum StockMovementType {
   ADD = "add",
   REMOVE = "remove",
@@ -20,3 +14,38 @@ export enum StockMovementReason {
 }
 
 // ...other types and interfaces...
+
+export interface Supplier {
+  id: string;
+  name: string;
+}
+
+export interface SupplyOrder {
+  id: string;
+  supplier: Supplier;
+}
+
+export interface StockProduct {
+  id: string;
+  name: string;
+  image: string;
+}
+
+export interface StockVariant {
+  id: string;
+  color: string;
+  size: string;
+  product: StockProduct;
+}
+
+export interface StockMovement {
+  id: string;
+  productDetail: StockVariant;
+  type: StockMovementType;
+  quantity: number;
+  reason: StockMovementReason;
+  note?: string;
+  supplier?: Supplier | null;
+  supplierOrder?: SupplyOrder | null;
+  createdAt: string;
+}

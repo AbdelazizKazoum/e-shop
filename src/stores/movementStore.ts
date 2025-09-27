@@ -6,6 +6,7 @@ import {
   updateStockMovement,
   deleteStockMovement,
 } from "@/services/movementService";
+import { toast } from "react-toastify";
 
 // Define types for stock movement and filters (customize as needed)
 export interface StockMovement {
@@ -133,11 +134,13 @@ export const useMovementStore = create<MovementStore>((set, get) => ({
     try {
       const response = await createStockMovement(data);
       set({ loading: false });
+      toast.success("Stock movement created successfully.");
       return response.data;
     } catch (err: any) {
       const errorMessage =
         err.response?.data?.message || "Failed to create stock movement.";
       set({ error: errorMessage, loading: false });
+      toast.error(errorMessage);
       throw err;
     }
   },
@@ -160,9 +163,11 @@ export const useMovementStore = create<MovementStore>((set, get) => ({
             : state.selectedMovement,
         loading: false,
       }));
+      toast.success("Stock movement updated successfully.");
     } catch (err: any) {
       const errorMessage =
         err.response?.data?.message || "Failed to update stock movement.";
+      toast.error(errorMessage);
       set({ error: errorMessage, loading: false });
       throw err;
     }
@@ -179,9 +184,11 @@ export const useMovementStore = create<MovementStore>((set, get) => ({
         movements: state.movements.filter((m) => m.id !== id),
         loading: false,
       }));
+      toast.success("Stock movement deleted successfully.");
     } catch (err: any) {
       const errorMessage =
         err.response?.data?.message || "Failed to delete stock movement.";
+      toast.error(errorMessage);
       set({ error: errorMessage, loading: false });
       throw err;
     }
