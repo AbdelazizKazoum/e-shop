@@ -141,18 +141,8 @@ const SectionHero2: FC<SectionHero2Props> = ({ className = "" }) => {
 
         {/* RENDER IMAGES */}
         <Link href={item.href as any}>
-          {/* Mobile Image */}
-          <div className="block md:hidden aspect-w-1 aspect-h-1">
-            <Image
-              fill
-              className="w-full h-full object-cover"
-              src={item.mobileImage}
-              alt="slider image"
-              priority
-            />
-          </div>
-          {/* Desktop Image */}
-          <div className="hidden md:block aspect-w-16 aspect-h-[6.25]">
+          {/* Responsive height for all screen sizes */}
+          <div className="relative w-full h-[200px] sm:h-[250px] md:h-[300px] lg:h-[350px] xl:h-[400px] 2xl:h-[450px]">
             <Image
               fill
               className="w-full h-full object-cover"

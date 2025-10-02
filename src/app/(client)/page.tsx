@@ -26,20 +26,20 @@ async function PageHome() {
     <div className="nc-PageHome relative overflow-hidden">
       <SectionHero2 />
 
-      <div className="container mt-16 lg:mt-24">
+      <div className="container mt-8 sm:mt-12 md:mt-16 lg:mt-20">
         <SectionSliderCategories data={categories} />
       </div>
 
-      <div className="container mt-16 lg:mt-24">
+      <div className="container mt-12 sm:mt-16 md:mt-20 lg:mt-24">
         <SectionSliderProductCard data={newArrivals} />
       </div>
 
-      <div className="mt-16 lg:mt-24">
+      <div className="mt-12 sm:mt-16 md:mt-20 lg:mt-24">
         {/* <DiscoverMoreSlider /> */}
         <DiscoverBrands brands={topBrands} />
       </div>
 
-      <div className="container relative space-y-16 my-16 lg:space-y-24 lg:my-24">
+      <div className="container relative space-y-12 sm:space-y-16 md:space-y-20 lg:space-y-24 my-12 sm:my-16 md:my-20 lg:my-24">
         {/* <SectionPromo1 />
         <div className="relative py-24 lg:py-32">
           <BackgroundSection />
