@@ -61,7 +61,7 @@ async function PageHome() {
           products={featuredProducts}
           categories={categories}
         />
-        <div className="relative py-16 lg:py-24">
+        {/* <div className="relative py-16 lg:py-24">
           <BackgroundSection />
           <div>
             <Heading rightDescText="From the Ciseco blog">
@@ -71,8 +71,8 @@ async function PageHome() {
               <ButtonSecondary>Show all blog articles</ButtonSecondary>
             </div>
           </div>
-        </div>
-        <SectionClientSay />
+        </div> */}
+        {/* <SectionClientSay /> */}
       </div>
     </div>
   );
