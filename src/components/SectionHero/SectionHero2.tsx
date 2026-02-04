@@ -13,9 +13,9 @@ const SLIDER_DATA = [
   {
     id: 1,
     desktopImage:
-      "https://static.tendaglasses.com/media/banner/banner-1-f7ecb28e3a53677559bdd23470c167ab.jpg?x-oss-process=style/banner",
+      "https://static.tendaglasses.com/media/banner/banner-1-9806f2935868a7b91186f63e6a98713b.jpg?x-oss-process=style/banner",
     mobileImage:
-      "https://static.tendaglasses.com/media/banner/banner-m-1-6504bb16f128c1704cafc97639d0c84a.jpg?x-oss-process=style/banner",
+      "https://static.tendaglasses.com/media/banner/banner-2-f7ecb28e3a53677559bdd23470c167ab.jpg?x-oss-process=style/banner",
     href: "/search",
   },
   {
